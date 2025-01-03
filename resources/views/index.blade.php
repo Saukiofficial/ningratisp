@@ -287,7 +287,7 @@
                 <div>
                   <h3>Kecepatan Internet Maksimal</h3>
                   <p>Kami memastikan Anda mendapatkan pengalaman internet tercepat untuk kebutuhan browsing, streaming, dan gaming Anda.</p>
-                  <a href="service-details.html" class="read-more">Read More <i class="bi bi-arrow-right"></i></a>
+                  <a href="{{ route('service-details') }}" class="read-more">Read More <i class="bi bi-arrow-right"></i></a>
                 </div>
               </div>
             </div><!-- End Service Card -->
@@ -300,7 +300,7 @@
                 <div>
                   <h3>Uptime Tinggi</h3>
                   <p>Layanan kami dirancang untuk menjaga koneksi Anda tetap stabil dengan uptime hingga 99,9%, sehingga aktivitas online Anda tidak terganggu.</p>
-                  <a href="service-details.html" class="read-more">Read More <i class="bi bi-arrow-right"></i></a>
+                  <a href="{{ route('service-details') }}" class="read-more">Read More <i class="bi bi-arrow-right"></i></a>
                 </div>
               </div>
             </div><!-- End Service Card -->
@@ -313,7 +313,7 @@
                 <div>
                   <h3>Support Pelanggan 24/7</h3>
                   <p>Tim dukungan kami selalu siap membantu Anda kapan pun Anda membutuhkannya, memastikan setiap masalah dapat segera terselesaikan.</p>
-                  <a href="service-details.html" class="read-more">Read More <i class="bi bi-arrow-right"></i></a>
+                  <a href="{{ route('service-details') }}" class="read-more">Read More <i class="bi bi-arrow-right"></i></a>
                 </div>
               </div>
             </div><!-- End Service Card -->
@@ -326,7 +326,7 @@
                 <div>
                   <h3>Fleksibilitas Paket</h3>
                   <p>Pilih dari berbagai paket internet yang dirancang untuk memenuhi kebutuhan Anda, baik untuk penggunaan pribadi maupun bisnis.</p>
-                  <a href="service-details.html" class="read-more">Read More <i class="bi bi-arrow-right"></i></a>
+                  <a href="{{ route('service-details') }}" class="read-more">Read More <i class="bi bi-arrow-right"></i></a>
                 </div>
               </div>
             </div><!-- End Service Card -->
@@ -354,233 +354,215 @@
           <!-- Basic Plan -->
           <div class="col-lg-4" data-aos="fade-up" data-aos-delay="100">
             <div class="pricing-card popular">
-              <center><h3>Paket Miskin</h3>
-              <h4>10Mbps</h4> </center>
-              <div class="price">
-                <center><span class="currency">Rp.</span>
-                <span class="amount">150rb </span>
-                <span class="period">/ Bulan</span></center>
-              </div>
-              <p class="description">ye mun tak andik pesse ngalak se mode bei jek langlarang, mun la sogi bhuruh melle se larangan, dek remmah tretan? cocok ?.</p>
+                <center>
+                    <h3>Paket Epic</h3>
+                    <h4>7 Mbps</h4>
+                </center>
+                <div class="price">
+                    <center>
+                        <span class="currency">Rp.</span>
+                        <span class="amount">100rb</span>
+                        <span class="period">/Bulan</span>
+                    </center>
+                </div>
+                <p class="description">
+                    Paket internet dengan harga terjangkau dan koneksi stabil untuk kebutuhan keluarga sehari-hari.
+                </p>
 
-              <h4>Featured Included:</h4>
-              <ul class="features-list">
-                <li>
-                  <i class="bi bi-check-circle-fill"></i>
-                  Uploud & download stabil
-                </li>
-                <li>
-                  <i class="bi bi-check-circle-fill"></i>
-                  cocok untuk keluarga kismin
-                </li>
-                <li>
-                  <i class="bi bi-check-circle-fill"></i>
-                  ideal untuk 3 perangkat, kalau lebih mending sadar diri
-                </li>
-                <li>
-                    <i class="bi bi-check-circle-fill"></i>
-                    kalau lemot jgn nyalahin , kan la taoh jek mode paketnah
-                </li>
-              </ul>
+                <h4>Fitur Unggulan:</h4>
+                <ul class="features-list">
+                    <li>
+                        <i class="bi bi-check-circle-fill"></i>
+                        Kecepatan upload & download stabil
+                    </li>
+                    <li>
+                        <i class="bi bi-check-circle-fill"></i>
+                        Nikmati Internet Tanpa Batas Kuota
+                    </li>
+                    <li>
+                        <i class="bi bi-check-circle-fill"></i>
+                        Ideal untuk hingga 3 perangkat
+                    </li>
+                </ul>
 
-              <a href="https://wa.me/6285895039471?text=Halo%20saya%20ingin%20berlangganan%20paket%20ini" class="btn btn-light">
-                Langganan Sekarang
-                <i class="bi bi-arrow-right"></i>
-              </a>
+                <a href="https://wa.me/6285895039471?text=Halo%20saya%20ingin%20berlangganan%20paket%20ini" class="btn btn-light">
+                    Langganan Sekarang
+                    <i class="bi bi-arrow-right"></i>
+                </a>
             </div>
-          </div>
+        </div>
+
 
           <!-- Standard Plan -->
-          <div class="col-lg-4" data-aos="fade-up" data-aos-delay="100">
-            <div class="pricing-card popular">
-              <center><h3>Paket Hampir Miskin</h3>
-              <h4>30Mbps</h4> </center>
-              <div class="price">
-                <center><span class="currency">Rp.</span>
-                <span class="amount">250rb </span>
-                <span class="period">/ Bulan</span></center>
-              </div>
-              <p class="description">ye mun tak andik pesse ngalak se mode bei jek langlarang, mun la sogi bhuruh melle se larangan, dek remmah tretan? cocok ?.</p>
+         <div class="col-lg-4" data-aos="fade-up" data-aos-delay="100">
+  <div class="pricing-card popular">
+    <center><h3>Paket Legend</h3>
+    <h4>15Mbps</h4> </center>
+    <div class="price">
+      <center><span class="currency">Rp.</span>
+      <span class="amount">150rb </span>
+      <span class="period">/ Bulan</span></center>
+    </div>
+    <p class="description">Paket internet yang hemat dan stabil untuk kebutuhan keluarga sehari-hari.</p>
 
-              <h4>Featured Included:</h4>
-              <ul class="features-list">
-                <li>
-                  <i class="bi bi-check-circle-fill"></i>
-                  Uploud & download stabil
-                </li>
-                <li>
-                  <i class="bi bi-check-circle-fill"></i>
-                  cocok untuk keluarga kismin
-                </li>
-                <li>
-                  <i class="bi bi-check-circle-fill"></i>
-                  ideal untuk 7 perangkat, kalau lebih mending sadar diri
-                </li>
-                <li>
-                    <i class="bi bi-check-circle-fill"></i>
-                    kalau lemot jgn nyalahin , kan la taoh jek mode paketnah
-                </li>
-              </ul>
+    <h4>Fitur Unggulan:</h4>
+    <ul class="features-list">
+      <li>
+        <i class="bi bi-check-circle-fill"></i>
+        Kecepatan upload & download stabil
+      </li>
+      <li>
+        <i class="bi bi-check-circle-fill"></i>
+        Nikmati Internet Tanpa Batas Kuota
+      </li>
+      <li>
+        <i class="bi bi-check-circle-fill"></i>
+        Ideal untuk 7 perangkat
+      </li>
+    </ul>
 
-              <a href="https://wa.me/6285895039471?text=Halo%20saya%20ingin%20berlangganan%20paket%20ini" class="btn btn-light">
-                Langganan Sekarang
-                <i class="bi bi-arrow-right"></i>
-              </a>
-            </div>
-          </div>
+    <a href="https://wa.me/6285895039471?text=Halo%20saya%20ingin%20berlangganan%20paket%20ini" class="btn btn-light">
+      Langganan Sekarang
+      <i class="bi bi-arrow-right"></i>
+    </a>
+  </div>
+</div>
+        <!-- Premium Plan -->
+        <div class="col-lg-4" data-aos="fade-up" data-aos-delay="100">
+  <div class="pricing-card popular">
+    <center><h3>Paket Mythic </h3>
+    <h4>20Mbps</h4> </center>
+    <div class="price">
+      <center><span class="currency">Rp.</span>
+      <span class="amount">200rb </span>
+      <span class="period">/ Bulan</span></center>
+    </div>
+    <p class="description">Paket internet dengan kecepatan tinggi dan stabil untuk kebutuhan keluarga sehari-hari.</p>
 
-          <!-- Premium Plan -->
-          <div class="col-lg-4" data-aos="fade-up" data-aos-delay="100">
-            <div class="pricing-card popular">
-              <center><h3>Paket Hampir Kaya</h3>
-              <h4>50Mbps</h4> </center>
-              <div class="price">
-                <center><span class="currency">Rp.</span>
-                <span class="amount">300rb </span>
-                <span class="period">/ Bulan</span></center>
-              </div>
-              <p class="description">Nah parajin nyareh pesse , male setoran tak cet macetan , kan mun ngak jriyeh padeh nyaman. beremmah bosku aman?</p>
+    <h4>Fitur Unggulan:</h4>
+    <ul class="features-list">
+      <li>
+        <i class="bi bi-check-circle-fill"></i>
+        Upload dan download stabil
+      </li>
+      <li>
+        <i class="bi bi-check-circle-fill"></i>
+        Nikmati Internet Tanpa Batas Kuota
+      </li>
+      <li>
+        <i class="bi bi-check-circle-fill"></i>
+        Ideal untuk hingga 10 perangkat
+      </li>
+    </ul>
 
-              <h4>Featured Included:</h4>
-              <ul class="features-list">
-                <li>
-                  <i class="bi bi-check-circle-fill"></i>
-                  Uploud & download stabil
-                </li>
-                <li>
-                  <i class="bi bi-check-circle-fill"></i>
-                  cocok untuk keluarga hampir kaya
-                </li>
-                <li>
-                  <i class="bi bi-check-circle-fill"></i>
-                  ideal untuk 10 perangkat, kalau lebih mending sadar diri
-                </li>
-                <li>
-                    <i class="bi bi-check-circle-fill"></i>
-                    kalau lemot gpp chat admin , keng jek gut seggut
-                </li>
-              </ul>
-
-              <a href="https://wa.me/6285895039471?text=Halo%20saya%20ingin%20berlangganan%20paket%20ini" class="btn btn-light">
-                Langganan Sekarang
-                <i class="bi bi-arrow-right"></i>
-              </a>
-            </div>
-          </div>
+    <a href="https://wa.me/6285895039471?text=Halo%20saya%20ingin%20berlangganan%20paket%20ini" class="btn btn-light">
+      Langganan Sekarang
+      <i class="bi bi-arrow-right"></i>
+    </a>
+  </div>
+</div>
           <!--  produk andalan  -->
           <div class="col-lg-4" data-aos="fade-up" data-aos-delay="100">
-            <div class="pricing-card popular">
-              <center><h3>Paket Kaya </h3>
-              <h4>70Mbps</h4> </center>
-              <div class="price">
-                <center><span class="currency">Rp.</span>
-                <span class="amount">350rb </span>
-                <span class="period">/ Bulan</span></center>
-              </div>
-              <p class="description">Mun reng sogi jek bong sombong , pesse tak egibeh mateh , tak rokaroan onggu.</p>
+  <div class="pricing-card popular">
+    <center><h3>Paket Mythic Honor </h3>
+    <h4>30Mbps</h4> </center>
+    <div class="price">
+      <center><span class="currency">Rp.</span>
+      <span class="amount">250rb </span>
+      <span class="period">/ Bulan</span></center>
+    </div>
+    <p class="description">Paket internet dengan kecepatan tinggi dan stabil untuk kebutuhan keluarga sehari-hari.</p>
 
-              <h4>Featured Included:</h4>
-              <ul class="features-list">
-                <li>
-                  <i class="bi bi-check-circle-fill"></i>
-                  Uploud & download stabil
-                </li>
-                <li>
-                  <i class="bi bi-check-circle-fill"></i>
-                  cocok untuk keluarga kaya
-                </li>
-                <li>
-                  <i class="bi bi-check-circle-fill"></i>
-                  ideal untuk 15 perangkat, santak paggun
-                </li>
-                <li>
-                    <i class="bi bi-check-circle-fill"></i>
-                    kalau lemot chat admin , mun tk ebeleh berarti gik ngepush ranked
-                </li>
-              </ul>
+    <h4>Fitur Unggulan:</h4>
+    <ul class="features-list">
+      <li>
+        <i class="bi bi-check-circle-fill"></i>
+        Upload dan download stabil
+      </li>
+      <li>
+        <i class="bi bi-check-circle-fill"></i>
+        Nikmati Internet Tanpa Batas Kuota
+      </li>
+      <li>
+        <i class="bi bi-check-circle-fill"></i>
+        Ideal untuk hingga 15 perangkat
+      </li>
+    </ul>
 
-              <a href="https://wa.me/6285895039471?text=Halo%20saya%20ingin%20berlangganan%20paket%20ini" class="btn btn-light">
-                Langganan Sekarang
-                <i class="bi bi-arrow-right"></i>
-              </a>
-            </div>
-          </div>
+    <a href="https://wa.me/6285895039471?text=Halo%20saya%20ingin%20berlangganan%20paket%20ini" class="btn btn-light">
+      Langganan Sekarang
+      <i class="bi bi-arrow-right"></i>
+    </a>
+  </div>
+</div>
           <!--  produk orang kaya  -->
           <div class="col-lg-4" data-aos="fade-up" data-aos-delay="100">
-            <div class="pricing-card popular">
-              <center><h3>Paket Kaya raya</h3>
-              <h4>80Mbps</h4> </center>
-              <div class="price">
-                <center><span class="currency">Rp.</span>
-                <span class="amount">400rb </span>
-                <span class="period">/ Bulan</span></center>
-              </div>
-              <p class="description">nah selamat datang juragan , kami ada untuk melayanimu sepenuhnya ,.</p>
+  <div class="pricing-card popular">
+    <center><h3>Paket Mythic Glory</h3>
+    <h4>40Mbps</h4> </center>
+    <div class="price">
+      <center><span class="currency">Rp.</span>
+      <span class="amount">300rb </span>
+      <span class="period">/ Bulan</span></center>
+    </div>
+    <p class="description">Selamat datang, kami ada untuk melayani Anda sepenuhnya.</p>
 
-              <h4>Featured Included:</h4>
-              <ul class="features-list">
-                <li>
-                  <i class="bi bi-check-circle-fill"></i>
-                  Uploud & download stabil
-                </li>
-                <li>
-                  <i class="bi bi-check-circle-fill"></i>
-                  cocok untuk keluarga kaya
-                </li>
-                <li>
-                  <i class="bi bi-check-circle-fill"></i>
-                  ideal untuk 20 orang , meledak bumm
-                </li>
-                <li>
-                    <i class="bi bi-check-circle-fill"></i>
-                    kalau lemot jgn nyalahin , kan la taoh jek mode paketnah
-                </li>
-              </ul>
+    <h4>Fitur Unggulan:</h4>
+    <ul class="features-list">
+      <li>
+        <i class="bi bi-check-circle-fill"></i>
+        Upload dan download stabil
+      </li>
+      <li>
+        <i class="bi bi-check-circle-fill"></i>
+        Nikmati Internet Tanpa Batas Kuota
+      </li>
+      <li>
+        <i class="bi bi-check-circle-fill"></i>
+        Ideal untuk hingga 20 perangkat
+      </li>
+    </ul>
 
-              <a href="https://wa.me/6285895039471?text=Halo%20saya%20ingin%20berlangganan%20paket%20ini" class="btn btn-light">
-                Langganan Sekarang
-                <i class="bi bi-arrow-right"></i>
-              </a>
-            </div>
-          </div>
+    <a href="https://wa.me/6285895039471?text=Halo%20saya%20ingin%20berlangganan%20paket%20ini" class="btn btn-light">
+      Langganan Sekarang
+      <i class="bi bi-arrow-right"></i>
+    </a>
+  </div>
+</div>
           <!--  produk orang kaya sultan  -->
           <div class="col-lg-4" data-aos="fade-up" data-aos-delay="100">
-            <div class="pricing-card popular">
-              <center><h3>Paket Sultan</h3>
-              <h4>100Mbps</h4> </center>
-              <div class="price">
-                <center><span class="currency">Rp.</span>
-                <span class="amount">500rb </span>
-                <span class="period">/ Bulan</span></center>
-              </div>
-              <p class="description">posetep ariah selakoh korupsi , mending ngakoh, dari pada epeghek maso prabowo!!.</p>
+  <div class="pricing-card popular">
+    <center><h3>Paket Mythic Immortal</h3>
+    <h4>50Mbps</h4> </center>
+    <div class="price">
+      <center><span class="currency">Rp.</span>
+      <span class="amount">350rb </span>
+      <span class="period">/ Bulan</span></center>
+    </div>
+    <p class="description">Paket internet dengan kecepatan tinggi dan stabil untuk kebutuhan keluarga sehari-hari.</p>
 
-              <h4>Featured Included:</h4>
-              <ul class="features-list">
-                <li>
-                  <i class="bi bi-check-circle-fill"></i>
-                  Uploud & download stabil
-                </li>
-                <li>
-                  <i class="bi bi-check-circle-fill"></i>
-                  cocok untuk keluarga Sultan
-                </li>
-                <li>
-                  <i class="bi bi-check-circle-fill"></i>
-                  ideal untuk 25 perangkat, cuan cuan
-                </li>
-                <li>
-                    <i class="bi bi-check-circle-fill"></i>
-                    kalau lemot keng pas tapok adminah... sala larang gik lemmot
-                </li>
-              </ul>
+    <h4>Fitur Unggulan:</h4>
+    <ul class="features-list">
+      <li>
+        <i class="bi bi-check-circle-fill"></i>
+        Upload dan download stabil
+      </li>
+      <li>
+        <i class="bi bi-check-circle-fill"></i>
+        Nikmati Internet Tanpa Batas Kuota
+      </li>
+      <li>
+        <i class="bi bi-check-circle-fill"></i>
+        Ideal untuk hingga 25 perangkat
+      </li>
+    </ul>
 
-              <a href="https://wa.me/6285895039471?text=Halo%20saya%20ingin%20berlangganan%20paket%20ini" class="btn btn-light">
-                Langganan Sekarang
-                <i class="bi bi-arrow-right"></i>
-              </a>
-            </div>
-          </div>
+    <a href="https://wa.me/6285895039471?text=Halo%20saya%20ingin%20berlangganan%20paket%20ini" class="btn btn-light">
+      Langganan Sekarang
+      <i class="bi bi-arrow-right"></i>
+    </a>
+  </div>
+</div>
     </section><!-- /Pricing Section -->
 
     <!-- Faq Section -->
