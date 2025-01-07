@@ -24,7 +24,7 @@ class Voucher extends Model
         return [
             3 => 3000,
             5 => 5000,
-            10 => 1000
+            10 => 10000
         ];
     }
 }
