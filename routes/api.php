@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\HotspotController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -14,6 +15,8 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+Route::group(['prefix' => 'midtrans'], function () {
+    Route::post('voucher', [HotspotController::class, 'preVoucherRequest']);
+    Route::post('requestvoucher', [HotspotController::class, 'voucherRequest'])->name('postVoucher');
+    Route::post('callback', [HotspotController::class, 'midtransCallback']);
 });
