@@ -1,12 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
+@extends('base-landing', ['title' => 'Ningrat ISP | Metode Pembayaran'])
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payment Methods</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+@push('head')
     <style>
         .payment-container {
             width: 50%;
@@ -24,9 +18,9 @@
             }
         }
     </style>
-</head>
+@endpush
 
-<body>
+@push('body')
     <div class="payment-container">
         <div class="card shadow">
             <div class="card-header bg-primary text-white text-center">
@@ -51,11 +45,9 @@
                         @endphp
                         <div class="accordion-item">
                             <h2 class="accordion-header" id="heading_{{ $category }}">
-                                <button
-                                    class="accordion-button collapsed d-flex justify-content-between align-items-center"
-                                    type="button" data-bs-toggle="collapse"
-                                    data-bs-target="#collapse_{{ $category }}" aria-expanded="false"
-                                    aria-controls="collapse_{{ $category }}">
+                                <button class="accordion-button collapsed d-flex justify-content-between align-items-center"
+                                    type="button" data-bs-toggle="collapse" data-bs-target="#collapse_{{ $category }}"
+                                    aria-expanded="false" aria-controls="collapse_{{ $category }}">
 
                                     <!-- Left side for category name -->
                                     <span class="flex-grow-1">{{ $categories[$category] }}</span>
@@ -68,7 +60,7 @@
                             </h2>
                             <div id="collapse_{{ $category }}" class="accordion-collapse collapse"
                                 data-bs-parent="#paymentMethods">
-                                <form id="form-req-voucher" action="{{ route('postVoucher') }}" method="post">
+                                <form id="form-req-voucher" action="{{ route('voucherRequest') }}" method="post">
                                     @foreach ($items as $channel)
                                         <a onclick="goConfirm(this)" data-id="{{ $channel->id }}"
                                             class="text-decoration-none text-dark">
@@ -80,8 +72,7 @@
 
                                                     <!-- Channel Logo -->
                                                     <img id="channel_logo" src="{{ $channel->logoPath }}"
-                                                        alt="{{ $channel->name }} Logo"
-                                                        style="width: 30px; height: 30px;">
+                                                        alt="{{ $channel->name }} Logo" style="width: 30px; height: 30px;">
                                                 </div>
                                                 <!-- Fee information below -->
                                                 <div class="mt-2">
@@ -115,22 +106,17 @@
             </div>
         </div>
     </div>
+@endpush
 
-    <!-- Bootstrap JS Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- JS dependencies -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/6.0.0/bootbox.min.js"
-        integrity="sha512-oVbWSv2O4y1UzvExJMHaHcaib4wsBMS5tEP3/YkMP6GmkwRJAa79Jwsv+Y/w7w2Vb/98/Xhvck10LyJweB8Jsw=="
-        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+@push('script')
     <script>
         function goConfirm(el) {
             const c_name = $(el).find('#channel_name').text()
             const c_total = $(el).find('#channel_total').text()
             const msg = `Apakah data pembayaran sudah sesuai? <br><br>
-            <p>Metode pembayaran : ${c_name} <br>${c_total}</p>
-            <small class="text-muted text-small"><em>klik OK untuk melanjutkan</em></small>
-            `
+        <p>Metode pembayaran : ${c_name} <br>${c_total}</p>
+        <small class="text-muted text-small"><em>klik OK untuk melanjutkan</em></small>
+        `
             bootbox.confirm({
                 message: msg,
                 buttons: {
@@ -154,6 +140,4 @@
             });
         }
     </script>
-</body>
-
-</html>
+@endpush

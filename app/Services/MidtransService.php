@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Jobs\GenerateMikrotikVoucherJob;
 use App\Services\Model\VoucherService;
 use Carbon\Carbon;
 use Exception;
@@ -9,6 +10,9 @@ use Illuminate\Support\Facades\Http;
 
 class MidtransService
 {
+    const VOUCHER = 'VOC';
+    const INVOICE = 'INV';
+
     protected $baseUrl;
     protected $credentials;
     protected $pathUrl;
@@ -125,15 +129,25 @@ class MidtransService
             return false;
         }
 
-        $orderId = explode('-', $data['order_id']);
-        $orderId = $orderId[1] ?? null;
+        $orderIdArr = explode('-', $data['order_id']);
+        $orderId = $orderIdArr[1] ?? null;
+        $orderIdType = $orderIdArr[0];
         $voucherService = new VoucherService();
-        $voucher = $voucherService->buildData()->where('order_id', '=', $orderId)->first();
+        $voucher = $voucherService->buildData()->where([
+            'order_id' => $orderId,
+            'status' => '0'
+        ])->first();
         if (empty($voucher)) {
             return false;
         }
 
         $voucher->status = true;
-        return $voucher->save();
+        $success = $voucher->save();
+
+        if ($success && strtoupper($orderIdType) == self::VOUCHER) {
+            GenerateMikrotikVoucherJob::dispatch($voucher->code, $voucher->duration, $voucher->duration_type);
+        }
+
+        return $success;
     }
 }

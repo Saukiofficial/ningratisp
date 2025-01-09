@@ -9,6 +9,7 @@ use App\Models\Voucher;
 use App\Services\HotspotService;
 use App\Services\MidtransService;
 use App\Services\Model\PaymentMethodService;
+use App\Services\Model\VoucherService;
 use Exception;
 use Illuminate\Http\Request;
 
@@ -34,7 +35,7 @@ class HotspotController extends Controller
         $data['categories'] = $service->getCategory();
         $data['price'] = $price;
         $data['hour'] = $request->validated('hour');
-        return view('landing-payment-link', $data);
+        return view('hotspot/landing-payment-link', $data);
     }
 
     public function voucherRequest(VoucherRequest $request, HotspotService $service)
@@ -68,5 +69,30 @@ class HotspotController extends Controller
     public function midtransCallback(MidtransCallbackRequest $request, MidtransService $service)
     {
         $service->handleNotification($request->all());
+    }
+
+    public function getVoucherDetails(VoucherRequest $request, VoucherService $service)
+    {
+        // $challenge = $request->validated('challenge');
+        $orderId = $request->validated('orderid');
+        // $challengeKey = hash('sha512', env('CHALLENGE_VOUCHER') . $orderId);
+        // if ($challenge != $challengeKey) {
+        //     abort(403);
+        // }
+
+        $response = [
+            'error' => true,
+            'message' => 'Vocuher tidak ditemukan'
+        ];
+        $voucher = $service->buildData()->where(['order_id' => $orderId])
+            ->first(['order_id', 'code', 'duration', 'description', 'status']);
+
+        if (!empty($voucher)) {
+            $response['error'] = empty($voucher->status) ? true : false;
+            $response['message'] = empty($voucher->status) ? 'Voucher belum dibayar' : 'Sukses';
+            $response['data'] = $voucher;
+        }
+
+        return response()->json($response);
     }
 }
