@@ -30,7 +30,7 @@ class HotspotService
         $record = [
             'order_id' => $orderId,
             'code' => $code,
-            'expired_at' => $created_at->addHours($hour)->toIso8601String(),
+            'expired_at' => $created_at->addHours($hour),
             'description' => $desc,
             'duration' => $hour,
             'price' => $prices[$hour],
