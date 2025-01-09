@@ -1,5 +1,6 @@
 <?php
 
+use App\Helpers\MikrotikAPI;
 use App\Http\Controllers\HotspotController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -17,6 +18,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::group(['prefix' => 'midtrans'], function () {
     Route::post('voucher', [HotspotController::class, 'preVoucherRequest']);
-    Route::post('requestvoucher', [HotspotController::class, 'voucherRequest'])->name('postVoucher');
+    Route::post('requestvoucher', [HotspotController::class, 'voucherRequest'])->name('voucherRequest');
     Route::post('callback', [HotspotController::class, 'midtransCallback']);
+    // Route::post('paymentstate', [HotspotController::class, '']);
 });
+Route::post('voucherdetails', [HotspotController::class, 'getVoucherDetails'])->name('voucherDetails');

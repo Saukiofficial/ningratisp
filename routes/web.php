@@ -16,3 +16,5 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('index');
 })->name('index');
+
+Route::get('midtrans/paymentstate', fn() => view('hotspot/success-payment-landing'));
