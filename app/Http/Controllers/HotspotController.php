@@ -7,11 +7,13 @@ use App\Http\Requests\MidtransCallbackRequest;
 use App\Http\Requests\VoucherRequest;
 use App\Models\Voucher;
 use App\Services\HotspotService;
+use App\Services\IPayMuService;
 use App\Services\MidtransService;
 use App\Services\Model\PaymentMethodService;
 use App\Services\Model\VoucherService;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 
 class HotspotController extends Controller
 {
@@ -106,5 +108,19 @@ class HotspotController extends Controller
         return view('temp.confirm-payment', $data);
     }
 
-    public function createInvoice() {}
+    public function createInvoice(Request $request, IPayMuService $service)
+    {
+        $expired = now()->addHours(4)->toIso8601String();
+        $response = $service->paymentLink($request->orderid, $request->amount, $expired);
+        if (!isset($response['Data']['Url'])) {
+            abort(400);
+        }
+
+        return redirect($response['Data']['Url']);
+    }
+
+    public function ipaymuCallback(Request $request, IPayMuService $service)
+    {
+        Http::post('https://webhook.site/bbe1ff0b-b20b-4d86-89da-1ea381c233a6', $request->all());
+    }
 }
