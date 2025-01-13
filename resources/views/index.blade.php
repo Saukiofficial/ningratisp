@@ -418,11 +418,10 @@
                                 </li>
                             </ul>
 
-                            <a href="https://wa.me/6285895039471?text=Halo%20saya%20ingin%20berlangganan%20paket%20ini"
-                                class="btn btn-light">
+                            <button type="submit" class="btn btn-light btn-submit-form" data-id="100">
                                 Langganan Sekarang
                                 <i class="bi bi-arrow-right"></i>
-                            </a>
+                            </button>
                         </div>
                     </div>
 
@@ -459,11 +458,10 @@
                                 </li>
                             </ul>
 
-                            <a href="https://wa.me/6285895039471?text=Halo%20saya%20ingin%20berlangganan%20paket%20ini"
-                                class="btn btn-light">
+                            <button type="submit" class="btn btn-light btn-submit-form" data-id="150">
                                 Langganan Sekarang
                                 <i class="bi bi-arrow-right"></i>
-                            </a>
+                            </button>
                         </div>
                     </div>
                     <!-- Premium Plan -->
@@ -498,11 +496,10 @@
                                 </li>
                             </ul>
 
-                            <a href="https://wa.me/6285895039471?text=Halo%20saya%20ingin%20berlangganan%20paket%20ini"
-                                class="btn btn-light">
+                            <button type="submit" class="btn btn-light btn-submit-form" data-id="200">
                                 Langganan Sekarang
                                 <i class="bi bi-arrow-right"></i>
-                            </a>
+                            </button>
                         </div>
                     </div>
                     <!--  produk andalan  -->
@@ -537,11 +534,10 @@
                                 </li>
                             </ul>
 
-                            <a href="https://wa.me/6285895039471?text=Halo%20saya%20ingin%20berlangganan%20paket%20ini"
-                                class="btn btn-light">
+                            <button type="submit" class="btn btn-light btn-submit-form" data-id="250">
                                 Langganan Sekarang
                                 <i class="bi bi-arrow-right"></i>
-                            </a>
+                            </button>
                         </div>
                     </div>
                     <!--  produk orang kaya  -->
@@ -575,11 +571,10 @@
                                 </li>
                             </ul>
 
-                            <a href="https://wa.me/6285895039471?text=Halo%20saya%20ingin%20berlangganan%20paket%20ini"
-                                class="btn btn-light">
+                            <button type="submit" class="btn btn-light btn-submit-form" data-id="300">
                                 Langganan Sekarang
                                 <i class="bi bi-arrow-right"></i>
-                            </a>
+                            </button>
                         </div>
                     </div>
                     <!--  produk orang kaya sultan  -->
@@ -614,13 +609,18 @@
                                 </li>
                             </ul>
 
-                            <a href="https://wa.me/6285895039471?text=Halo%20saya%20ingin%20berlangganan%20paket%20ini"
-                                class="btn btn-light">
+                            <button type="submit" class="btn btn-light btn-submit-form" data-id="350">
                                 Langganan Sekarang
                                 <i class="bi bi-arrow-right"></i>
-                            </a>
+                            </button>
                         </div>
                     </div>
+                </div>
+                <form action="{{ route('confirm-payment') }}" method="post" id="form-confirm-payment">
+                    @csrf
+                    <input type="hidden" name="price">
+                    <input type="hidden" name="title">
+                </form>
         </section><!-- /Pricing Section -->
 
         <!-- Faq Section -->
@@ -824,6 +824,18 @@
 
     <!-- Main JS File -->
     <script src="{{ 'assets/js/main.js' }}"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script>
+        $(function() {
+            const form = $('#form-confirm-payment')
+            $('.btn-submit-form').click(function() {
+                const title = $(this).parent().find('center>h3').html()
+                $('[name="price"]').val($(this).data('id'))
+                $('[name="title"]').val(title)
+                form.submit()
+            })
+        })
+    </script>
 
 </body>
 

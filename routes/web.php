@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\HotspotController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -16,7 +17,9 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('index');
 })->name('index');
-Route::get
-('/service-details', function () {
+Route::get('/service-details', function () {
     return view('service-details');
 })->name('service-details');
+
+Route::post('confirm-payment', [HotspotController::class, 'confirmPayment'])->name('confirm-payment');
+Route::post('create-invoice', [HotspotController::class, 'createInvoice'])->name('createinvoice');
