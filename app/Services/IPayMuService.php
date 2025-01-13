@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\LogIpaymu;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\Http;
@@ -78,6 +79,13 @@ class IPayMuService
             ];
         }
 
+        LogIpaymu::create([
+            'orderid' => $data['referenceId'],
+            'request' => json_encode($data),
+            'response' => json_encode($response),
+            'act' => LogIpaymu::REQUEST
+        ]);
+
         return $response;
     }
 
@@ -94,7 +102,8 @@ class IPayMuService
             'price' => [$amount],
             'description' => [$desc],
             'returnUrl' => "https://ipaymu.com/return",
-            'notifyUrl' => "https://ipaymu.com/notify",
+            // 'notifyUrl' => 'https://c1e4-180-247-63-62.ngrok-free.app/api/ipaymu/callback',
+            'notifyUrl' => route('ipaymu-callback'),
             'cancelUrl' => "https://ipaymu.com/cancel",
             'referenceId' => $uniqueId,
             'buyerName' => "{$type}-{$uniqueId}",

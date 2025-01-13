@@ -19,4 +19,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::post('ipaymu/callback', [HotspotController::class, 'ipaymuCallback']);
+Route::group(['prefix' => 'ipaymu'], function () {
+    Route::post('callback', [HotspotController::class, 'ipaymuCallback'])->name('ipaymu-callback');
+    Route::get('infolog/{orderid?}', [HotspotController::class, 'ipaymuInfoLog'])->name('ipaymu-log');
+});

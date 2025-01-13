@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Helpers\TaxCalculate;
 use App\Http\Requests\MidtransCallbackRequest;
 use App\Http\Requests\VoucherRequest;
+use App\Models\LogIpaymu;
 use App\Models\Voucher;
 use App\Services\HotspotService;
 use App\Services\IPayMuService;
@@ -102,7 +103,7 @@ class HotspotController extends Controller
     {
         $uniqNumber = fake()->numerify('###');
         $data['orderid'] = fake()->bothify('#?#????###?#?#?');
-        $data['price'] = $request->price . $uniqNumber;
+        $data['price'] = $request->price . "000";
         $data['title'] = $request->title;
 
         return view('temp.confirm-payment', $data);
@@ -121,6 +122,25 @@ class HotspotController extends Controller
 
     public function ipaymuCallback(Request $request, IPayMuService $service)
     {
-        Http::post('https://webhook.site/bbe1ff0b-b20b-4d86-89da-1ea381c233a6', $request->all());
+        $log = LogIpaymu::create([
+            'orderid' => $request->reference_id,
+            'request' => json_encode($request->all()),
+            'act' => LogIpaymu::CALLBACK
+        ]);
+
+        return response()->json(['success' => 'ok', 'data' => $log->toArray() ?? []]);
+    }
+
+    public function ipaymuInfoLog(Request $request, $orderid)
+    {
+        $log = LogIpaymu::with([])->where([
+            'orderid' => $orderid,
+            'act' => LogIpaymu::CALLBACK,
+        ])->orderBy('id', 'desc')->first(['request']);
+
+        return response()->json([
+            'success' => empty($log) ? false : true,
+            'data' => empty($log) ? [] : json_decode($log['request'])
+        ]);
     }
 }

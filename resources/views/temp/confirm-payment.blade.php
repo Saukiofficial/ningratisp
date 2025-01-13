@@ -45,6 +45,10 @@
             border-radius: 10px;
             padding: 14px;
             font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
 
         .btn-custom:hover {
@@ -94,6 +98,35 @@
         .summary-box strong {
             font-weight: bold;
         }
+
+        .progress-indicator {
+            display: flex;
+            /* justify-content: space-between; */
+            margin-bottom: 30px;
+        }
+
+        .progress-indicator .step {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .progress-indicator .step span {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #ccc;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .progress-indicator .step.active span {
+            background: #1e3c72;
+        }
     </style>
 </head>
 
@@ -104,18 +137,14 @@
     </header>
 
     <div class="payment-container">
-        <div class="summary-instructions">
-            {{-- <div class="instructions-box">
-                <h5>Transfer Instructions</h5>
-                <p>Transfer the total amount to one of the following accounts:</p>
-                <ul>
-                    <li><strong>Rizal Abul Fata</strong></li>
-                    <li><strong>Mandiri Bank:</strong> 1400021389102</li>
-                    <li><strong>Seabank:</strong> 901640673570</li>
-                    <li><strong>ShopeePay / GoPay:</strong> +6282301148188</li>
-                </ul>
-            </div> --}}
+        <div class="progress-indicator">
+            <button id="flag-status" class="btn btn-warning" type="button" disabled style="display: none">
+                <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+                <span id="flag-msg" class="" role="status"></span>
+            </button>
+        </div>
 
+        <div class="summary-instructions">
             <div class="summary-box">
                 <h5>Order Overview</h5>
                 <p>Invoice Code: <strong>{{ $orderid }}</strong></p>
@@ -129,18 +158,67 @@
             <p class="text-muted"><em>*Take a screenshot of this page and keep your payment proof.</em></p>
         </div>
 
-        <form action="{{ route('createinvoice') }}" method="post">
+        <form action="{{ route('createinvoice') }}" method="post" target="_blank" onsubmit="disableButton(this)">
             @csrf
             <input type="hidden" name="amount" value="{{ $price }}">
             <input type="hidden" name="orderid" value="{{ $orderid }}">
             <input type="hidden" name="title" value="{{ $title }}">
-            <button class="btn btn-custom w-100">Generate Invoice</button>
+            <button class="btn btn-custom w-100">
+                <span class="text-white">Generate Invoice</span>
+            </button>
         </form>
         <br>
+        <div id="check-status-btn" style="display: none" class="pb-3">
+            <button class="btn btn-outline-warning w-100" onclick="checkStatus()">Check
+                Status</button>
+        </div>
         <a href="{{ route('index') }}" class="btn btn-outline-secondary w-100">Return to Home</a>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script>
+        function disableButton(form) {
+            const button = form.querySelector('.btn-custom');
+            button.disabled = true; // Disable the button
+            button.innerHTML = 'Processing...'; // Change the button text (optional)
+
+            $('#flag-status').show()
+            $('#flag-msg').text('Pembayaran sedang berlangsung...')
+
+            $('#check-status-btn').show()
+        }
+
+        function checkStatus() {
+            const orderid = $('[name="orderid"]').val();
+            // let intervalTime = 1000;
+            $.ajax({
+                url: '{{ route('ipaymu-log') }}/' + orderid,
+                method: 'GET',
+                success: function(response) {
+                    if (response.success && response.data.status_code == '1') {
+                        // // Stop the interval
+                        // clearInterval(checkInterval);
+
+                        // Optionally, handle further actions here
+                        $('#flag-status .spinner-border').hide()
+                        $('#flag-msg').text('Pembayaran telah berhasil')
+                        $('#flag-status').removeClass('btn-warning').addClass('btn-success')
+                        const button = document.querySelector('.btn-custom');
+                        button.innerHTML =
+                            "Yeay! Pembayaran berhasil! Admin akan segera menghubungi Anda. Jika perlu, Anda juga bisa menghubungi admin dengan melampirkan screenshot halaman ini sebagai bukti. 😊"
+                        $('#check-status-btn').hide()
+
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error checking status:', error);
+                }
+            });
+            // const checkInterval = setInterval(() => {
+            // }, intervalTime);
+        }
+    </script>
 </body>
 
 </html>
