@@ -101,7 +101,7 @@ class IPayMuService
             'qty' => ["1"],
             'price' => [$amount],
             'description' => [$desc],
-            'returnUrl' => "route('thanks-page')",
+            'returnUrl' => route('thanks-page'),
             'notifyUrl' => route('ipaymu-callback'),
             'cancelUrl' => route('failed-page'),
             'referenceId' => $uniqueId,
