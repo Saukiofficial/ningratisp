@@ -23,3 +23,5 @@ Route::get('/service-details', function () {
 
 Route::post('confirm-payment', [HotspotController::class, 'confirmPayment'])->name('confirm-payment');
 Route::post('create-invoice', [HotspotController::class, 'createInvoice'])->name('createinvoice');
+Route::get('ipaymu/thanks', fn() => view('temp.thank-page'))->name('thanks-page');
+Route::get('ipaymu/failed', fn() => view('temp.failed-page'))->name('failed-page');
