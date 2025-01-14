@@ -17,4 +17,8 @@ Route::get('/', function () {
     return view('index');
 })->name('index');
 
+Route::get('/service-details', function () {
+    return view('service-details');
+})->name('service-details');
+
 Route::get('midtrans/paymentstate', fn() => view('hotspot/success-payment-landing'));
