@@ -7,6 +7,7 @@
     <title>NingratNet-Penyedia Layanan Internet</title>
     <meta name="description" content="">
     <meta name="keywords" content="">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
 
     <!-- Favicons -->
     <link href="{{ asset('assets/img/favicon.jpg') }}" rel="icon">
