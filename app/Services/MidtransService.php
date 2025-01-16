@@ -135,7 +135,7 @@ class MidtransService
         }
 
         // validasi data
-        $payload = [$data['order_id'], $data['status_code'], $data['gross_amount'], env('MTRANS_KEY_STG')];
+        $payload = [$data['order_id'], $data['status_code'], $data['gross_amount'], $this->credentials['server_key']];
         $validPayload = hash('SHA512', implode('', $payload));
         if ($data['signature_key'] != $validPayload) {
             return false;
