@@ -25,7 +25,7 @@ abstract class BaseModelService
         return $this->model->with([])->paginate($n, page: $p);
     }
 
-    public function save(array $data, $id)
+    public function save(array $data, $id = null)
     {
         if ($id) {
             $this->model = $this->get($id);

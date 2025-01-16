@@ -12,7 +12,7 @@ class HotspotService
      * 
      * @param int $hour masa berlaku voucher dalam Jam
      * @param int $expiredPayment masa batas pembayaran dalam jam
-     * @return false|App\Models\Voucher
+     * @return \App\Models\Voucher|false
      */
     public function generateVoucher($hour, $expiredPayment = 3)
     {

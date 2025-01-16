@@ -35,6 +35,7 @@ class HotspotController extends Controller
         $data['categories'] = $service->getCategory();
         $data['price'] = $price;
         $data['hour'] = $request->validated('hour');
+        $data['sealcode'] = fake()->unique()->bothify('?#?#??##?#?#??##');
         return view('hotspot/landing-payment-link', $data);
     }
 
@@ -43,17 +44,21 @@ class HotspotController extends Controller
         $pmService = new PaymentMethodService();
         $voucher = $service->generateVoucher($request->validated('hour'));
         $channelId = $request->validated('channel_id');
-        $fee = $pmService->get($channelId)->fee();
+        $channel = $pmService->get($channelId);
+        $fee = $channel->fee();
         $total = TaxCalculate::calculate($voucher->price, $fee->amount, $fee->unit);
         if (empty($voucher)) {
             throw new Exception('error');
         }
+        $sealcode = $request->seal_code;
+        $voucher->fill(['seal_code' => $sealcode, 'fee_id' => $fee->id]);
+        $voucher->save();
 
         $data['others'] = "<script>localStorage.setItem('orderid', '{$voucher->order_id}')</script>";
 
         try {
             $pg = new MidtransService();
-            $response = $pg->paymentLink($voucher->order_id, $total, $voucher->expired_at, $voucher->description);
+            $response = $pg->paymentLink($voucher->order_id, $total, $voucher->expired_at, $voucher->description, [$channel->code]);
         } catch (Exception $e) {
             return abort(500);
         }
@@ -62,7 +67,10 @@ class HotspotController extends Controller
             return abort(403);
         }
 
-        $data['url'] = $response['payment_url'];
+        $url = $response['payment_url'];
+        $voucher->fill(['external_link' => $url]);
+        $voucher->save();
+        $data['url'] = $url;
         return view('redirectorjs', $data);
     }
 
@@ -71,10 +79,9 @@ class HotspotController extends Controller
         $service->handleNotification($request->all());
     }
 
-    public function getVoucherDetails(VoucherRequest $request, VoucherService $service)
+    public function getVoucherDetails($sealcode, VoucherService $service)
     {
         // $challenge = $request->validated('challenge');
-        $orderId = $request->validated('orderid');
         // $challengeKey = hash('sha512', env('CHALLENGE_VOUCHER') . $orderId);
         // if ($challenge != $challengeKey) {
         //     abort(403);
@@ -84,12 +91,14 @@ class HotspotController extends Controller
             'error' => true,
             'message' => 'Vocuher tidak ditemukan'
         ];
-        $voucher = $service->buildData()->where(['order_id' => $orderId])
+        $voucher = $service->buildData()->where(['seal_code' => $sealcode])
             ->first(['order_id', 'code', 'duration', 'description', 'status']);
 
         if (!empty($voucher)) {
             $response['error'] = empty($voucher->status) ? true : false;
-            $response['message'] = empty($voucher->status) ? 'Voucher belum dibayar' : 'Sukses';
+            $response['message'] = empty($voucher->status) ? 'Voucher belum dibayar' : 'Voucher lunas';
+            $voucher->code = empty($voucher->status) ? null : $voucher->code;
+            $voucher->description = empty($voucher->status) ? explode('|', $voucher->description)[0] : $voucher->description;
             $response['data'] = $voucher;
         }
 

@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Jobs\GenerateMikrotikVoucherJob;
+use App\Models\LogMidtrans;
+use App\Services\Model\PaymentService;
 use App\Services\Model\VoucherService;
 use Carbon\Carbon;
 use Exception;
@@ -16,6 +18,9 @@ class MidtransService
     protected $baseUrl;
     protected $credentials;
     protected $pathUrl;
+
+    // optional property
+    protected $orderId;
 
     public function __construct()
     {
@@ -76,6 +81,12 @@ class MidtransService
             ];
         }
 
+        LogMidtrans::create([
+            'orderid' => $this->getOrderId(),
+            'request' => json_encode($data),
+            'response' => json_encode($response),
+        ]);
+
         return $response;
     }
 
@@ -86,6 +97,7 @@ class MidtransService
         $duration = $expired_at->diffInHours($now);
         $this->pathUrl = '/v1/payment-links';
         $orderId = "VOC-{$uniqueId}";
+        $this->setOrderId($uniqueId);
 
         $data = [
             "transaction_details" => [
@@ -94,7 +106,7 @@ class MidtransService
                 "payment_link_id" => strtolower($orderId),
             ],
             "customer_required" => false,
-            // "usage_limit" => 1,
+            "usage_limit" => 1,
             "expiry" => [
                 "start_time" => $expired_at->format('Y-m-d H:i:s P'),
                 "duration" => $duration,
@@ -108,7 +120,7 @@ class MidtransService
                     "category" => "Voucher",
                 ]
             ],
-            // "enabled_payments" => ['bri']
+            "enabled_payments" => $channels
         ];
 
         $response = $this->request($data);
@@ -131,6 +143,7 @@ class MidtransService
 
         $orderIdArr = explode('-', $data['order_id']);
         $orderId = $orderIdArr[1] ?? null;
+        $this->setOrderId($orderId);
         $orderIdType = $orderIdArr[0];
         $voucherService = new VoucherService();
         $voucher = $voucherService->buildData()->where([
@@ -144,10 +157,38 @@ class MidtransService
         $voucher->status = true;
         $success = $voucher->save();
 
+        LogMidtrans::create([
+            'orderid' => $this->getOrderId(),
+            'request' => json_encode($data),
+            'act' => LogMidtrans::CALLBACK
+        ]);
+
         if ($success && strtoupper($orderIdType) == self::VOUCHER) {
             GenerateMikrotikVoucherJob::dispatch($voucher->code, $voucher->duration, $voucher->duration_type);
         }
 
+        // proses payment
+        $payService = new PaymentService();
+        $payRecord = [
+            'total_amount' => $data['gross_amount'],
+            'reference_id' => $data['transaction_id'],
+            'payment_datetime' => $data['transaction_time'],
+            'voucher_id' => $voucher->id,
+            'price' => $voucher->price,
+            'fee_id' => $voucher->fee_id
+        ];
+        $payService->save($payRecord);
+
         return $success;
+    }
+
+    public function setOrderId($orderId): void
+    {
+        $this->orderId = $orderId;
+    }
+
+    public function getOrderId(): string
+    {
+        return $this->orderId;
     }
 }

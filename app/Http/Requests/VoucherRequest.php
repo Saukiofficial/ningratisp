@@ -19,8 +19,9 @@ class VoucherRequest extends FormRequest
         ];
         if ($this->path() == 'api/midtrans/requestvoucher') {
             $rules['channel_id'] = 'required';
+            $rules['seal_code'] = 'required';
         } elseif ($this->path() == 'api/voucherdetails') {
-            $rules = ['orderid' => 'required|string'];
+            $rules = ['seal_code' => 'required|string'];
         }
 
         return $rules;

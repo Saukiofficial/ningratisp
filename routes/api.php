@@ -22,4 +22,4 @@ Route::group(['prefix' => 'midtrans'], function () {
     Route::post('callback', [HotspotController::class, 'midtransCallback']);
     // Route::post('paymentstate', [HotspotController::class, '']);
 });
-Route::post('voucherdetails', [HotspotController::class, 'getVoucherDetails'])->name('voucherDetails');
+Route::get('voucherdetails/{sealcode?}', [HotspotController::class, 'getVoucherDetails'])->name('voucherDetails');
