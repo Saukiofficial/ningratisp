@@ -90,7 +90,7 @@ class MidtransService
         return $response;
     }
 
-    public function paymentLink($uniqueId, $amount, $expired_at, $desc = null, $channels = [],)
+    public function paymentLink($uniqueId, $amount, $expired_at, $desc = null, $channels = ['other_qris'])
     {
         $expired_at = Carbon::parse($expired_at);
         $now = now();

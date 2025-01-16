@@ -58,7 +58,7 @@ class HotspotController extends Controller
 
         try {
             $pg = new MidtransService();
-            $response = $pg->paymentLink($voucher->order_id, $total, $voucher->expired_at, $voucher->description, [$channel->code]);
+            $response = $pg->paymentLink($voucher->order_id, $total, $voucher->expired_at, $voucher->description, [$channel->midtrans_code]);
         } catch (Exception $e) {
             return abort(500);
         }
