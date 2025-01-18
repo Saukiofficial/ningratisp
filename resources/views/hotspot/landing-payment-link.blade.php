@@ -1,7 +1,7 @@
 @extends('base-landing', ['title' => 'Ningrat ISP | Metode Pembayaran'])
 
 @push('head')
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="{{asset('assets/css/bootstrap-icons.min.css')}}" rel="stylesheet">
 
     <style>
         .payment-wrapper {
