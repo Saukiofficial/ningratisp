@@ -10,7 +10,7 @@
     <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
     <title>{{ $title }}</title>
     <!-- Bootstrap CSS -->
-    <link href="{{asset('assets/css/bootstrap.min.css')}" rel="stylesheet">
+    <link href="{{asset('assets/css/bootstrap.min.css')}}" rel="stylesheet">
     @stack('head')
 </head>
 
