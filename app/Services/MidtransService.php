@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Helpers\MikrotikAPI;
 use App\Jobs\GenerateMikrotikVoucherJob;
 use App\Models\LogMidtrans;
 use App\Services\Model\PaymentService;
@@ -164,20 +165,24 @@ class MidtransService
         ]);
 
         if ($success && strtoupper($orderIdType) == self::VOUCHER) {
-            GenerateMikrotikVoucherJob::dispatch($voucher->code, $voucher->duration, $voucher->duration_type);
+            // GenerateMikrotikVoucherJob::dispatch($voucher->code, $voucher->duration, $voucher->duration_type);
+            $service = new MikrotikAPI();
+            $service->createVoucher($voucher->code, $voucher->duration, $voucher->duration_type);
         }
 
-        // proses payment
-        $payService = new PaymentService();
-        $payRecord = [
-            'total_amount' => $data['gross_amount'],
-            'reference_id' => $data['transaction_id'],
-            'payment_datetime' => $data['transaction_time'],
-            'voucher_id' => $voucher->id,
-            'price' => $voucher->price,
-            'fee_id' => $voucher->fee_id
-        ];
-        $payService->save($payRecord);
+        if ($success) {
+            // proses payment
+            $payService = new PaymentService();
+            $payRecord = [
+                'total_amount' => $data['gross_amount'],
+                'reference_id' => $data['transaction_id'],
+                'payment_datetime' => $data['transaction_time'],
+                'voucher_id' => $voucher->id,
+                'price' => $voucher->price,
+                'fee_id' => $voucher->fee_id
+            ];
+            $payService->save($payRecord);
+        }
 
         return $success;
     }

@@ -2,12 +2,13 @@
 
 namespace App\Helpers;
 
+use App\Models\LogMikrotik;
 use Exception;
 use Illuminate\Support\Facades\Http;
 
 class MikrotikAPI
 {
-    private $baseUrl, $user, $password, $pathUrl;
+    private $baseUrl, $user, $password, $pathUrl, $action;
 
     public function __construct($baseUrl = null, $user = null, $password = null)
     {
@@ -21,6 +22,7 @@ class MikrotikAPI
         $url = $this->baseUrl . $this->getPathUrl();
         $token = base64_encode($this->user . ':' . $this->password);
         $driver = Http::withToken($token, 'Basic');
+        $error = false;
 
         switch (strtolower($method)) {
             case 'delete':
@@ -44,6 +46,7 @@ class MikrotikAPI
         try {
             $response = $driver->json();
         } catch (Exception $e) {
+            $error = true;
             $response = [
                 'detail' => 'Exception Request',
                 'error' => 500,
@@ -52,12 +55,20 @@ class MikrotikAPI
         }
 
         if (empty($response)) {
+            $error = true;
             $response = [
                 'detail' => 'Empty Response',
                 'error' => 400,
                 'message' => 'Empty Response'
             ];
         }
+
+        LogMikrotik::create([
+            'action' => $this->action ?? str(__FUNCTION__)->snake('-'),
+            'request' => json_validate($data) ? $data : json_encode($data),
+            'response' => json_validate($response) ? $response : json_encode($response),
+            'status' => $error
+        ]);
 
         return $response;
     }
@@ -91,6 +102,7 @@ class MikrotikAPI
      */
     public function createVoucher($code, $uptime = 1, $uptimeType = 'h', $server = null, $profile = 'default')
     {
+        $this->action = str(__FUNCTION__)->snake('-');
         $this->setPathUrl('/ip/hotspot/user');
         $data = [
             'name' => $code,
