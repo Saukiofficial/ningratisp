@@ -1,7 +1,7 @@
 @extends('base-landing', ['title' => 'Ningrat ISP | Metode Pembayaran'])
 
 @push('head')
-    <link href="{{asset('assets/css/bootstrap-icons.min.css')}}" rel="stylesheet">
+    <link href="{{ asset('assets/css/bootstrap-icons.min.css') }}" rel="stylesheet">
 
     <style>
         .payment-wrapper {
@@ -80,7 +80,8 @@
             <div class="card shadow">
                 <div class="card-header bg-primary text-white text-center">
                     <h4 class="mb-0">Ningrat ISP</h4>
-                    <p class="mb-0">Voucher {{ TaxCalculate::getLabelTax($price ?? 0) }} ({{ $hour }} Jam)</p>
+                    <p class="mb-0">Voucher {{ TaxCalculate::getLabelTax($price ?? 0) }}
+                        ({{ $priceDetail['label'] ?? '' }})</p>
                     {{-- <small>Order ID MID-62215736789</small> --}}
                 </div>
                 <form id="form-req-voucher" action="{{ route('voucherRequest') }}" method="post" target="_newtab">
@@ -162,7 +163,7 @@
                     </div>
                     <input type="hidden" name="channel_id">
                     <input type="hidden" name="seal_code" value="{{ $sealcode }}">
-                    <input type="hidden" name="hour" value="{{ $hour }}">
+                    <input type="hidden" name="pointer" value="{{ $pointer }}">
                 </form>
                 <div class="card-body body-summary" style="display: none">
                     <h5 class="mb-3">Detail Pesanan</h5>

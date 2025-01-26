@@ -3,6 +3,7 @@
 namespace App\Helpers;
 
 use App\Models\LogMikrotik;
+use App\Models\Voucher;
 use Exception;
 use Illuminate\Support\Facades\Http;
 
@@ -100,14 +101,19 @@ class MikrotikAPI
      * @param string $server Server hotspot
      * @param string $profile Profile hotspot
      */
-    public function createVoucher($code, $uptime = 1, $uptimeType = 'h', $server = null, $profile = 'default')
+    public function createVoucher($code, $uptime = 3, $uptimeType = 'h', $server = null, $profile = 'default')
     {
+        if (!defined("VOUCHER::{$uptimeType}_{$uptime}")) {
+            return false;
+        }
+
         $this->action = str(__FUNCTION__)->snake('-');
         $this->setPathUrl('/ip/hotspot/user');
+        $profile = $this->getProfileAndUptime($uptime);
         $data = [
             'name' => $code,
-            'profile' => $profile,
-            'limit-uptime' => $uptime . $uptimeType
+            'profile' => $profile['profile'],
+            'limit-uptime' => $profile['limit']
         ];
         if (!empty($server)) {
             $data['server'] = $server;
@@ -115,5 +121,24 @@ class MikrotikAPI
         $response = $this->request($data, 'put');
 
         return $response;
+    }
+
+    /**
+     * Get detail profile and uptime voucher
+     * 
+     * @param int|string $uptime
+     * @return array
+     */
+    public function getProfileAndUptime($uptime)
+    {
+        $list = [
+            Voucher::H_3 => ['profile' => 'paket-3-jam', 'limit' => '3h'],
+            Voucher::H_6 => ['profile' => 'paket-6-jam', 'limit' => '6h'],
+            Voucher::D_1 => ['profile' => 'paket-harian', 'limit' => '1d'],
+            Voucher::D_7 => ['profile' => 'paket-mingguan', 'limit' => '7d'],
+            Voucher::D_30 => ['profile' => 'paket-bulanan', 'limit' => '30d']
+        ];
+
+        return isset($list[$uptime]) ? $list[$uptime] : ['profile' => 'default', 'limit' => '0h'];
     }
 }

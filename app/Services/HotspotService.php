@@ -10,31 +10,34 @@ class HotspotService
     /**
      * Generate voucher berdasarkan jam
      * 
-     * @param int $hour masa berlaku voucher dalam Jam
+     * @param int $pointer pointer masa berlaku voucher (Hour and Day)
      * @param int $expiredPayment masa batas pembayaran dalam jam
      * @return \App\Models\Voucher|false
      */
-    public function generateVoucher($hour, $expiredPayment = 3)
+    public function generateVoucher($pointer, $expiredPayment = 3)
     {
-        $prices = Voucher::availPrices();
+        $pricesDetail = Voucher::pricesDetail();
         $model = new Voucher();
-        if (!isset($prices[$hour])) {
+        if (!isset($pricesDetail[$pointer])) {
             return false;
         }
 
+        $pDetail = $pricesDetail[$pointer];
         $orderId = fake()->unique()->bothify(fake()->randomElement(['?##???#?#??#??##?', '###?#?#????###?##', '#???#??##???#?##?']));
         $code = $this->generateCode(false);
         $created_at = now();
-        $desc = "Voucher {$hour} Jam | Kupon : " . $code;
+        $expired_at = $pDetail['type'] == Voucher::DAYS ? $created_at->addDays($pDetail['active']) : $created_at->addHours($pDetail['active']);
+        $desc = "Voucher {$pointer} " . ($pDetail['type'] == Voucher::DAYS ? 'Hari' : 'Jam') . " | Kupon : " . $code;
 
         $record = [
             'order_id' => $orderId,
             'code' => $code,
-            'expired_at' => $created_at->addHours($hour),
+            'expired_at' => $expired_at,
             'description' => $desc,
-            'duration' => $hour,
-            'price' => $prices[$hour],
-            'status' => false
+            'duration' => $pDetail['active'],
+            'duration_type' => ($pDetail['type'] == Voucher::DAYS ? Voucher::DAYS : Voucher::HOUR),
+            'price' => $pDetail['price'],
+            'status' => false,
         ];
 
         $model->fill($record);

@@ -15,7 +15,7 @@ class VoucherRequest extends FormRequest
     public function rules(): array
     {
         $rules = [
-            'hour' => 'required|int|in:' . implode(',', array_keys(Voucher::availPrices()))
+            'pointer' => 'required|string|in:' . implode(',', array_keys(Voucher::pricesDetail()))
         ];
         if ($this->path() == 'api/midtrans/requestvoucher') {
             $rules['channel_id'] = 'required';

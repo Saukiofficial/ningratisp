@@ -24,25 +24,26 @@ class HotspotController extends Controller
 
     public function preVoucherRequest(VoucherRequest $request, PaymentMethodService $service)
     {
-        $prices = (new Voucher())->availPrices();
-        if (!isset($prices[$request->validated('hour')])) {
+        $prices = (new Voucher())->pricesDetail();
+        if (!isset($prices[$request->validated('pointer')])) {
             return false;
         }
-        $price = $prices[$request->validated('hour')];
+        $price = $prices[$request->validated('pointer')];
 
         $channels = $service->getAll();
         $data['channels'] = $channels->where('is_active')->groupBy('category');
         $data['categories'] = $service->getCategory();
-        $data['price'] = $price;
-        $data['hour'] = $request->validated('hour');
+        $data['price'] = $price['price'];
+        $data['pointer'] = $request->validated('pointer');
         $data['sealcode'] = fake()->unique()->bothify('?#?#??##?#?#??##');
+        $data['priceDetail'] = $price;
         return view('hotspot/landing-payment-link', $data);
     }
 
     public function voucherRequest(VoucherRequest $request, HotspotService $service)
     {
         $pmService = new PaymentMethodService();
-        $voucher = $service->generateVoucher($request->validated('hour'));
+        $voucher = $service->generateVoucher($request->validated('pointer'));
         $channelId = $request->validated('channel_id');
         $channel = $pmService->get($channelId);
         $fee = $channel->fee();
