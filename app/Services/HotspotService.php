@@ -27,7 +27,7 @@ class HotspotService
         $code = $this->generateCode(false);
         $created_at = now();
         $expired_at = $pDetail['type'] == Voucher::DAYS ? $created_at->addDays($pDetail['active']) : $created_at->addHours($pDetail['active']);
-        $desc = "Voucher {$pointer} " . ($pDetail['type'] == Voucher::DAYS ? 'Hari' : 'Jam') . " | Kupon : " . $code;
+        $desc = "Voucher {$pDetail['label']} | Kupon : " . $code;
 
         $record = [
             'order_id' => $orderId,

@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::group(['prefix' => 'midtrans'], function () {
-    Route::post('voucher', [HotspotController::class, 'preVoucherRequest']);
+    Route::get('voucher', [HotspotController::class, 'preVoucherRequest']);
     Route::post('requestvoucher', [HotspotController::class, 'voucherRequest'])->name('voucherRequest');
     Route::post('requestvoucherqris', [HotspotController::class, 'voucherRequestQris'])->name('voucherRequest-qris');
     Route::post('callback', [HotspotController::class, 'midtransCallback']);
