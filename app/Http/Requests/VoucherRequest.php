@@ -17,7 +17,7 @@ class VoucherRequest extends FormRequest
         $rules = [
             'pointer' => 'required|string|in:' . implode(',', array_keys(Voucher::pricesDetail()))
         ];
-        if ($this->path() == 'api/midtrans/requestvoucher') {
+        if (in_array($this->path(), ['api/midtrans/requestvoucher', 'api/midtrans/requestvoucherqris'])) {
             $rules['channel_id'] = 'required';
             $rules['seal_code'] = 'required';
         } elseif ($this->path() == 'api/voucherdetails') {

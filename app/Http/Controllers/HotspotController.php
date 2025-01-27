@@ -37,7 +37,51 @@ class HotspotController extends Controller
         $data['pointer'] = $request->validated('pointer');
         $data['sealcode'] = fake()->unique()->bothify('?#?#??##?#?#??##');
         $data['priceDetail'] = $price;
-        return view('hotspot/landing-payment-link', $data);
+        return view('hotspot/landing-payment-link-static', $data);
+    }
+
+    public function voucherRequestQris(VoucherRequest $request, HotspotService $service)
+    {
+        $pmService = new PaymentMethodService();
+        $voucher = $service->generateVoucher($request->validated('pointer'));
+        $channelId = 'qris';
+        $channel = $pmService->buildData()->where('code', '=', $channelId)->firstOrFail();
+        $fee = $channel->fee();
+        $total = TaxCalculate::calculate($voucher->price, $fee->amount, $fee->unit);
+        if (empty($voucher)) {
+            throw new Exception('error');
+        }
+        $sealcode = $request->seal_code;
+        $voucher->fill(['seal_code' => $sealcode, 'fee_id' => $fee->id]);
+        $voucher->save();
+
+        try {
+            $pg = new MidtransService();
+            $response = $pg->generateQRIS($voucher->order_id, $total);
+        } catch (Exception $e) {
+            return abort(500);
+        }
+
+        if (!isset($response['status_code']) && $response['status_code'] != '201' && $response['fraud_status'] != 'accept') {
+            return abort(403);
+        }
+
+        $imgUrl = $statusUrl = '';
+        foreach ($response['actions'] as $action) {
+            if ($action['name'] == 'generate-qr-code') {
+                $imgUrl = $action['url'];
+            }
+            if ($action['name'] == 'get-status') {
+                $statusUrl = $action['url'];
+            }
+        };
+
+        $voucher->fill(['external_link' => $imgUrl]);
+        $voucher->save();
+        $data['url'] = $imgUrl;
+        $data['urlStatus'] = $statusUrl;
+
+        return response()->json($data);
     }
 
     public function voucherRequest(VoucherRequest $request, HotspotService $service)

@@ -25,7 +25,7 @@ class MidtransService
 
     public function __construct()
     {
-        if (app()->environment('production')) {
+        if (env('APP_ENV') == 'production') {
             $this->baseUrl = env('MTRANS_URL');
             $credentials = [
                 'merchant_id' => env('MTRANS_MERCHANT_ID'),
@@ -195,5 +195,23 @@ class MidtransService
     public function getOrderId(): string
     {
         return $this->orderId;
+    }
+
+    public function generateQRIS($uniqueId, $amount, $preOrderId = 'VOC')
+    {
+        $this->pathUrl = '/v2/charge';
+        $orderId = "$preOrderId-{$uniqueId}";
+        $this->setOrderId($uniqueId);
+
+        $data = [
+            "transaction_details" => [
+                "order_id" => $orderId,
+                "gross_amount" => $amount,
+            ],
+            "payment_type" => 'gopay'
+        ];
+
+        $response = $this->request($data);
+        return $response;
     }
 }
