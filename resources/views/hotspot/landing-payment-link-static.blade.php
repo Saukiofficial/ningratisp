@@ -379,11 +379,12 @@
                         $('#coupon-code').html(`<strong>${response.data.code}</strong>`)
                         $('.box-copy-button').show()
                         $('#box-instr-qris').hide()
-
                     } else {
                         $('#order_id').html(`<strong>${response.data.order_id}</strong>`)
                         $('#item-name').html(`<strong>${response.data.description}</strong>`)
                     }
+
+                    $('#total-amount').html(`<strong>Rp ${response.data.total_amount}</strong>`)
                 },
                 error: function(xhr, status, error) {
                     console.error('Error checking status:', error);
@@ -426,5 +427,12 @@
             const toast = new bootstrap.Toast(toastElement);
             toast.show();
         }
+
+        window.addEventListener('beforeunload', (event) => {
+            // Cancel the event as stated by the standard.
+            event.preventDefault();
+            // Chrome requires returnValue to be set.
+            event.returnValue = '';
+        });
     </script>
 @endpush

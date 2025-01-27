@@ -22,6 +22,11 @@ class Voucher extends Model
     const D_7 = 'd7';
     const D_30 = 'd30';
 
+    public function fee()
+    {
+        return $this->belongsTo(Fee::class);
+    }
+
     public static function pricesDetail(): array
     {
         return [

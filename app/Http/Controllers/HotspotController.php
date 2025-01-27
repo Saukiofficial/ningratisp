@@ -136,14 +136,16 @@ class HotspotController extends Controller
             'error' => true,
             'message' => 'Vocuher tidak ditemukan'
         ];
-        $voucher = $service->buildData()->where(['seal_code' => $sealcode])
-            ->first(['order_id', 'code', 'duration', 'description', 'status']);
-
+        $voucherRow = $service->buildData()->where(['seal_code' => $sealcode]);
+        $voucher = $voucherRow->first(['order_id', 'code', 'duration', 'description', 'status', 'price']);
+        $fee = $voucherRow->first()->fee;
         if (!empty($voucher)) {
             $response['error'] = empty($voucher->status) ? true : false;
             $response['message'] = empty($voucher->status) ? 'Voucher belum dibayar' : 'Voucher lunas';
             $voucher->code = empty($voucher->status) ? null : $voucher->code;
             $voucher->description = empty($voucher->status) ? explode('|', $voucher->description)[0] : $voucher->description;
+            $total_amount = TaxCalculate::calculate($voucher->price, $fee->amount, $fee->unit);
+            $voucher->total_amount = number_format($total_amount, 0, ',', '.');
             $response['data'] = $voucher;
         }
 
