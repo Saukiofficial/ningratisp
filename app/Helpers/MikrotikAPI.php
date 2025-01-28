@@ -114,7 +114,7 @@ class MikrotikAPI
         $profile = $this->getProfileAndUptime($uptimeType . $uptime);
         $data = [
             'name' => $code,
-            'profile' => $profile['profile'],
+            'profile' => strtoupper($profile['profile']),
             'limit-uptime' => $profile['limit']
         ];
         if (!empty($server)) {
