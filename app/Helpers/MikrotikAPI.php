@@ -64,10 +64,12 @@ class MikrotikAPI
             ];
         }
 
+        $reqLog = is_array($data) ? json_encode($data) : (json_validate($data) ? $data : json_encode($data));
+        $respLog = is_array($response) ? json_encode($response) : (json_validate($response) ? $data : json_encode($response));
         LogMikrotik::create([
             'action' => $this->action ?? str(__FUNCTION__)->snake('-'),
-            'request' => json_validate($data) ? $data : json_encode($data),
-            'response' => json_validate($response) ? $response : json_encode($response),
+            'request' => $reqLog,
+            'response' => $respLog,
             'status' => $error
         ]);
 
@@ -103,7 +105,8 @@ class MikrotikAPI
      */
     public function createVoucher($code, $uptime = 3, $uptimeType = 'h', $server = null, $profile = 'default')
     {
-        if (!defined("VOUCHER::{$uptimeType}_{$uptime}")) {
+        $uptimeType = strtoupper($uptimeType);
+        if (!defined("App\Models\Voucher::{$uptimeType}_{$uptime}")) {
             return false;
         }
 
