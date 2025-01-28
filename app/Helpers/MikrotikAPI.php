@@ -105,14 +105,13 @@ class MikrotikAPI
      */
     public function createVoucher($code, $uptime = 3, $uptimeType = 'h', $server = null, $profile = 'default')
     {
-        $uptimeType = strtoupper($uptimeType);
-        if (!defined("App\Models\Voucher::{$uptimeType}_{$uptime}")) {
+        if (!defined("App\Models\Voucher::" . strtoupper($uptimeType) . "_{$uptime}")) {
             return false;
         }
 
         $this->action = str(__FUNCTION__)->snake('-');
         $this->setPathUrl('/ip/hotspot/user');
-        $profile = $this->getProfileAndUptime($uptime);
+        $profile = $this->getProfileAndUptime($uptimeType . $uptime);
         $data = [
             'name' => $code,
             'profile' => $profile['profile'],
