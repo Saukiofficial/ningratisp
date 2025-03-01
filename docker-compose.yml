@@ -9,5 +9,7 @@ services:
       - SYS_ADMIN
     devices:
       - /dev/net/tun:/dev/net/tun
+    ports:
+      - "32021:9993/udp"
     volumes:
       - ~/zerotier-data:/var/lib/zerotier-one
