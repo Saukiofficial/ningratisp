@@ -7,9 +7,9 @@ services:
     cap_add:
       - NET_ADMIN
       - SYS_ADMIN
+    sysctls:
+      - net.ipv4.ip_forward=1
     devices:
       - /dev/net/tun:/dev/net/tun
-    ports:
-      - "32021:9993/udp"
     volumes:
       - ~/zerotier-data:/var/lib/zerotier-one
