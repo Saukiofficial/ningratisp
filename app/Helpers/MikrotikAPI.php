@@ -21,30 +21,30 @@ class MikrotikAPI
     public function request($data = null, $method = 'get')
     {
         $url = $this->baseUrl . $this->getPathUrl();
-        $token = base64_encode($this->user . ':' . $this->password);
-        $driver = Http::withToken($token, 'Basic');
-        $error = false;
-
-        switch (strtolower($method)) {
-            case 'delete':
-                $driver = $driver->delete($url, $data);
-                break;
-            case 'put':
-                $driver = $driver->put($url, $data);
-                break;
-            case 'patch':
-                $driver = $driver->patch($url, $data);
-                break;
-            case 'post':
-                $driver = $driver->post($url, $data);
-                break;
-
-            default:
-                $driver = $driver->get($url, $data);
-                break;
-        }
 
         try {
+            $driver = Http::withBasicAuth($this->user, $this->password);
+            $error = false;
+
+            switch (strtolower($method)) {
+                case 'delete':
+                    $driver = $driver->delete($url, $data);
+                    break;
+                case 'put':
+                    $driver = $driver->put($url, $data);
+                    break;
+                case 'patch':
+                    $driver = $driver->patch($url, $data);
+                    break;
+                case 'post':
+                    $driver = $driver->post($url, $data);
+                    break;
+
+                default:
+                    $driver = $driver->get($url, $data);
+                    break;
+            }
+
             $response = $driver->json();
         } catch (Exception $e) {
             $error = true;
