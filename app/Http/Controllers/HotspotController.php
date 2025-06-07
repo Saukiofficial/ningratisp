@@ -151,4 +151,24 @@ class HotspotController extends Controller
 
         return response()->json($response);
     }
+
+    public function checkInvoice(Request $request, VoucherService $service)
+    {
+        $invoiceRequest = str_replace(
+            'inv-',
+            '',
+            strtolower($request->invoice_number)
+        );
+
+        $voucher = $service->buildData('payment')
+            ->where('order_id', $invoiceRequest)
+            ->first();
+        if (empty($voucher) || empty($voucher->payment()->exists())) {
+            return [
+                'status' => 'fail'
+            ];
+        }
+
+        return ['status' => 'success', 'voucher_code' => $voucher->code];
+    }
 }

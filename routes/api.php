@@ -2,6 +2,7 @@
 
 use App\Helpers\MikrotikAPI;
 use App\Http\Controllers\HotspotController;
+use App\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -24,3 +25,5 @@ Route::group(['prefix' => 'midtrans'], function () {
     // Route::post('paymentstate', [HotspotController::class, '']);
 });
 Route::get('voucherdetails/{sealcode?}', [HotspotController::class, 'getVoucherDetails'])->name('voucherDetails');
+Route::middleware(['throttle:check_voucher'])
+    ->post('check-invoice', [HotspotController::class, 'checkInvoice']);
