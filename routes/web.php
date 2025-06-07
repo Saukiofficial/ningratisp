@@ -25,3 +25,4 @@ Route::group(['prefix' => 'midtrans/payment'], function () {
     Route::get('success', fn() => view('temp.thank-page'));
     Route::get('failed', fn() => view('temp.failed-page'));
 });
+Route::get('check-voucher', fn() => view('temp.voucher-check'));
