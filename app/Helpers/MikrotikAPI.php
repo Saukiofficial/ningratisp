@@ -143,4 +143,88 @@ class MikrotikAPI
 
         return isset($list[$uptime]) ? $list[$uptime] : ['profile' => 'default', 'limit' => '0h'];
     }
+
+    public function getSystemResource()
+    {
+        $this->action = str(__FUNCTION__)->snake('-');
+        $this->setPathUrl('/system/resource');
+        return $this->request();
+    }
+
+    public function getSystemRouterboard()
+    {
+        $this->action = str(__FUNCTION__)->snake('-');
+        $this->setPathUrl('/system/routerboard');
+        return $this->request();
+    }
+
+    public function getIpAddresses()
+    {
+        $this->action = str(__FUNCTION__)->snake('-');
+        $this->setPathUrl('/ip/address');
+        return $this->request();
+    }
+
+    public function getIpRoutes()
+    {
+        $this->action = str(__FUNCTION__)->snake('-');
+        $this->setPathUrl('/ip/route');
+        return $this->request();
+    }
+
+    public function getIpDns()
+    {
+        $this->action = str(__FUNCTION__)->snake('-');
+        $this->setPathUrl('/ip/dns');
+        return $this->request();
+    }
+
+    public function getPppSecrets()
+    {
+        $this->action = str(__FUNCTION__)->snake('-');
+        $this->setPathUrl('/ppp/secret');
+        return $this->request();
+    }
+
+    public function getPppActive()
+    {
+        $this->action = str(__FUNCTION__)->snake('-');
+        $this->setPathUrl('/ppp/active');
+        return $this->request();
+    }
+
+    public function getPppProfiles()
+    {
+        $this->action = str(__FUNCTION__)->snake('-');
+        $this->setPathUrl('/ppp/profile');
+        return $this->request();
+    }
+
+    public function getHotspotUsers()
+    {
+        $this->action = str(__FUNCTION__)->snake('-');
+        $this->setPathUrl('/ip/hotspot/user');
+        return $this->request();
+    }
+
+    public function getHotspotActive()
+    {
+        $this->action = str(__FUNCTION__)->snake('-');
+        $this->setPathUrl('/ip/hotspot/active');
+        return $this->request();
+    }
+
+    public function getHotspotProfiles()
+    {
+        $this->action = str(__FUNCTION__)->snake('-');
+        $this->setPathUrl('/ip/hotspot/profile');
+        return $this->request();
+    }
+
+    public function getHotspotServers()
+    {
+        $this->action = str(__FUNCTION__)->snake('-');
+        $this->setPathUrl('/ip/hotspot/server');
+        return $this->request();
+    }
 }
