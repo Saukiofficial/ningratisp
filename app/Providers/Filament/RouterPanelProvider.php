@@ -61,5 +61,6 @@ class RouterPanelProvider extends PanelProvider
                 NavigationGroup::make()->label('Transactions'),
                 NavigationGroup::make()->label('Logs'),
             ]);
+        // ->viteTheme('resources/css/filament/router/theme.css');
     }
 }
