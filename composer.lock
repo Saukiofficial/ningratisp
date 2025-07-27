@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "799a9e405210b9e13f244aa6cba6f16f",
+    "content-hash": "cd1656c3e34e16a40ef630071d5e4831",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -7807,6 +7807,79 @@
             "time": "2025-06-26T14:11:46+00:00"
         },
         {
+            "name": "valentin-morice/filament-json-column",
+            "version": "dev-dev",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/valentin-morice/filament-json-column.git",
+                "reference": "470594b9d18ab5e40519b016123667be7f86fd91"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/valentin-morice/filament-json-column/zipball/470594b9d18ab5e40519b016123667be7f86fd91",
+                "reference": "470594b9d18ab5e40519b016123667be7f86fd91",
+                "shasum": ""
+            },
+            "require": {
+                "filament/forms": "^4.0",
+                "filament/infolists": "^4.0",
+                "filament/notifications": "^4.0",
+                "php": "^8.2",
+                "spatie/laravel-package-tools": "^1.15.0"
+            },
+            "require-dev": {
+                "laravel/pint": "^1.0",
+                "nunomaduro/collision": "^7.9|^8.0",
+                "nunomaduro/larastan": "^2.0.1",
+                "orchestra/testbench": "^8.0|^9.0",
+                "pestphp/pest": "^2.1",
+                "pestphp/pest-plugin-arch": "^2.0",
+                "pestphp/pest-plugin-laravel": "^2.0",
+                "phpstan/extension-installer": "^1.1",
+                "phpstan/phpstan-deprecation-rules": "^1.0",
+                "phpstan/phpstan-phpunit": "^1.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "aliases": {
+                        "FilamentJsonColumn": "ValentinMorice\\FilamentJsonColumn\\Facades\\FilamentJsonColumn"
+                    },
+                    "providers": [
+                        "ValentinMorice\\FilamentJsonColumn\\FilamentJsonColumnServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "ValentinMorice\\FilamentJsonColumn\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "valentin-morice",
+                    "email": "valentinmorice1@gmail.com",
+                    "role": "Developer"
+                }
+            ],
+            "description": "A simple package to view and edit your JSON columns in Filament",
+            "homepage": "https://github.com/valentin-morice/filament-json-column",
+            "keywords": [
+                "filament-json-column",
+                "laravel",
+                "valentin-morice"
+            ],
+            "support": {
+                "issues": "https://github.com/valentin-morice/filament-json-column/issues",
+                "source": "https://github.com/valentin-morice/filament-json-column"
+            },
+            "time": "2025-06-23T22:52:23+00:00"
+        },
+        {
             "name": "vlucas/phpdotenv",
             "version": "v5.6.2",
             "source": {
@@ -10640,7 +10713,9 @@
     ],
     "aliases": [],
     "minimum-stability": "beta",
-    "stability-flags": {},
+    "stability-flags": {
+        "valentin-morice/filament-json-column": 20
+    },
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
