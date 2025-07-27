@@ -15,6 +15,8 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Filament\Actions\Action;
+use App\Helpers\MikrotikAPI;
 use UnitEnum;
 
 class PppProfileResource extends Resource
@@ -39,7 +41,43 @@ class PppProfileResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return PppProfilesTable::configure($table);
+        return PppProfilesTable::configure($table)
+            ->headerActions([
+                Action::make('syncWithMikrotik')
+                    ->label('Sync Profiles to MikroTik')
+                    ->action(function () {
+                        $mikrotik = new MikrotikAPI();
+                        $mikrotikProfiles = collect($mikrotik->getPppProfiles());
+
+                        $localProfiles = PppProfile::all();
+                        $syncedCount = 0;
+
+                        foreach ($mikrotikProfiles as $mikrotikProfile) {
+                            $profile = PppProfile::firstOrNew(['profile_name' => $mikrotikProfile['name']]);
+
+                            if (!$profile->exists) {
+                                $profile->profile_name = $mikrotikProfile['name'];
+                                $profile->local_address = $mikrotikProfile['local-address'] ?? null;
+                                $profile->remote_address = $mikrotikProfile['remote-address'] ?? null;
+                                $profile->dns_server = $mikrotikProfile['dns-server'] ?? null;
+                                $profile->rate_limit = $mikrotikProfile['rate-limit'] ?? null;
+                                $profile->session_timeout = $mikrotikProfile['session-timeout'] ?? null;
+                                $profile->idle_timeout = $mikrotikProfile['idle-timeout'] ?? null;
+                                $profile->only_one = ($mikrotikProfile['only-one'] ?? 'false') === 'true';
+                                $profile->is_active = ($mikrotikProfile['disabled'] ?? 'false') === 'false';
+
+                                $profile->save();
+                                $syncedCount++;
+                            }
+                        }
+
+                        \Filament\Notifications\Notification::make()
+                            ->title('PPP Profiles synced with MikroTik')
+                            ->body("{$syncedCount} new profiles added to MikroTik.")
+                            ->success()
+                            ->send();
+                    }),
+            ]);
     }
 
     public static function getRelations(): array

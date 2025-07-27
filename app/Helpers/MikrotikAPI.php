@@ -9,6 +9,9 @@ use Illuminate\Support\Facades\Http;
 
 class MikrotikAPI
 {
+
+    protected bool $shouldLog = true;
+
     private $baseUrl, $user, $password, $pathUrl, $action;
 
     public function __construct($baseUrl = null, $user = null, $password = null)
@@ -64,14 +67,16 @@ class MikrotikAPI
             ];
         }
 
-        $reqLog = is_array($data) ? json_encode($data) : (json_validate($data) ? $data : json_encode($data));
-        $respLog = is_array($response) ? json_encode($response) : (json_validate($response) ? $data : json_encode($response));
-        LogMikrotik::create([
-            'action' => $this->action ?? str(__FUNCTION__)->snake('-'),
-            'request' => $reqLog,
-            'response' => $respLog,
-            'status' => $error
-        ]);
+        if ($this->getShouldLog()) {
+            $reqLog = is_array($data) ? json_encode($data) : (json_validate($data) ? $data : json_encode($data));
+            $respLog = is_array($response) ? json_encode($response) : (json_validate($response) ? $data : json_encode($response));
+            LogMikrotik::create([
+                'action' => $this->action ?? str(__FUNCTION__)->snake('-'),
+                'request' => $reqLog,
+                'response' => $respLog,
+                'status' => $error
+            ]);
+        }
 
         return $response;
     }
@@ -92,6 +97,16 @@ class MikrotikAPI
         $response = $this->request();
 
         return $response;
+    }
+
+    public function setShouldLog($state = true): void
+    {
+        $this->shouldLog = $state;
+    }
+
+    public function getShouldLog(): bool
+    {
+        return $this->shouldLog;
     }
 
     /**
@@ -183,6 +198,7 @@ class MikrotikAPI
     {
         $this->action = str(__FUNCTION__)->snake('-');
         $this->setPathUrl('/ppp/secret');
+        $this->setShouldLog(false);
         return $this->request();
     }
 
@@ -197,6 +213,7 @@ class MikrotikAPI
     {
         $this->action = str(__FUNCTION__)->snake('-');
         $this->setPathUrl('/ppp/profile');
+        $this->setShouldLog(false);
         return $this->request();
     }
 
@@ -227,4 +244,8 @@ class MikrotikAPI
         $this->setPathUrl('/ip/hotspot/server');
         return $this->request();
     }
+
+    
+
+    
 }

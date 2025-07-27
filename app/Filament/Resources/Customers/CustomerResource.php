@@ -15,6 +15,9 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Filament\Actions\Action;
+use App\Helpers\MikrotikAPI;
+use App\Models\PppProfile;
 use UnitEnum;
 
 class CustomerResource extends Resource
@@ -39,7 +42,57 @@ class CustomerResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return CustomersTable::configure($table);
+        return CustomersTable::configure($table)
+            ->headerActions([
+                Action::make('syncWithMikrotik')
+                    ->label('Sync Customers to MikroTik')
+                    ->action(function () {
+                        $mikrotik = new MikrotikAPI();
+                        $secrets = collect($mikrotik->getPppSecrets());
+
+                        $syncedCount = 0;
+
+                        foreach ($secrets as $secret) {
+                            $customer = Customer::firstOrNew(['username' => $secret['name']]);
+
+                            if (!$customer->exists) {
+                                $customer->username = $secret['name'];
+                                $customer->password = $secret['password']; // Assuming plain text password from MikroTik
+                                $customer->service_name = $secret['service'] ?? null;
+
+                                // Find or create PPP Profile
+                                $pppProfile = PppProfile::firstOrCreate(['profile_name' => $secret['profile']]);
+                                $customer->ppp_profile_id = $pppProfile->id;
+
+                                $customer->local_address = $secret['local-address'] ?? null;
+                                $customer->remote_address = $secret['remote-address'] ?? null;
+                                $customer->rate_limit = $secret['rate-limit'] ?? null;
+                                $customer->caller_id = $secret['caller-id'] ?? null;
+                                $customer->is_active = ($secret['disabled'] ?? 'false') === 'false';
+
+                                // Set default values for required fields if not present in MikroTik
+                                $customer->full_name = $customer->full_name ?? $secret['name'];
+                                $customer->package_name = $customer->package_name ?? 'Default Package';
+                                $customer->monthly_fee = $customer->monthly_fee ?? 0;
+                                $customer->status = $customer->status ?? 'active';
+                                $customer->payment_status = $customer->payment_status ?? 'unpaid';
+                                $customer->total_uptime = $customer->total_uptime ?? 0;
+                                $customer->session_count = $customer->session_count ?? 0;
+                                $customer->bytes_in = $customer->bytes_in ?? 0;
+                                $customer->bytes_out = $customer->bytes_out ?? 0;
+
+                                $customer->save();
+                                $syncedCount++;
+                            }
+                        }
+
+                        \Filament\Notifications\Notification::make()
+                            ->title('Customers synced with MikroTik')
+                            ->body("{$syncedCount} new customers added to MikroTik.")
+                            ->success()
+                            ->send();
+                    }),
+            ]);
     }
 
     public static function getRelations(): array

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Hash;
 
 class Customer extends Model
 {
@@ -17,7 +18,7 @@ class Customer extends Model
      */
     public function pppProfile()
     {
-        return $this->belongsTo(PppProfile::class, 'ppp_profile', 'profile_name');
+        return $this->belongsTo(PppProfile::class);
     }
 
     /**
@@ -25,7 +26,8 @@ class Customer extends Model
      */
     public function setPasswordAttribute($value)
     {
-        $this->attributes['password'] = Hash::make($value);
+        $this->attributes['password'] = $value;
+        // $this->attributes['password'] = Hash::make($value);
     }
 
     /**
