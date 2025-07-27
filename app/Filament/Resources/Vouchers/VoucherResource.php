@@ -15,6 +15,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 use UnitEnum;
 
 class VoucherResource extends Resource
@@ -57,5 +58,20 @@ class VoucherResource extends Resource
             'view' => ViewVoucher::route('/{record}'),
             'edit' => EditVoucher::route('/{record}/edit'),
         ];
+    }
+
+    public static function canCreate(): bool
+    {
+        return false;
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return false;
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return false;
     }
 }

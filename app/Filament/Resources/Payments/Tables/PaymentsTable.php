@@ -50,12 +50,13 @@ class PaymentsTable
             ])
             ->recordActions([
                 ViewAction::make(),
-                EditAction::make(),
+                // EditAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                    // DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->defaultSort('created_at', 'desc');
     }
 }
