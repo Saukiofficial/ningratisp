@@ -163,6 +163,7 @@ class MikrotikAPI
     {
         $this->action = str(__FUNCTION__)->snake('-');
         $this->setPathUrl('/system/resource');
+        $this->setShouldLog(false);
         return $this->request();
     }
 
@@ -170,6 +171,7 @@ class MikrotikAPI
     {
         $this->action = str(__FUNCTION__)->snake('-');
         $this->setPathUrl('/system/routerboard');
+        $this->setShouldLog(false);
         return $this->request();
     }
 
@@ -177,6 +179,7 @@ class MikrotikAPI
     {
         $this->action = str(__FUNCTION__)->snake('-');
         $this->setPathUrl('/ip/address');
+        $this->setShouldLog(false);
         return $this->request();
     }
 
@@ -184,6 +187,7 @@ class MikrotikAPI
     {
         $this->action = str(__FUNCTION__)->snake('-');
         $this->setPathUrl('/ip/route');
+        $this->setShouldLog(false);
         return $this->request();
     }
 
@@ -191,6 +195,7 @@ class MikrotikAPI
     {
         $this->action = str(__FUNCTION__)->snake('-');
         $this->setPathUrl('/ip/dns');
+        $this->setShouldLog(false);
         return $this->request();
     }
 
@@ -206,6 +211,7 @@ class MikrotikAPI
     {
         $this->action = str(__FUNCTION__)->snake('-');
         $this->setPathUrl('/ppp/active');
+        $this->setShouldLog(false);
         return $this->request();
     }
 
@@ -221,6 +227,7 @@ class MikrotikAPI
     {
         $this->action = str(__FUNCTION__)->snake('-');
         $this->setPathUrl('/ip/hotspot/user');
+        $this->setShouldLog(false);
         return $this->request();
     }
 
@@ -228,6 +235,7 @@ class MikrotikAPI
     {
         $this->action = str(__FUNCTION__)->snake('-');
         $this->setPathUrl('/ip/hotspot/active');
+        $this->setShouldLog(false);
         return $this->request();
     }
 
@@ -235,6 +243,7 @@ class MikrotikAPI
     {
         $this->action = str(__FUNCTION__)->snake('-');
         $this->setPathUrl('/ip/hotspot/profile');
+        $this->setShouldLog(false);
         return $this->request();
     }
 
@@ -242,10 +251,7 @@ class MikrotikAPI
     {
         $this->action = str(__FUNCTION__)->snake('-');
         $this->setPathUrl('/ip/hotspot/server');
+        $this->setShouldLog(false);
         return $this->request();
     }
-
-    
-
-    
 }
