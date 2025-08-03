@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Helpers\MikrotikAPI;
 
 /*
 |--------------------------------------------------------------------------
@@ -26,3 +27,19 @@ Route::group(['prefix' => 'midtrans/payment'], function () {
     Route::get('failed', fn() => view('temp.failed-page'));
 });
 Route::get('check-voucher', fn() => view('temp.voucher-check'));
+
+// Route::get('/mikrotik-proxy-config', function () {
+//     $mikrotik = new MikrotikAPI();
+//     return response()->json([
+//         'proxy' => $mikrotik->getIpProxy(),
+//         'nat' => $mikrotik->getIpFirewallNat(),
+//         'filter' => $mikrotik->getIpFirewallFilter(),
+//         'ppp_secrets' => $mikrotik->getPppSecrets(),
+//         'ppp_profiles' => $mikrotik->getPppProfiles(),
+//     ]);
+// });
+
+// Route::get(
+//     'mikrotik-test',
+//     fn(MikrotikAPI $api) => $api->test()
+// );

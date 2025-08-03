@@ -4,13 +4,13 @@ namespace App\Helpers;
 
 use App\Models\LogMikrotik;
 use App\Models\Voucher;
+use App\Trait\HasMikrotikConfiguration;
 use Exception;
 use Illuminate\Support\Facades\Http;
 
 class MikrotikAPI
 {
-
-    protected bool $shouldLog = true;
+    use HasMikrotikConfiguration;
 
     private $baseUrl, $user, $password, $pathUrl, $action;
 
@@ -28,6 +28,10 @@ class MikrotikAPI
         try {
             $driver = Http::withBasicAuth($this->user, $this->password);
             $error = false;
+
+            if (!empty($this->getRequestTimeout())) {
+                $driver = $driver->connectTimeout($this->getRequestTimeout())->timeout($this->getRequestTimeout());
+            }
 
             switch (strtolower($method)) {
                 case 'delete':
@@ -99,14 +103,21 @@ class MikrotikAPI
         return $response;
     }
 
-    public function setShouldLog($state = true): void
+    public function isConnected(): bool
     {
-        $this->shouldLog = $state;
-    }
+        $url = $this->baseUrl . '/system/resource';
+        $success = true;
 
-    public function getShouldLog(): bool
-    {
-        return $this->shouldLog;
+        try {
+            $response = Http::withBasicAuth($this->user, $this->password)->get($url);
+            if (!$response->successful()) {
+                throw new Exception('');
+            }
+        } catch (\Throwable $th) {
+            $success = false;
+        }
+
+        return $success;
     }
 
     /**
@@ -212,6 +223,7 @@ class MikrotikAPI
         $this->action = str(__FUNCTION__)->snake('-');
         $this->setPathUrl('/ppp/active');
         $this->setShouldLog(false);
+        $this->setRequestTimeout(1);
         return $this->request();
     }
 
@@ -253,5 +265,39 @@ class MikrotikAPI
         $this->setPathUrl('/ip/hotspot/server');
         $this->setShouldLog(false);
         return $this->request();
+    }
+
+    public function getIpProxy()
+    {
+        $this->action = str(__FUNCTION__)->snake('-');
+        $this->setPathUrl('/ip/proxy');
+        $this->setShouldLog(false);
+        return $this->request();
+    }
+
+    public function getIpFirewallNat()
+    {
+        $this->action = str(__FUNCTION__)->snake('-');
+        $this->setPathUrl('/ip/firewall/nat');
+        $this->setShouldLog(false);
+        return $this->request();
+    }
+
+    public function getIpFirewallFilter()
+    {
+        $this->action = str(__FUNCTION__)->snake('-');
+        $this->setPathUrl('/ip/firewall/filter');
+        $this->setShouldLog(false);
+        return $this->request();
+    }
+
+    public function getInterfaceTraffic(string $interface)
+    {
+        $this->action = str(__FUNCTION__)->snake('-');
+        $this->setPathUrl('/interface/monitor-traffic');
+        $this->setShouldLog(false);
+        $this->setRequestTimeout(1);
+
+        return $this->request(["interface" => $interface, "once" => ""], 'post');
     }
 }
