@@ -47,17 +47,21 @@ class WahaApi
                     break;
             }
 
+            if ($driver->status() >= 300) {
+                throw new Exception($driver->reason());
+            }
+
             $response = $driver->json();
         } catch (Exception $e) {
             $error = true;
             $response = [
                 'detail' => 'Exception Request',
                 'error' => 500,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ];
         }
 
-        if (empty($response) || is_string($response) || !empty($response['error'])) {
+        if (empty($response) || is_string($response) || (!empty($response['error']) && $response['error'] != 500)) {
             $error = true;
             $response = [
                 'detail' => 'Empty Response',
