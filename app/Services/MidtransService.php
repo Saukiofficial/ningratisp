@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Helpers\MikrotikAPI;
 use App\Jobs\GenerateMikrotikVoucherJob;
+use App\Jobs\SendWhatsappMessageJob;
 use App\Models\LogMidtrans;
 use App\Services\Model\PaymentService;
 use App\Services\Model\VoucherService;
@@ -157,6 +158,8 @@ class MidtransService
 
         $voucher->status = true;
         $success = $voucher->save();
+
+        SendWhatsappMessageJob::dispatch($voucher);
 
         LogMidtrans::create([
             'orderid' => $this->getOrderId(),

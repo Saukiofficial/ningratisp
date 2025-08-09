@@ -46,19 +46,24 @@ class HotspotController extends Controller
         $voucher = $service->generateVoucher($request->validated('pointer'));
         $channelId = 'qris';
         $channel = $pmService->buildData()->where('code', '=', $channelId)->firstOrFail();
-        $fee = $channel->fee();
+        $fee = $channel->fee;
         $total = TaxCalculate::calculate($voucher->price, $fee->amount, $fee->unit);
         if (empty($voucher)) {
             throw new Exception('error');
         }
         $sealcode = $request->seal_code;
-        $voucher->fill(['seal_code' => $sealcode, 'fee_id' => $fee->id]);
+        $voucher->fill([
+            'seal_code' => $sealcode,
+            'fee_id' => $fee->id,
+            'whatsapp_number' => $request->whatsapp_number ?? null
+        ]);
         $voucher->save();
 
         try {
             $pg = new MidtransService();
             $response = $pg->generateQRIS($voucher->order_id, $total);
         } catch (Exception $e) {
+            $voucher->delete();
             return abort(500);
         }
 
@@ -90,7 +95,7 @@ class HotspotController extends Controller
         $voucher = $service->generateVoucher($request->validated('pointer'));
         $channelId = $request->validated('channel_id');
         $channel = $pmService->get($channelId);
-        $fee = $channel->fee();
+        $fee = $channel->fee;
         $total = TaxCalculate::calculate($voucher->price, $fee->amount, $fee->unit);
         if (empty($voucher)) {
             throw new Exception('error');

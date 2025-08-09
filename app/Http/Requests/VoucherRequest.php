@@ -20,10 +20,20 @@ class VoucherRequest extends FormRequest
         if (in_array($this->path(), ['api/midtrans/requestvoucher', 'api/midtrans/requestvoucherqris'])) {
             $rules['channel_id'] = 'required';
             $rules['seal_code'] = 'required';
+            $rules['whatsapp_number'] = 'nullable|string|max:16';
         } elseif ($this->path() == 'api/voucherdetails') {
             $rules = ['seal_code' => 'required|string'];
         }
 
         return $rules;
+    }
+
+    protected function passedValidation()
+    {
+        if (!empty($this->input('whatsapp_number'))) {
+            $this->merge([
+                'whatsapp_number' => str_replace('+', '', $this->input('whatsapp_number'))
+            ]);
+        }
     }
 }

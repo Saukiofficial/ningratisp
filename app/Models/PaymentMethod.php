@@ -20,9 +20,9 @@ class PaymentMethod extends Model
 
     protected $guarded = ['id'];
 
-    public function fees()
+    public function fee()
     {
-        return $this->hasMany(Fee::class);
+        return $this->hasOne(Fee::class)->latestOfMany();
     }
 
     public function getCategoryName()
