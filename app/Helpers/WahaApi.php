@@ -11,8 +11,8 @@ class WahaApi
 
     public function __construct($baseUrl = null, $apiKey = null)
     {
-        $this->baseUrl = $baseUrl ?? env('WAHA_URL');
-        $this->apiKey = $apiKey ?? env('WAHA_API_KEY');
+        $this->baseUrl = $baseUrl ?? config('app.waha.url');
+        $this->apiKey = $apiKey ?? config('app.waha.api_key');
     }
 
     public function request($data = null, $method = 'get')
