@@ -5,6 +5,7 @@ namespace App\Filament\Widgets;
 use App\Helpers\MikrotikAPI;
 use Carbon\Carbon;
 use Filament\Actions\Action;
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
@@ -20,17 +21,18 @@ class OfflineUsersWidget extends BaseWidget
 
     public function table(Table $table): Table
     {
+        $mikrotik = new MikrotikAPI();
+        $this->isConnected = $mikrotik->isConnected();
+
         return $table
-            ->records(function (): array {
+            ->records(function () use ($mikrotik): array {
                 try {
-                    $mikrotik = new MikrotikAPI();
 
                     // Test connection by trying to get secrets
                     $secrets = $mikrotik->getPppSecrets();
                     $activeUsers = collect($mikrotik->getPppActive())->pluck('name')->all();
 
-                    $this->isConnected = true;
-                    $this->connectionError = '';
+                    $this->connectionError = 'Router not connected';
 
                     return collect($secrets)->filter(function ($secret) use ($activeUsers) {
                         if (!isset($secret['name']) || !isset($secret['last-logged-out'])) {
@@ -101,9 +103,11 @@ class OfflineUsersWidget extends BaseWidget
                 Action::make('connection_status')
                     ->label($this->isConnected ? 'Connected' : 'Disconnected')
                     ->color($this->isConnected ? 'success' : 'danger')
-                    ->icon($this->isConnected ? 'heroicon-o-wifi' : 'heroicon-o-wifi-slash')
+                    ->icon(Heroicon::Wifi)
                     ->disabled()
-                    ->tooltip($this->isConnected ? 'MikroTik connection is active' : 'Error: ' . $this->connectionError),
+                    ->tooltip(
+                        $this->isConnected ? 'MikroTik connection is active' : 'Error: ' . $this->connectionError
+                    ),
                 Action::make('refresh')
                     ->label('Refresh')
                     ->icon('heroicon-o-arrow-path')

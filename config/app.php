@@ -186,4 +186,15 @@ return [
         'TaxCalculate' => App\Helpers\TaxCalculate::class
     ])->toArray(),
 
+    'mikrotik' => [
+        'url' => env('MIKROTIK_URL') ?? '',
+        'user' => env('MIKROTIK_USER') ?? '',
+        'password' => env('MIKROTIK_PASS') ?? '',
+    ],
+
+    'waha' => [
+        'url' => env('WAHA_URL') ?? '',
+        'api_key' => env('WAHA_API_KEY') ?? ''
+    ]
+
 ];

@@ -16,9 +16,9 @@ class MikrotikAPI
 
     public function __construct($baseUrl = null, $user = null, $password = null)
     {
-        $this->baseUrl = $baseUrl ?? env('MIKROTIK_URL');
-        $this->user = $user ?? env('MIKROTIK_USER');
-        $this->password = $password ?? env('MIKROTIK_PASS');
+        $this->baseUrl = $baseUrl ?? config('app.mikrotik.url');
+        $this->user = $user ?? config('app.mikrotik.user');
+        $this->password = $password ?? config('app.mikrotik.password');
     }
 
     public function request($data = null, $method = 'get')
