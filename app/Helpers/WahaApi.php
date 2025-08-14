@@ -73,6 +73,47 @@ class WahaApi
         return $response;
     }
 
+    public function rawRequest($data = null, $method = 'get')
+    {
+        $url = $this->baseUrl . $this->getPathUrl();
+
+        if (!empty($data['chatId'])) {
+            $data['chatId'] = $data['chatId'] . '@c.us';
+        }
+        $data['session'] = 'default';
+
+        try {
+            $driver = Http::withHeaders(['X-Api-Key' => $this->apiKey]);
+
+            switch (strtolower($method)) {
+                case 'delete':
+                    $driver = $driver->delete($url, $data);
+                    break;
+                case 'put':
+                    $driver = $driver->put($url, $data);
+                    break;
+                case 'patch':
+                    $driver = $driver->patch($url, $data);
+                    break;
+                case 'post':
+                    $driver = $driver->post($url, $data);
+                    break;
+
+                default:
+                    $driver = $driver->get($url, $data);
+                    break;
+            }
+
+            if ($driver->status() >= 300) {
+                throw new Exception($driver->reason());
+            }
+
+            return $driver->body();
+        } catch (Exception $e) {
+            return null;
+        }
+    }
+
     public function setPathUrl(string $path): void
     {
         $this->pathUrl = $path;
@@ -81,6 +122,44 @@ class WahaApi
     public function getPathUrl(): string
     {
         return $this->pathUrl;
+    }
+
+    public function getSessionStatus(string $session = 'default')
+    {
+        $this->setPathUrl('/api/sessions/' . $session);
+        return $this->request();
+    }
+
+    public function getQrCode(string $session = 'default')
+    {
+        $this->setPathUrl('/api/' . $session . '/auth/qr');
+        $imageData = $this->rawRequest();
+        return $imageData ? base64_encode($imageData) : null;
+    }
+
+    public function getMe(string $session = 'default')
+    {
+        $this->setPathUrl('/api/sessions/' . $session . '/me');
+        return $this->request();
+    }
+
+    public function getSessions()
+    {
+        $this->setPathUrl('/api/sessions');
+        return $this->request();
+    }
+
+    public function getScreenshot(string $session = 'default')
+    {
+        $this->setPathUrl('/api/screenshot?session=' . $session);
+        $imageData = $this->rawRequest();
+        return $imageData ? base64_encode($imageData) : null;
+    }
+
+    public function logout(string $session = 'default')
+    {
+        $this->setPathUrl('/api/sessions/' . $session . '/logout');
+        return $this->request([], 'post');
     }
 
     public function isConnected(): bool
