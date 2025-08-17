@@ -171,6 +171,13 @@ class Customer extends Model
         return $script;
     }
 
+    protected static function booted()
+    {
+        static::creating(
+            fn($record) => $record->billing_number = fake()->unique()->numerify('#######')
+        );
+    }
+
     /**
      * Helper method to format bytes
      */
