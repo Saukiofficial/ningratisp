@@ -16,6 +16,7 @@ class CustomerForm
     {
         return $schema
             ->components([
+                TextInput::make('billing_number')->visibleOn('view'),
                 TextInput::make('username')
                     ->required()
                     ->maxLength(64),
@@ -24,35 +25,49 @@ class CustomerForm
                     ->required()
                     ->maxLength(255),
                 TextInput::make('service_name')
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->visibleOn(['edit', 'view']),
                 Select::make('ppp_profile_id')
                     ->relationship('pppProfile', 'profile_name')
                     ->required(),
-                Toggle::make('profile_override'),
+                Toggle::make('profile_override')
+                    ->visibleOn(['edit', 'view']),
                 TextInput::make('local_address')
-                    ->maxLength(15),
+                    ->maxLength(15)
+                    ->visibleOn(['edit', 'view']),
                 TextInput::make('remote_address')
-                    ->maxLength(15),
+                    ->maxLength(15)
+                    ->visibleOn(['edit', 'view']),
                 TextInput::make('dns_server')
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->visibleOn(['edit', 'view']),
                 TextInput::make('wins_server')
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->visibleOn(['edit', 'view']),
                 TextInput::make('incoming_filter')
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->visibleOn(['edit', 'view']),
                 TextInput::make('outgoing_filter')
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->visibleOn(['edit', 'view']),
                 TextInput::make('rate_limit')
-                    ->maxLength(50),
+                    ->maxLength(50)
+                    ->visibleOn(['edit', 'view']),
                 TextInput::make('rx_rate_limit')
-                    ->numeric(),
+                    ->numeric()
+                    ->visibleOn(['edit', 'view']),
                 TextInput::make('tx_rate_limit')
-                    ->numeric(),
+                    ->numeric()
+                    ->visibleOn(['edit', 'view']),
                 TextInput::make('burst_limit')
-                    ->maxLength(50),
+                    ->maxLength(50)
+                    ->visibleOn(['edit', 'view']),
                 TextInput::make('burst_threshold')
-                    ->maxLength(50),
+                    ->maxLength(50)
+                    ->visibleOn(['edit', 'view']),
                 TextInput::make('burst_time')
-                    ->maxLength(20),
+                    ->maxLength(20)
+                    ->visibleOn(['edit', 'view']),
                 TextInput::make('full_name')
                     ->required()
                     ->maxLength(255),
@@ -64,22 +79,27 @@ class CustomerForm
                 Textarea::make('address')
                     ->maxLength(65535),
                 TextInput::make('id_number')
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->visibleOn(['edit', 'view']),
                 Select::make('customer_type')
                     ->options([
                         'residential' => 'Residential',
                         'business' => 'Business',
                         'corporate' => 'Corporate',
                     ])
-                    ->required(),
+
+                    ->visibleOn(['edit', 'view']),
                 TextInput::make('package_name')
-                    ->required()
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->visibleOn(['edit', 'view']),
                 TextInput::make('monthly_fee')
                     ->numeric()
-                    ->required(),
-                DatePicker::make('installation_date'),
-                DatePicker::make('expiry_date'),
+
+                    ->visibleOn(['edit', 'view']),
+                DatePicker::make('installation_date')
+                    ->visibleOn(['edit', 'view']),
+                DatePicker::make('expiry_date')
+                    ->visibleOn(['edit', 'view']),
                 Select::make('status')
                     ->options([
                         'active' => 'Active',
@@ -87,56 +107,77 @@ class CustomerForm
                         'terminated' => 'Terminated',
                         'pending' => 'Pending',
                     ])
-                    ->required(),
+
+                    ->visibleOn(['edit', 'view']),
                 Select::make('payment_status')
                     ->options([
                         'paid' => 'Paid',
                         'unpaid' => 'Unpaid',
                         'overdue' => 'Overdue',
                     ])
-                    ->required(),
+
+                    ->visibleOn(['edit', 'view']),
                 TextInput::make('caller_id')
-                    ->maxLength(255),
-                Toggle::make('only_one_override'),
+                    ->maxLength(255)
+                    ->visibleOn(['edit', 'view']),
+                Toggle::make('only_one_override')
+                    ->visibleOn(['edit', 'view']),
                 TextInput::make('idle_timeout_override')
-                    ->numeric(),
+                    ->numeric()
+                    ->visibleOn(['edit', 'view']),
                 TextInput::make('keepalive_timeout_override')
-                    ->numeric(),
+                    ->numeric()
+                    ->visibleOn(['edit', 'view']),
                 TextInput::make('session_timeout_override')
-                    ->numeric(),
+                    ->numeric()
+                    ->visibleOn(['edit', 'view']),
                 Select::make('bridge_learning_override')
                     ->options([
                         'default' => 'Default',
                         'yes' => 'Yes',
                         'no' => 'No',
-                    ]),
+                    ])
+                    ->visibleOn(['edit', 'view']),
                 TextInput::make('bridge_horizon_override')
-                    ->numeric(),
+                    ->numeric()
+                    ->visibleOn(['edit', 'view']),
                 TextInput::make('bridge_path_cost_override')
-                    ->numeric(),
+                    ->numeric()
+                    ->visibleOn(['edit', 'view']),
                 TextInput::make('bridge_port_priority_override')
-                    ->numeric(),
-                DateTimePicker::make('last_login'),
-                DateTimePicker::make('last_logout'),
+                    ->numeric()
+                    ->visibleOn(['edit', 'view']),
+                DateTimePicker::make('last_login')
+                    ->visibleOn(['edit', 'view']),
+                DateTimePicker::make('last_logout')
+                    ->visibleOn(['edit', 'view']),
                 TextInput::make('last_caller_id')
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->visibleOn(['edit', 'view']),
                 TextInput::make('total_uptime')
                     ->numeric()
-                    ->required(),
+
+                    ->visibleOn(['edit', 'view']),
                 TextInput::make('session_count')
                     ->numeric()
-                    ->required(),
+
+                    ->visibleOn(['edit', 'view']),
                 TextInput::make('bytes_in')
                     ->numeric()
-                    ->required(),
+
+                    ->visibleOn(['edit', 'view']),
                 TextInput::make('bytes_out')
                     ->numeric()
-                    ->required(),
+
+                    ->visibleOn(['edit', 'view']),
                 TextInput::make('created_by')
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->visibleOn(['edit', 'view']),
                 Textarea::make('notes')
-                    ->maxLength(65535),
-                Toggle::make('is_active'),
+                    ->maxLength(65535)
+                    ->visibleOn(['edit', 'view']),
+                Toggle::make('is_active')
+                    ->visibleOn(['edit', 'view']),
             ]);
     }
 }
