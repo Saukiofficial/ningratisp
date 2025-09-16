@@ -11,6 +11,7 @@ class WhatsappStatusWidget extends BaseWidget
 {
     protected static ?int $sort = 1;
     // protected static ?string $pollingInterval = '15s';
+    protected bool $isDiscovered = false;
 
     protected function getStats(): array
     {

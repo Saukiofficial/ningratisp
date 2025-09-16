@@ -159,8 +159,6 @@ class MidtransService
         $voucher->status = true;
         $success = $voucher->save();
 
-        SendWhatsappMessageJob::dispatch($voucher);
-
         LogMidtrans::create([
             'orderid' => $this->getOrderId(),
             'request' => json_encode($data),
@@ -170,7 +168,11 @@ class MidtransService
         if ($success && strtoupper($orderIdType) == self::VOUCHER) {
             // GenerateMikrotikVoucherJob::dispatch($voucher->code, $voucher->duration, $voucher->duration_type);
             $service = new MikrotikAPI();
-            $service->createVoucher($voucher->code, $voucher->duration, $voucher->duration_type);
+            $createdVoucher = $service->createVoucher($voucher->code, $voucher->duration, $voucher->duration_type);
+            if (!empty($createdVoucher['name']) && $createdVoucher['name'] == $voucher->code) {
+                $voucher->status = true;
+                SendWhatsappMessageJob::dispatch($voucher);
+            }
         }
 
         if ($success) {

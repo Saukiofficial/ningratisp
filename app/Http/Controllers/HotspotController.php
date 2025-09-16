@@ -127,6 +127,7 @@ class HotspotController extends Controller
     public function midtransCallback(MidtransCallbackRequest $request, MidtransService $service)
     {
         $service->handleNotification($request->all());
+        return response();
     }
 
     public function getVoucherDetails($sealcode, VoucherService $service)
