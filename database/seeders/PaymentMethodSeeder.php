@@ -22,7 +22,8 @@ class PaymentMethodSeeder extends Seeder
                 'logo' => 'Gopay (Alt).svg',
                 'created_at' => $now,
                 'updated_at' => $now,
-                'category' => PaymentMethod::E_WALLET
+                'category' => PaymentMethod::E_WALLET,
+                'midtrans_code' => 'gopay'
             ],
             [
                 'code' => 'qris',
@@ -30,7 +31,8 @@ class PaymentMethodSeeder extends Seeder
                 'logo' => 'QRIS.svg',
                 'created_at' => $now,
                 'updated_at' => $now,
-                'category' => PaymentMethod::OTHERS
+                'category' => PaymentMethod::OTHERS,
+                'midtrans_code' => 'other_qris'
             ],
             [
                 'code' => 'mandiri',
@@ -38,7 +40,8 @@ class PaymentMethodSeeder extends Seeder
                 'logo' => 'Mandiri.svg',
                 'created_at' => $now,
                 'updated_at' => $now,
-                'category' => PaymentMethod::BANK
+                'category' => PaymentMethod::BANK,
+                'midtrans_code' => 'mandiri'
             ],
             [
                 'code' => 'bni',
@@ -46,7 +49,8 @@ class PaymentMethodSeeder extends Seeder
                 'logo' => 'BNI.svg',
                 'created_at' => $now,
                 'updated_at' => $now,
-                'category' => PaymentMethod::BANK
+                'category' => PaymentMethod::BANK,
+                'midtrans_code' => 'bni_va',
             ],
             [
                 'code' => 'bri',
@@ -54,7 +58,8 @@ class PaymentMethodSeeder extends Seeder
                 'logo' => 'BRI.svg',
                 'created_at' => $now,
                 'updated_at' => $now,
-                'category' => PaymentMethod::BANK
+                'category' => PaymentMethod::BANK,
+                'midtrans_code' => 'bri_va'
             ],
             [
                 'code' => 'permata',
@@ -62,7 +67,8 @@ class PaymentMethodSeeder extends Seeder
                 'logo' => 'Permata Bank (Alt).svg',
                 'created_at' => $now,
                 'updated_at' => $now,
-                'category' => PaymentMethod::BANK
+                'category' => PaymentMethod::BANK,
+                'midtrans_code' => 'permata_va'
             ],
             [
                 'code' => 'cimb',
@@ -70,7 +76,8 @@ class PaymentMethodSeeder extends Seeder
                 'logo' => 'CIMB Niaga.svg',
                 'created_at' => $now,
                 'updated_at' => $now,
-                'category' => PaymentMethod::BANK
+                'category' => PaymentMethod::BANK,
+                'midtrans_code' => 'cimb_va'
             ],
             [
                 'code' => 'dana',
@@ -78,7 +85,8 @@ class PaymentMethodSeeder extends Seeder
                 'logo' => 'DANA.svg',
                 'created_at' => $now,
                 'updated_at' => $now,
-                'category' => PaymentMethod::E_WALLET
+                'category' => PaymentMethod::E_WALLET,
+                'midtrans_code' => 'other_qris'
             ],
             [
                 'code' => 'ovo',
@@ -86,7 +94,8 @@ class PaymentMethodSeeder extends Seeder
                 'logo' => 'OVO (New Alt).svg',
                 'created_at' => $now,
                 'updated_at' => $now,
-                'category' => PaymentMethod::E_WALLET
+                'category' => PaymentMethod::E_WALLET,
+                'midtrans_code' => 'other_qris'
             ],
             [
                 'code' => 'linkaja',
@@ -94,10 +103,26 @@ class PaymentMethodSeeder extends Seeder
                 'logo' => 'LinkAja.svg',
                 'created_at' => $now,
                 'updated_at' => $now,
-                'category' => PaymentMethod::E_WALLET
+                'category' => PaymentMethod::E_WALLET,
+                'midtrans_code' => 'other_qris'
+            ],
+
+            [
+                'code' => 'cash',
+                'name' => 'Cash / Langsung',
+                'logo' => '',
+                'created_at' => $now,
+                'updated_at' => $now,
+                'category' => PaymentMethod::OTHERS,
             ],
         ];
 
-        DB::table((new PaymentMethod())->getTable())->insert($channels);
+        array_map(
+            fn($channel) => PaymentMethod::query()->updateOrCreate(
+                ['code' => $channel['code']],
+                $channel
+            ),
+            $channels
+        );
     }
 }
