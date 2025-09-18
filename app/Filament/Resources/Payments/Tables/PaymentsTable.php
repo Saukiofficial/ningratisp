@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Payments\Tables;
 
+use App\Models\Payment;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -16,26 +17,19 @@ class PaymentsTable
     {
         return $table
             ->columns([
-                TextColumn::make('voucher.code')
-                    ->searchable()
-                    ->sortable(),
+                TextColumn::make('payment_type')
+                ->formatStateUsing(
+                    fn(string $state) => ucfirst($state)
+                ),
                 TextColumn::make('total_amount')
-                    ->searchable()
+                    ->money('IDR')
                     ->sortable(),
                 TextColumn::make('reference_id')
-                    ->searchable()
-                    ->sortable(),
+                    ->searchable(),
                 TextColumn::make('payment_datetime')
                     ->dateTime()
-                    ->searchable()
                     ->sortable(),
-                IconColumn::make('is_cancel')
-                    ->boolean()
-                    ->searchable()
-                    ->sortable(),
-                TextColumn::make('description')
-                    ->searchable()
-                    ->sortable(),
+                TextColumn::make('description'),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

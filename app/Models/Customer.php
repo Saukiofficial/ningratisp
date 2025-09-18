@@ -4,6 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Customer extends Model
 {
@@ -13,12 +18,93 @@ class Customer extends Model
         'password',
     ];
 
+    protected $casts = [
+        'monthly_fee' => 'decimal:2',
+        'installation_date' => 'date',
+        'expiry_date' => 'date',
+        'last_login' => 'datetime',
+        'last_logout' => 'datetime',
+        'only_one_override' => 'boolean',
+        'profile_override' => 'boolean',
+        'is_active' => 'boolean',
+    ];
+
     /**
      * Relationship with PPP Profile
      */
     public function pppProfile()
     {
         return $this->belongsTo(PppProfile::class);
+    }
+
+    /**
+     * Billing & Accounting relationships
+     */
+    public function customerPackages(): HasMany
+    {
+        return $this->hasMany(CustomerPackages::class, 'customer_id');
+    }
+
+    public function latestCustomerPackage(): HasOne
+    {
+        return $this->hasOne(CustomerPackages::class)->latestOfMany();
+    }
+
+    public function activePackage(): HasOne
+    {
+        return $this->hasOne(CustomerPackages::class)->where('status', customerPackages::STATUS_ACTIVE);
+    }
+
+
+    public function invoices(): HasManyThrough
+    {
+        return $this->hasManyThrough(
+            Invoices::class,
+            CustomerPackages::class,
+            'customer_id',            // Foreign key on customer_packages
+            'customer_package_id',    // Foreign key on invoices
+            'id',
+            'id'
+        );
+    }
+
+    public function payments(): HasManyThrough
+    {
+        return $this->hasManyThrough(
+            Payment::class,
+            Invoices::class,
+            'customer_package_id',
+            'invoice_id',
+            'id',
+            'id'
+        );
+    }
+
+    public function customerDiscounts(): HasMany
+    {
+        return $this->hasMany(CustomerDiscount::class);
+    }
+
+    public function discounts(): BelongsToMany
+    {
+        return $this->belongsToMany(Discount::class, 'customer_discounts')
+            ->withPivot(['is_active', 'applied_at', 'created_at', 'updated_at'])
+            ->withTimestamps();
+    }
+
+    public function primaryDiscount(): BelongsTo
+    {
+        return $this->belongsTo(Discount::class, 'discount_id');
+    }
+
+    public function credits(): HasMany
+    {
+        return $this->hasMany(CustomerCredit::class);
+    }
+
+    public function receivables(): HasMany
+    {
+        return $this->hasMany(AccountReceivable::class);
     }
 
     /**
@@ -51,6 +137,11 @@ class Customer extends Model
     public function scopeExpiringSoon($query, $days = 7)
     {
         return $query->where('expiry_date', '<=', now()->addDays($days));
+    }
+
+    public function scopeCategory($query, string $category)
+    {
+        return $query->where('customer_category', $category);
     }
 
     /**
@@ -173,9 +264,12 @@ class Customer extends Model
 
     protected static function booted()
     {
-        static::creating(
-            fn($record) => $record->billing_number = fake()->unique()->numerify('#######')
-        );
+        static::creating(function ($record) {
+            $record->billing_number = $record->billing_number ?? fake()->unique()->numerify('#######');
+            if (empty($record->customer_category)) {
+                $record->customer_category = 'normal';
+            }
+        });
     }
 
     /**

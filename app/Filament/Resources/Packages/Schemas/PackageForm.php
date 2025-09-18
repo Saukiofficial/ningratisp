@@ -10,6 +10,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Filament\Support\RawJs;
 
 class PackageForm
 {
@@ -34,7 +35,9 @@ class PackageForm
                             ->default(1),
                         TextInput::make('price')
                             ->required()
-                            ->numeric(),
+                            ->numeric()
+                            ->mask(RawJs::make('$money($input)'))
+                            ->stripCharacters(','),
                         TextInput::make('discount_percent')
                             ->numeric()
                             ->default(0),

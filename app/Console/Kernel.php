@@ -12,7 +12,11 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
+        // Generate monthly invoices on the 1st day of each month at 02:00
+        $schedule->command('invoices:generate')->monthlyOn(1, '02:00');
+
+        // Sync account receivables daily at 01:30
+        $schedule->command('receivables:sync')->dailyAt('01:30');
     }
 
     /**
