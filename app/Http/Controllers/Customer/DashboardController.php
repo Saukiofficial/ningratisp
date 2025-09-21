@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
-use App\Models\Invoices;
+use App\Models\VirtualAccount;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -14,9 +14,10 @@ class DashboardController extends Controller
     {
         $user = auth()->user();
 
-        $pendingVA = $user->virtualAccounts()
-            ->where('virtual_accounts.status', 'pending')
-            ->where('expired_at', '>', now())->first();
+        $pendingVA = VirtualAccount::whereHas('invoice.customerPackage.customer', function ($query) use ($user) {
+            $query->where('id', $user->id);
+        })->where('status', 'pending')->where('expired_at', '>', now())->first();
+
         if ($pendingVA) {
             return to_route('pending-payment.show', $pendingVA);
         }

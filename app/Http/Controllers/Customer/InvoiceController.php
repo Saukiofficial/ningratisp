@@ -19,14 +19,16 @@ class InvoiceController extends Controller
      */
     public function index(Request $request)
     {
-        $pendingVA = auth()->user()->virtualAccounts()
-            ->where('virtual_accounts.status', 'pending')
-            ->where('expired_at', '>', now())->first();
+        $user = auth()->user();
+        $pendingVA = VirtualAccount::whereHas('invoice.customerPackage.customer', function ($query) use ($user) {
+            $query->where('id', $user->id);
+        })->where('status', 'pending')->where('expired_at', '>', now())->first();
+
         if ($pendingVA) {
             return to_route('pending-payment.show', $pendingVA);
         }
 
-        $query = auth()->user()->invoices();
+        $query = $user->invoices();
 
         if ($request->filled('status')) {
             $query->where('invoices.status', $request->status);
