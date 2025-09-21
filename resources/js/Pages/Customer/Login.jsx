@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, usePage } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 
 // Modern WiFi Icon Component
@@ -41,6 +41,8 @@ export default function Login() {
         username: '',
         password: ''
     });
+    const { props } = usePage();
+    const { appEnv } = props;
     const [showPassword, setShowPassword] = useState(false);
 
     function submit(e) {
@@ -51,6 +53,11 @@ export default function Login() {
     return (
         <>
             <Head title="Login Pelanggan" />
+            {appEnv !== 'production' && (
+                <div className="bg-red-600 text-white text-center py-1 text-sm font-bold uppercase tracking-wider fixed top-0 left-0 w-full z-50">
+                    TESTING APP
+                </div>
+            )}
             <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 relative overflow-hidden">
                 <div
                     className="absolute inset-0"
