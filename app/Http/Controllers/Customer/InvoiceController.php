@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
 use App\Models\Fee;
-use App\Models\Invoices;
+use App\Models\Customer\Invoices;
 use App\Models\PaymentMethod;
 use App\Models\VirtualAccount;
 use App\Services\MidtransService;
@@ -62,6 +62,8 @@ class InvoiceController extends Controller
      */
     public function show(Invoices $invoice)
     {
+        $this->authorize('view', $invoice);
+
         $invoice->load(['items', 'allocations.payment.paymentMethod']);
 
         $invoiceData = [
