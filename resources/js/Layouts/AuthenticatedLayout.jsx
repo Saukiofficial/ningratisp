@@ -18,7 +18,8 @@ const DocumentIcon = ({ isActive }) => (
 
 
 export default function AuthenticatedLayout({ children }) {
-    const { url } = usePage();
+    const { url, props } = usePage();
+    const { appEnv } = props;
     useFlash();
 
     const handleLogout = (e) => {
@@ -31,6 +32,11 @@ export default function AuthenticatedLayout({ children }) {
         <div className="min-h-screen bg-gray-100 flex flex-col pb-20 sm:pb-0">
 
             <header className="bg-white shadow-sm sticky top-0 z-10">
+                {appEnv !== 'production' && (
+                    <div className="bg-red-600 text-white text-center py-1 text-sm font-bold uppercase tracking-wider">
+                        TESTING APP
+                    </div>
+                )}
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between h-16">
                         <div className="flex items-center space-x-8">
