@@ -130,7 +130,7 @@ class InvoiceService
             'invoice_number' => $this->makeManualInvoiceNumber($cp, $periodStart),
             'customer_package_id' => $cp->id,
             'customer_id' => $cp->customer->id,
-            'invoice_date' => Carbon::now()->toDateString(),
+            'invoice_date' => $dueDate->format('Y-m-d'),
             'due_date' => $dueDate->toDateString(),
             'period_start' => $periodStart->toDateString(),
             'period_end' => $periodEnd->toDateString(),

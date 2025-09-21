@@ -19,6 +19,7 @@ use Filament\Tables\Table;
 use Filament\Actions\Action;
 use App\Helpers\MikrotikAPI;
 use App\Models\PppProfile;
+use Illuminate\Support\Facades\Hash;
 use UnitEnum;
 
 class CustomerResource extends Resource
@@ -58,7 +59,8 @@ class CustomerResource extends Resource
 
                             if (!$customer->exists) {
                                 $customer->username = $secret['name'];
-                                $customer->password = $secret['password']; // Assuming plain text password from MikroTik
+                                $customer->password_pptp = $secret['password']; // Assuming plain text password from MikroTik
+                                $customer->password = Hash::make($secret['password']); // Assuming plain text password from MikroTik
                                 $customer->service_name = $secret['service'] ?? null;
 
                                 // Find or create PPP Profile

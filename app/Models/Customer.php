@@ -9,13 +9,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Foundation\Auth\User;
 
-class Customer extends Model
+class Customer extends User
 {
     protected $guarded = ['id'];
 
     protected $hidden = [
         'password',
+        'password_pptp'
     ];
 
     protected $casts = [
