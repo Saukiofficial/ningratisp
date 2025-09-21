@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('virtual_accounts', function (Blueprint $table) {
             $table->id();
+            $table->uuid('order_id');
             $table->foreignId('payment_method_id')->constrained('payment_methods')->restrictOnDelete();
             $table->foreignId('invoice_id')->constrained('invoices')->restrictOnDelete();
             $table->string('va_number')->nullable();

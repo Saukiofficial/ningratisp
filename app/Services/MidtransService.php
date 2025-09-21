@@ -217,16 +217,16 @@ class MidtransService
         return $this->orderId;
     }
 
-    public function chargeVirtualAccount(Invoices $invoice, PaymentMethod $paymentMethod, $feeAmount = 0)
+    public function chargeVirtualAccount($orderId, Invoices $invoice, PaymentMethod $paymentMethod, $feeAmount = 0)
     {
         $this->pathUrl = '/v2/charge';
-        $this->setOrderId($invoice->invoice_number);
+        $this->setOrderId($orderId);
 
         $customer = $invoice->customerPackage->customer;
 
         $data = [
             "transaction_details" => [
-                "order_id" => $invoice->invoice_number . fake()->bothify(),
+                "order_id" => $orderId,
                 "gross_amount" => $invoice->balance_due + $feeAmount,
             ],
             "customer_details" => [

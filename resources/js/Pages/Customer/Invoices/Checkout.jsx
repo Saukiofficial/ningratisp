@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { toast } from 'react-toastify';
 
-export default function Checkout({ invoice, paymentMethods }) {
+export default function Checkout({ invoice, paymentMethods, flash }) {
     const [openMethod, setOpenMethod] = useState(null);
     const [isProcessing, setIsProcessing] = useState(false);
 
@@ -16,6 +17,8 @@ export default function Checkout({ invoice, paymentMethods }) {
             payment_method: method.id,
         }, {
             onFinish: () => setIsProcessing(false),
+            onSuccess: () => toast.success(flash.success),
+            onError: (errors) => toast.error(flash.error),
         });
     };
 

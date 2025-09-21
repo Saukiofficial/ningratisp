@@ -18,6 +18,11 @@ class VirtualAccountController extends Controller
             $virtualAccount->save();
 
             return to_route('invoices.show', $virtualAccount->invoice_id)->with('success', 'Pembayaran berhasil dibatalkan.');
+        } elseif (isset($response['status_code']) && $response['status_code'] == 412) {
+            $virtualAccount->status = VirtualAccount::STATUS_EXPIRE;
+            $virtualAccount->save();
+
+            return to_route('invoices.show', $virtualAccount->invoice_id)->with('success', 'Pembayaran telah kadaluarsa.');
         }
 
         return back()->with('error', 'Gagal membatalkan pembayaran.');
@@ -34,6 +39,11 @@ class VirtualAccountController extends Controller
             if ($virtualAccount->status !== 'pending') {
                 return to_route('invoices.show', $virtualAccount->invoice_id)->with('success', 'Status pembayaran berhasil diperbarui.');
             }
+        } elseif (isset($response['status_code']) && $response['status_code'] == 407) {
+            $virtualAccount->status = VirtualAccount::STATUS_EXPIRE;
+            $virtualAccount->save();
+
+            return to_route('invoices.show', $virtualAccount->invoice_id)->with('success', 'Pembayaran telah kadaluarsa.');
         }
 
         return back()->with('success', 'Status pembayaran berhasil diperbarui.');

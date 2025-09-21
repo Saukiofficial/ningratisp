@@ -21,6 +21,7 @@ class PendingPaymentController extends Controller
 
         return Inertia::render('Customer/PendingPayment', [
             'virtualAccount' => $virtualAccount,
+            'flash' => $this->getFlash()
         ]);
     }
 }

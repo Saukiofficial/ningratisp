@@ -51,9 +51,7 @@ class InvoiceController extends Controller
                 'paid' => Invoices::STATUS_PAID,
                 'unpaid' => Invoices::STATUS_UNPAID,
             ],
-            'flash' => [
-                'success' => session('success'),
-            ]
+            'flash' => $this->getFlash()
         ]);
     }
 
@@ -103,6 +101,8 @@ class InvoiceController extends Controller
 
         return Inertia::render('Customer/Invoices/Show', [
             'invoice' => $invoiceData,
+            'flash' => $this->getFlash()
+
         ]);
     }
 
@@ -127,6 +127,7 @@ class InvoiceController extends Controller
         return Inertia::render('Customer/Invoices/Checkout', [
             'invoice' => $invoice,
             'paymentMethods' => $paymentMethods,
+            'flash' => $this->getFlash()
         ]);
     }
 
@@ -148,7 +149,9 @@ class InvoiceController extends Controller
             $fee = (floatval($invoice->balance_due) * floatval($paymentMethod->fee->amount)) / 100;
         }
 
+        $orderId = uuid_create();
         $response = $midtransService->chargeVirtualAccount(
+            $orderId,
             $invoice,
             $paymentMethod,
             $fee
@@ -156,6 +159,7 @@ class InvoiceController extends Controller
 
         if (isset($response['transaction_id'])) {
             $va = VirtualAccount::create([
+                'order_id' => $orderId,
                 'payment_method_id' => $paymentMethod->id,
                 'invoice_id' => $invoice->id,
                 'transaction_id' => $response['transaction_id'],
@@ -189,7 +193,7 @@ class InvoiceController extends Controller
 
             return to_route('pending-payment.show', $va)->with('success', 'Virtual Account created successfully.');
         } else {
-            return to_route('invoices.checkout', $invoice)->with('error', 'Failed to create Virtual Account.');
+            return to_route('invoices.checkout', $invoice)->with('error', 'Failed to create Virtual Account (' . $response['status_code'] . ').');
         }
     }
 }

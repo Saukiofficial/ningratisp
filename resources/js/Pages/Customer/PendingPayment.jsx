@@ -3,7 +3,7 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { toast } from 'react-toastify';
 
-export default function PendingPayment({ virtualAccount }) {
+export default function PendingPayment({ virtualAccount, flash }) {
     const [timeLeft, setTimeLeft] = useState(null);
     const [isCancelling, setIsCancelling] = useState(false);
     const [isCheckingStatus, setIsCheckingStatus] = useState(false);
@@ -44,8 +44,8 @@ export default function PendingPayment({ virtualAccount }) {
         setIsCancelling(true);
         router.post(route('virtual-accounts.cancel', virtualAccount.id), {}, {
             onFinish: () => setIsCancelling(false),
-            onSuccess: () => toast.success('Pembayaran berhasil dibatalkan.'),
-            onError: () => toast.error('Gagal membatalkan pembayaran.'),
+            onSuccess: () => toast.success(flash.success),
+            onError: (errors) => toast.error(flash.error),
         });
     };
 
@@ -53,8 +53,8 @@ export default function PendingPayment({ virtualAccount }) {
         setIsCheckingStatus(true);
         router.post(route('virtual-accounts.check-status', virtualAccount.id), {}, {
             onFinish: () => setIsCheckingStatus(false),
-            onSuccess: () => toast.success('Status pembayaran berhasil diperbarui.'),
-            onError: () => toast.error('Gagal memeriksa status pembayaran.'),
+            onSuccess: () => toast.success(flash.success),
+            onError: (errors) => toast.error(flash.error),
         });
     };
 
@@ -64,6 +64,26 @@ export default function PendingPayment({ virtualAccount }) {
             toast.success('Nomor Virtual Account berhasil disalin!');
             setTimeout(() => setIsCopied(false), 2000);
         });
+    };
+
+    const downloadQris = (url, invoiceNumber) => {
+        fetch(url)
+            .then(response => response.blob())
+            .then(blob => {
+                const blobUrl = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = blobUrl;
+                link.download = `qris_invoice_${invoiceNumber}.png`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(blobUrl);
+                toast.success('QRIS berhasil diunduh!');
+            })
+            .catch(error => {
+                console.error('Error downloading QRIS:', error);
+                toast.error('Gagal mengunduh QRIS.');
+            });
     };
 
     return (
@@ -81,7 +101,13 @@ export default function PendingPayment({ virtualAccount }) {
                                 {virtualAccount.payment_type === 'gopay' && virtualAccount.qris_url && (
                                     <div>
                                         <h2 className="text-lg font-semibold">Scan QRIS untuk Membayar</h2>
-                                        <img src={virtualAccount.qris_url} alt="QRIS Code" className="mx-auto mt-4" />
+                                        <img src={route('qris.proxy', virtualAccount.transaction_id)} alt="QRIS Code" className="mx-auto mt-4" />
+                                        <button
+                                            onClick={() => downloadQris(route('qris.proxy', virtualAccount.transaction_id), virtualAccount.invoice.invoice_number)}
+                                            className="mt-4 inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 disabled:opacity-50"
+                                        >
+                                            Unduh QRIS
+                                        </button>
                                     </div>
                                 )}
 
@@ -133,3 +159,4 @@ export default function PendingPayment({ virtualAccount }) {
         </AuthenticatedLayout>
     );
 }
+
