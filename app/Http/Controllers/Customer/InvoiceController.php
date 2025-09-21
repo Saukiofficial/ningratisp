@@ -173,11 +173,15 @@ class InvoiceController extends Controller
             } elseif ($response['payment_type'] == 'echannel') {
                 $va->va_number = $response['biller_code'] . $response['bill_key'];
             } elseif (isset($response['actions'])) {
+                $urls = [];
                 foreach ($response['actions'] as $action) {
-                    if ($action['name'] === 'generate-qr-code') {
-                        $va->qris_url = $action['url'];
-                        break;
-                    }
+                    $urls[$action['name']] = $action['url'];
+                }
+
+                if (isset($urls['generate-qr-code-v2'])) {
+                    $va->qris_url = $urls['generate-qr-code-v2'];
+                } elseif (isset($urls['generate-qr-code'])) {
+                    $va->qris_url = $urls['generate-qr-code'];
                 }
             }
 
