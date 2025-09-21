@@ -4,6 +4,7 @@ use App\Http\Controllers\Customer\AuthController;
 use App\Http\Controllers\Customer\DashboardController;
 use App\Http\Controllers\Customer\InvoiceController;
 use App\Http\Controllers\Customer\PendingPaymentController;
+use App\Http\Controllers\Customer\VirtualAccountController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -29,6 +30,8 @@ Route::prefix('customer')->group(function () {
         Route::get('/invoices/{invoice}/checkout', [InvoiceController::class, 'checkout'])->name('invoices.checkout');
         Route::post('/invoices/{invoice}/pay', [InvoiceController::class, 'pay'])->name('invoices.pay');
         Route::get('/pending-payment/{virtualAccount}', [PendingPaymentController::class, 'show'])->name('pending-payment.show');
+        Route::post('/virtual-accounts/{virtualAccount}/cancel', [VirtualAccountController::class, 'cancel'])->name('virtual-accounts.cancel');
+        Route::post('/virtual-accounts/{virtualAccount}/check-status', [VirtualAccountController::class, 'checkStatus'])->name('virtual-accounts.check-status');
         Route::resource('/invoices', InvoiceController::class);
 
         Route::post('/logout', [AuthController::class, 'logOut'])->name('logout');

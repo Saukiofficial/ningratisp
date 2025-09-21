@@ -4,14 +4,18 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 
 export default function Checkout({ invoice, paymentMethods }) {
     const [openMethod, setOpenMethod] = useState(null);
+    const [isProcessing, setIsProcessing] = useState(false);
 
     const toggleMethod = (id) => {
         setOpenMethod(openMethod === id ? null : id);
     };
 
     const handlePayment = (method) => {
+        setIsProcessing(true);
         router.post(route('invoices.pay', { invoice: invoice.id }), {
             payment_method: method.id,
+        }, {
+            onFinish: () => setIsProcessing(false),
         });
     };
 
@@ -72,9 +76,10 @@ export default function Checkout({ invoice, paymentMethods }) {
                                                     </div>
                                                     <button
                                                         onClick={() => handlePayment(method)}
-                                                        className="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition duration-150 ease-in-out"
+                                                        disabled={isProcessing}
+                                                        className="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition duration-150 ease-in-out disabled:opacity-50"
                                                     >
-                                                        Bayar Sekarang
+                                                        {isProcessing ? 'Memproses...' : 'Bayar Sekarang'}
                                                     </button>
                                                 </div>
                                             )}

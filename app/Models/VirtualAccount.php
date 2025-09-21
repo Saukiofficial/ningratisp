@@ -9,6 +9,12 @@ class VirtualAccount extends Model
 {
     use HasFactory;
 
+    const STATUS_PENDING = 'pending';
+    const STATUS_SETTLEMENT = 'settlement';
+    const STATUS_EXPIRE = 'expire';
+    const STATUS_CANCEL = 'cancel';
+    const STATUS_DENY = 'deny';
+
     protected $guarded = ['id'];
 
     protected $casts = [

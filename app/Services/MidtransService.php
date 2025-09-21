@@ -26,6 +26,7 @@ class MidtransService
 
     // optional property
     protected $orderId;
+    protected bool $shouldLog = true;
 
     public function __construct()
     {
@@ -64,9 +65,13 @@ class MidtransService
             case 'patch':
                 $driver = $driver->patch($url, $data);
                 break;
+            case 'get':
+                $driver = $driver->get($url, $data);
+                break;
 
             default:
-                $driver = $driver->post($url, $data);
+                $dataToSend = empty($data) ? new \stdClass() : $data;
+                $driver = $driver->post($url, $dataToSend);
                 break;
         }
 
@@ -86,13 +91,20 @@ class MidtransService
             ];
         }
 
-        LogMidtrans::create([
-            'orderid' => $this->getOrderId(),
-            'request' => json_encode($data),
-            'response' => json_encode($response),
-        ]);
+        if ($this->shouldLog) {
+            LogMidtrans::create([
+                'orderid' => $this->getOrderId(),
+                'request' => json_encode($data),
+                'response' => json_encode($response),
+            ]);
+        }
 
         return $response;
+    }
+
+    public function setShouldLog($state = true): void
+    {
+        $this->shouldLog = $state;
     }
 
     public function paymentLink($uniqueId, $amount, $expired_at, $desc = null, $channels = ['other_qris'])
@@ -263,10 +275,19 @@ class MidtransService
 
     public function cancelVirtualAccount($orderId)
     {
-        $this->pathUrl = "{$orderId}/cancel";
+        $this->pathUrl = "/v2/{$orderId}/cancel";
         $this->setOrderId($orderId);
 
-        $response = $this->request([]);
+        $response = $this->request([], 'post');
+        return $response;
+    }
+
+    public function getStatusVirtualAccount($orderId)
+    {
+        $this->pathUrl = "/v2/{$orderId}/status";
+        $this->setShouldLog(false);
+
+        $response = $this->request([], 'get');
         return $response;
     }
 }

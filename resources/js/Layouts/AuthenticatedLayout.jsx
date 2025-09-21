@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, usePage, router } from '@inertiajs/react';
 import { route } from 'ziggy-js';
+import { useFlash } from '@/Hooks/useFlash';
 
 const HomeIcon = ({ isActive }) => (
     <svg className={`w-6 h-6 mb-1 ${isActive ? 'text-blue-600' : 'text-gray-500'}`} aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
@@ -18,6 +19,7 @@ const DocumentIcon = ({ isActive }) => (
 
 export default function AuthenticatedLayout({ children }) {
     const { url } = usePage();
+    useFlash();
 
     const handleLogout = (e) => {
         e.preventDefault();

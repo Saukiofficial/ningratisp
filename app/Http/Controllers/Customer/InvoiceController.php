@@ -169,7 +169,7 @@ class InvoiceController extends Controller
             } elseif (isset($response['permata_va_number'])) {
                 $va->va_number = $response['permata_va_number'];
             } elseif ($response['payment_type'] == 'echannel') {
-                $va->va_number = $response['biller_code'] . $response['biller_key'];
+                $va->va_number = $response['biller_code'] . $response['bill_key'];
             } elseif (isset($response['actions'])) {
                 foreach ($response['actions'] as $action) {
                     if ($action['name'] === 'generate-qr-code') {

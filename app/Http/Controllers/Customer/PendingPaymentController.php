@@ -11,6 +11,10 @@ class PendingPaymentController extends Controller
 {
     public function show(VirtualAccount $virtualAccount)
     {
+        if ($virtualAccount->status != VirtualAccount::STATUS_PENDING) {
+            return to_route('invoices.index');
+        }
+
         $virtualAccount->load(['invoice.items', 'paymentMethod']);
 
         return Inertia::render('Customer/PendingPayment', [

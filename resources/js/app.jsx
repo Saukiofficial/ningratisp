@@ -1,9 +1,11 @@
 import './bootstrap';
 import '../css/app.css';
+import 'react-toastify/dist/ReactToastify.css';
 
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { createInertiaApp } from '@inertiajs/react';
+import { ToastContainer } from 'react-toastify';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
@@ -30,7 +32,12 @@ createInertiaApp({
     },
     setup({ el, App, props }) {
         const root = createRoot(el);
-        root.render(<App {...props} />);
+        root.render(
+            <>
+                <App {...props} />
+                <ToastContainer />
+            </>
+        );
     },
     progress: {
         color: '#4B5563',

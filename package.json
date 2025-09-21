@@ -16,6 +16,7 @@
     "dependencies": {
         "@inertiajs/react": "^2.1.6",
         "react-dom": "^19.1.1",
+        "react-toastify": "^11.0.5",
         "ziggy-js": "^2.6.0"
     }
 }
