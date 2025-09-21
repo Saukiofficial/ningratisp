@@ -100,12 +100,6 @@ class Invoices extends BaseModel
         return $this->belongsTo(CustomerPackages::class, 'customer_package_id');
     }
 
-    public function scopePending($query)
-    {
-        return $query->where('midtrans_status', 'pending')
-            ->where('midtrans_expiry_time', '>', now());
-    }
-
     protected static function booted(): void
     {
         static::saving(function (self $invoice) {

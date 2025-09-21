@@ -2,12 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 
-export default function PendingPayment({ invoice }) {
+export default function PendingPayment({ virtualAccount }) {
     const [timeLeft, setTimeLeft] = useState(null);
 
     useEffect(() => {
         const calculateTimeLeft = () => {
-            const expiryTime = new Date(invoice.midtrans_expiry_time).getTime();
+            const expiryTime = new Date(virtualAccount.expired_at).getTime();
             const now = new Date().getTime();
             const distance = expiryTime - now;
 
@@ -26,7 +26,7 @@ export default function PendingPayment({ invoice }) {
         const timer = setInterval(calculateTimeLeft, 1000);
 
         return () => clearInterval(timer);
-    }, [invoice.midtrans_expiry_time]);
+    }, [virtualAccount.expired_at]);
 
     const formatRupiah = (number) => {
         return new Intl.NumberFormat('id-ID', {
@@ -38,28 +38,28 @@ export default function PendingPayment({ invoice }) {
 
     return (
         <AuthenticatedLayout>
-            <Head title={`Pembayaran Invoice #${invoice.invoice_number}`} />
+            <Head title={`Pembayaran Invoice #${virtualAccount.invoice.invoice_number}`} />
 
             <div className="py-12">
                 <div className="max-w-2xl mx-auto sm:px-6 lg:px-8">
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div className="p-6 bg-white border-b border-gray-200 text-center">
                             <h1 className="text-2xl font-bold text-gray-900">Selesaikan Pembayaran Anda</h1>
-                            <p className="text-gray-600 mt-2">Invoice #{invoice.invoice_number}</p>
+                            <p className="text-gray-600 mt-2">Invoice #{virtualAccount.invoice.invoice_number}</p>
 
                             <div className="my-8">
-                                {invoice.midtrans_payment_type === 'gopay' && invoice.midtrans_qris_url && (
+                                {virtualAccount.payment_type === 'gopay' && virtualAccount.qris_url && (
                                     <div>
                                         <h2 className="text-lg font-semibold">Scan QRIS untuk Membayar</h2>
-                                        <img src={invoice.midtrans_qris_url} alt="QRIS Code" className="mx-auto mt-4" />
+                                        <img src={virtualAccount.qris_url} alt="QRIS Code" className="mx-auto mt-4" />
                                     </div>
                                 )}
 
-                                {(invoice.midtrans_payment_type === 'bank_transfer' || invoice.midtrans_payment_type === 'echannel') && invoice.midtrans_va_number && (
+                                {(virtualAccount.payment_type === 'bank_transfer' || virtualAccount.payment_type === 'echannel') && virtualAccount.va_number && (
                                     <div>
-                                        <h2 className="text-lg font-semibold">Virtual Account {invoice.midtrans_payment_type === 'bank_transfer' ? 'BCA' : 'Mandiri'}</h2>
-                                        <p className="text-3xl font-bold text-blue-600 my-4">{invoice.midtrans_va_number}</p>
-                                        <p>Total Pembayaran: {formatRupiah(invoice.balance_due)}</p>
+                                        <h2 className="text-lg font-semibold">Virtual Account {virtualAccount.payment_method.name}</h2>
+                                        <p className="text-3xl font-bold text-blue-600 my-4">{virtualAccount.va_number}</p>
+                                        <p>Total Pembayaran: {formatRupiah(virtualAccount.total_amount)}</p>
                                     </div>
                                 )}
                             </div>

@@ -14,9 +14,11 @@ class DashboardController extends Controller
     {
         $user = auth()->user();
 
-        $pendingInvoice = $user->invoices()->pending()->first();
-        if ($pendingInvoice) {
-            return to_route('pending-payment.show', $pendingInvoice);
+        $pendingVA = $user->virtualAccounts()
+            ->where('virtual_accounts.status', 'pending')
+            ->where('expired_at', '>', now())->first();
+        if ($pendingVA) {
+            return to_route('pending-payment.show', $pendingVA);
         }
 
         $customers = [
@@ -34,7 +36,7 @@ class DashboardController extends Controller
             'pelanggan' => $customers,
             'statusLangganan' => $unpaidInvoices->isEmpty(),
             'unpaid_invoices' => $unpaidInvoices,
-            'pending_invoice' => $pendingInvoice,
+            'pending_va' => $pendingVA,
         ]);
     }
 }

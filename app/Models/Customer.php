@@ -70,6 +70,11 @@ class Customer extends User
         );
     }
 
+    public function virtualAccounts(): HasManyThrough
+    {
+        return $this->hasManyThrough(VirtualAccount::class, Invoices::class, 'customer_package_id', 'invoice_id');
+    }
+
     public function payments(): HasManyThrough
     {
         return $this->hasManyThrough(

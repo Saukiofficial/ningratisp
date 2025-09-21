@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
+use App\Models\Fee;
 use App\Models\Invoices;
 use App\Models\PaymentMethod;
+use App\Models\VirtualAccount;
 use App\Services\MidtransService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -17,9 +19,11 @@ class InvoiceController extends Controller
      */
     public function index(Request $request)
     {
-        $pendingInvoice = auth()->user()->invoices()->pending()->first();
-        if ($pendingInvoice) {
-            return to_route('pending-payment.show', $pendingInvoice);
+        $pendingVA = auth()->user()->virtualAccounts()
+            ->where('virtual_accounts.status', 'pending')
+            ->where('expired_at', '>', now())->first();
+        if ($pendingVA) {
+            return to_route('pending-payment.show', $pendingVA);
         }
 
         $query = auth()->user()->invoices();
@@ -91,11 +95,6 @@ class InvoiceController extends Controller
                     'amount' => $allocation->amount,
                 ];
             }),
-            'midtrans_transaction_id' => $invoice->midtrans_transaction_id,
-            'midtrans_payment_type' => $invoice->midtrans_payment_type,
-            'midtrans_va_number' => $invoice->midtrans_va_number,
-            'midtrans_expiry_time' => $invoice->midtrans_expiry_time,
-            'midtrans_status' => $invoice->midtrans_status,
         ];
 
         return Inertia::render('Customer/Invoices/Show', [
@@ -135,35 +134,52 @@ class InvoiceController extends Controller
 
         $paymentMethod = $request->input('payment_method');
 
+        // get payment method and fee
+        $paymentMethod = PaymentMethod::query()->findOrFail($paymentMethod);
+        $fee = $paymentMethod->fee ?
+            $paymentMethod->fee->unit == Fee::PERCENTAGE :
+            0;
+        $fee = $paymentMethod->fee?->amount ?? 0;
+        if ($fee != 0 && $paymentMethod->fee->unit == Fee::PERCENTAGE) {
+            $fee = (floatval($invoice->balance_due) * floatval($paymentMethod->fee->amount)) / 100;
+        }
+
         $response = $midtransService->chargeVirtualAccount(
             $invoice,
-            $paymentMethod
+            $paymentMethod,
+            $fee
         );
 
         if (isset($response['transaction_id'])) {
-            $invoice->midtrans_transaction_id = $response['transaction_id'];
-            $invoice->midtrans_payment_type = $response['payment_type'];
-            $invoice->midtrans_status = $response['transaction_status'];
-            $invoice->midtrans_expiry_time = $response['expiry_time'];
+            $va = VirtualAccount::create([
+                'payment_method_id' => $paymentMethod->id,
+                'invoice_id' => $invoice->id,
+                'transaction_id' => $response['transaction_id'],
+                'payment_type' => $response['payment_type'],
+                'status' => $response['transaction_status'],
+                'expired_at' => $response['expiry_time'],
+                'total_amount' => $invoice->balance_due + $fee,
+                'fee_amount' => $fee
+            ]);
 
             if (isset($response['va_numbers'])) {
-                $invoice->midtrans_va_number = $response['va_numbers'][0]['va_number'];
+                $va->va_number = $response['va_numbers'][0]['va_number'];
             } elseif (isset($response['permata_va_number'])) {
-                $invoice->midtrans_va_number = $response['permata_va_number'];
+                $va->va_number = $response['permata_va_number'];
             } elseif ($response['payment_type'] == 'echannel') {
-                $invoice->midtrans_va_number = $response['biller_code'] . $response['biller_key'];
+                $va->va_number = $response['biller_code'] . $response['biller_key'];
             } elseif (isset($response['actions'])) {
                 foreach ($response['actions'] as $action) {
                     if ($action['name'] === 'generate-qr-code') {
-                        $invoice->midtrans_qris_url = $action['url'];
+                        $va->qris_url = $action['url'];
                         break;
                     }
                 }
             }
 
-            $invoice->save();
+            $va->save();
 
-            return to_route('pending-payment.show', $invoice)->with('success', 'Virtual Account created successfully.');
+            return to_route('pending-payment.show', $va)->with('success', 'Virtual Account created successfully.');
         } else {
             return to_route('invoices.checkout', $invoice)->with('error', 'Failed to create Virtual Account.');
         }

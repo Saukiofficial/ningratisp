@@ -28,7 +28,7 @@ Route::prefix('customer')->group(function () {
         Route::get('/dashboard', DashboardController::class)->name('dashboard');
         Route::get('/invoices/{invoice}/checkout', [InvoiceController::class, 'checkout'])->name('invoices.checkout');
         Route::post('/invoices/{invoice}/pay', [InvoiceController::class, 'pay'])->name('invoices.pay');
-        Route::get('/pending-payment/{invoice}', [PendingPaymentController::class, 'show'])->name('pending-payment.show');
+        Route::get('/pending-payment/{virtualAccount}', [PendingPaymentController::class, 'show'])->name('pending-payment.show');
         Route::resource('/invoices', InvoiceController::class);
 
         Route::post('/logout', [AuthController::class, 'logOut'])->name('logout');

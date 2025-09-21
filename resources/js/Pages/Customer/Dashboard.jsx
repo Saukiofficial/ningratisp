@@ -27,7 +27,7 @@ const BillIcon = () => (
     </svg>
 );
 
-export default function Dashboard({ pelanggan, statusLangganan, unpaid_invoices, pending_invoice }) {
+export default function Dashboard({ pelanggan, statusLangganan, unpaid_invoices, pending_va }) {
     const formatRupiah = (number) => {
         return new Intl.NumberFormat('id-ID', {
             style: 'currency',
@@ -68,11 +68,11 @@ export default function Dashboard({ pelanggan, statusLangganan, unpaid_invoices,
             <main className="bg-gray-50 flex-grow">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-4 relative z-10">
 
-                    {pending_invoice && (
+                    {pending_va && (
                         <div className="mb-8 bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4" role="alert">
                             <p className="font-bold">Anda memiliki pembayaran yang belum selesai</p>
-                            <p>Selesaikan pembayaran untuk invoice #{pending_invoice.invoice_number} sebelum waktu habis.</p>
-                            <Link href={route('pending-payment.show', pending_invoice.id)} className="font-bold text-blue-800 hover:text-blue-900">
+                            <p>Selesaikan pembayaran untuk invoice #{pending_va.invoice.invoice_number} sebelum waktu habis.</p>
+                            <Link href={route('pending-payment.show', pending_va.id)} className="font-bold text-blue-800 hover:text-blue-900">
                                 Lihat Detail Pembayaran
                             </Link>
                         </div>

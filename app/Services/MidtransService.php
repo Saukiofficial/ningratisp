@@ -205,26 +205,17 @@ class MidtransService
         return $this->orderId;
     }
 
-    public function chargeVirtualAccount(Invoices $invoice, $paymentMethod)
+    public function chargeVirtualAccount(Invoices $invoice, PaymentMethod $paymentMethod, $feeAmount = 0)
     {
         $this->pathUrl = '/v2/charge';
         $this->setOrderId($invoice->invoice_number);
 
         $customer = $invoice->customerPackage->customer;
-        $paymentMethod = PaymentMethod::query()->findOrFail($paymentMethod);
-        $fee = $paymentMethod->fee ?
-            $paymentMethod->fee->unit == Fee::PERCENTAGE :
-            0;
-        $fee = $paymentMethod->fee?->amount ?? 0;
-        if ($fee != 0 && $paymentMethod->fee->unit == Fee::PERCENTAGE) {
-            $fee = (floatval($invoice->balance_due) * floatval($paymentMethod->fee->amount)) / 100;
-        }
-
 
         $data = [
             "transaction_details" => [
                 "order_id" => $invoice->invoice_number . fake()->bothify(),
-                "gross_amount" => $invoice->balance_due + $fee,
+                "gross_amount" => $invoice->balance_due + $feeAmount,
             ],
             "customer_details" => [
                 "first_name" => $customer->full_name ?? $customer->user_name,
@@ -243,7 +234,7 @@ class MidtransService
 
         // add fee into item details
         $data['item_details'][] = [
-            'price' => $fee,
+            'price' => $feeAmount,
             'quantity' => 1,
             'name' => 'Fee ' . $paymentMethod->name
         ];
