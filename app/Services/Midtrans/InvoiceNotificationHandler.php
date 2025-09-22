@@ -18,15 +18,22 @@ class InvoiceNotificationHandler implements NotificationHandlerInterface
             return false;
         }
 
-        $payment = app(\App\Services\PaymentService::class)->recordIncomingPaymentWithAllocations(
-            $va->invoice->customerPackage->customer,
-            (float) ($data['amount'] ?? 0),
+        $invoice = $va->invoice;
+        $customer = $invoice->customerPackage->customer;
+
+        $payment = app(\App\Services\PaymentService::class)->recordCallbackIncomingPaymentWithAllocations(
+            $customer,
+            (float) ($data['gross_amount'] ?? 0),
+            ($va->total_amount - $va->fee_amount ?? 0),
+            $data['transaction_id'] ?? null,
             $va->paymentMethod,
-            $data['reference_id'] ?? null,
-            $va->invoice,
-            $data['file_path'],
-            $data['file_name']
+            $invoice
         );
+        if (!empty($payment)) {
+            $va->status = $data['transaction_status'];
+            $va->save();
+        }
+        app(\App\Services\ReceivableService::class)->syncForInvoice($invoice);
 
         return !empty($payment);
     }

@@ -121,6 +121,29 @@ class PaymentService
         });
     }
 
+    public function recordCallbackIncomingPaymentWithAllocations(
+        Customer $customer,
+        float $grossAmount,
+        float $unitPrice,
+        string $trxId,
+        ?PaymentMethod $method = null,
+        ?Invoices $invoice = null
+    ): Payment {
+        $payment = $this->recordIncomingPaymentWithAllocations(
+            $customer,
+            $grossAmount,
+            $method,
+            $trxId,
+            $invoice
+        );
+        if (!empty($payment)) {
+            $payment->update(['price' => $unitPrice]);
+            $payment->save();
+        }
+
+        return $payment;
+    }
+
     public function payInvoice(Payment $payment, Invoices $invoice): void
     {
         DB::transaction(function () use ($payment, $invoice) {

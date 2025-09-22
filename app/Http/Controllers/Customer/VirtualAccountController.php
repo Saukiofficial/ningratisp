@@ -58,15 +58,16 @@ class VirtualAccountController extends Controller
         $invoice = $va->invoice;
         $customer = $invoice->customerPackage->customer;
 
-        $payment = app(\App\Services\PaymentService::class)->recordIncomingPaymentWithAllocations(
+        $payment = app(\App\Services\PaymentService::class)->recordCallbackIncomingPaymentWithAllocations(
             $customer,
-            (float) ($va->total_amount - $va->fee_amount ?? 0),
-            $va->paymentMethod,
+            (float) ($data['gross_amount'] ?? 0),
+            ($va->total_amount - $va->fee_amount ?? 0),
             $data['transaction_id'] ?? null,
+            $va->paymentMethod,
             $invoice
         );
 
-        app(\App\Services\ReceivableService::class)->syncForCustomer($customer);
+        app(\App\Services\ReceivableService::class)->syncForInvoice($invoice);
 
         return $payment;
     }
