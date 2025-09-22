@@ -27,6 +27,12 @@ const BillIcon = () => (
     </svg>
 );
 
+const PackageIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+    </svg>
+);
+
 export default function Dashboard({ pelanggan, statusLangganan, unpaid_invoices, pending_va }) {
     const formatRupiah = (number) => {
         return new Intl.NumberFormat('id-ID', {
@@ -80,14 +86,14 @@ export default function Dashboard({ pelanggan, statusLangganan, unpaid_invoices,
 
                     <div className="mb-8">
                         <div className={`bg-white rounded-2xl shadow-xl border-l-4 p-6 ${statusLangganan
-                                ? 'border-emerald-500 bg-gradient-to-r from-emerald-50/50 to-white'
-                                : 'border-red-500 bg-gradient-to-r from-red-50/50 to-white'
+                            ? 'border-emerald-500 bg-gradient-to-r from-emerald-50/50 to-white'
+                            : 'border-red-500 bg-gradient-to-r from-red-50/50 to-white'
                             }`}>
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center space-x-4">
                                     <div className={`p-4 rounded-xl ${statusLangganan
-                                            ? 'bg-emerald-100 text-emerald-600'
-                                            : 'bg-red-100 text-red-600'
+                                        ? 'bg-emerald-100 text-emerald-600'
+                                        : 'bg-red-100 text-red-600'
                                         }`}>
                                         <ShieldCheckIcon />
                                     </div>
@@ -144,37 +150,62 @@ export default function Dashboard({ pelanggan, statusLangganan, unpaid_invoices,
 
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-
-
-                        <div className="lg:col-span-2 bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-                            <div className="bg-gradient-to-r from-gray-50 to-blue-50 px-6 py-4 border-b border-gray-100">
-                                <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-                                    <UserCircleIcon />
-                                    <span className="ml-3">Informasi Akun</span>
-                                </h3>
-                            </div>
+                        <div className="lg:col-span-3 bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
                             <div className="p-6">
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                    <div className="space-y-3">
-                                        <div>
-                                            <label className="text-sm font-medium text-gray-500">Nama Pelanggan</label>
-                                            <p className="text-lg font-semibold text-gray-900 mt-1">{pelanggan.nama}</p>
-                                        </div>
-                                        <div>
-                                            <label className="text-sm font-medium text-gray-500">ID PELANGGAN</label>
-                                            <div className="flex items-center mt-1">
-                                                <code className="bg-gray-100 text-gray-800 px-3 py-2 rounded-lg font-mono text-lg font-bold border">
-                                                    {pelanggan.kode_unik}
-                                                </code>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center justify-center">
-                                        <div className="bg-gradient-to-br from-blue-100 to-indigo-100 p-8 rounded-2xl">
-                                            <div className="text-blue-600">
+                                <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+                                    {/* User Info */}
+                                    <div className="flex items-center space-x-4 mb-6 md:mb-0 flex-1">
+                                        <div className="flex-shrink-0">
+                                            <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-4 rounded-2xl text-white shadow-lg">
                                                 <UserCircleIcon />
                                             </div>
                                         </div>
+                                        <div>
+                                            <p className="text-sm font-medium text-gray-500">Informasi Akun (Username)</p>
+                                            <p className="text-xl font-bold text-gray-900">{pelanggan.username}</p>
+                                            <div className="mt-2">
+                                                <label className="text-xs font-medium text-gray-500">ID PELANGGAN</label>
+                                                <p className="bg-gray-100 text-gray-800 px- py-1 rounded-lg font-mono text-sm font-bold border inline-block">
+                                                    {pelanggan.kode_unik}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Divider */}
+                                    <div className="hidden md:block w-px h-24 bg-gray-200 mx-8"></div>
+                                    <div className="block md:hidden h-px w-full bg-gray-200 my-6"></div>
+
+                                    {/* Package Info */}
+                                    <div className="flex items-center space-x-4 flex-1">
+                                        {pelanggan.package ? (
+                                            <>
+                                                <div className="flex-shrink-0">
+                                                    <div className="bg-gradient-to-br from-emerald-500 to-green-600 p-4 rounded-2xl text-white shadow-lg">
+                                                        <PackageIcon />
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-medium text-gray-500">Paket Aktif</p>
+                                                    <p className="text-xl font-bold text-gray-900">{pelanggan.package.name}</p>
+                                                    <p className="text-sm font-medium text-gray-700 mt-1">
+                                                        {formatRupiah(pelanggan.package.price)} / bulan
+                                                    </p>
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <div className="flex-shrink-0">
+                                                    <div className="bg-gradient-to-br from-gray-400 to-gray-500 p-4 rounded-2xl text-white shadow-lg">
+                                                        <PackageIcon />
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-medium text-gray-500">Paket Aktif</p>
+                                                    <p className="text-xl font-bold text-gray-900">Tidak ada paket aktif</p>
+                                                </div>
+                                            </>
+                                        )}
                                     </div>
                                 </div>
                             </div>

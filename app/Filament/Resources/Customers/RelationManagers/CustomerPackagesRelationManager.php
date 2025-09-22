@@ -101,7 +101,10 @@ class CustomerPackagesRelationManager extends RelationManager
                         Hidden::make('package_name'),
                         DatePicker::make('start_date')
                             ->required()
-                            ->default(now()),
+                            ->default(now())
+                            ->minDate(now()->format('Y-m-d'))
+                            ->disabled()
+                            ->dehydrated(),
                         Toggle::make('is_active')
                             ->label('Active')
                             ->default(true)
@@ -121,6 +124,8 @@ class CustomerPackagesRelationManager extends RelationManager
                                     'end_date' => now()
                                 ]);
                         }
+
+                        // TODO: dispatch job handle incoming new package more than now
 
                         Notification::make()
                             ->title('Success add package')
