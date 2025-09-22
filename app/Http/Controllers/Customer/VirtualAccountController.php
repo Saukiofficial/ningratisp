@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
+use App\Models\Payment;
 use App\Models\VirtualAccount;
 use App\Services\MidtransService;
 use Illuminate\Http\Request;
@@ -36,8 +37,11 @@ class VirtualAccountController extends Controller
             $virtualAccount->status = $response['transaction_status'];
             $virtualAccount->save();
 
-            if ($virtualAccount->status !== 'pending') {
+            if (!in_array($virtualAccount->status, [VirtualAccount::STATUS_PENDING, VirtualAccount::STATUS_SETTLEMENT])) {
                 return to_route('invoices.show', $virtualAccount->invoice_id)->with('success', 'Status pembayaran berhasil diperbarui.');
+            } elseif ($virtualAccount->status == VirtualAccount::STATUS_SETTLEMENT) {
+                $this->handlePaymentFromCheckStatus($virtualAccount, $response);
+                return to_route('invoices.show', $virtualAccount->invoice_id)->with('success', 'Pembayaran berhasil dilakukan.');
             }
         } elseif (isset($response['status_code']) && $response['status_code'] == 407) {
             $virtualAccount->status = VirtualAccount::STATUS_EXPIRE;
@@ -47,5 +51,23 @@ class VirtualAccountController extends Controller
         }
 
         return back()->with('success', 'Status pembayaran berhasil diperbarui.');
+    }
+
+    private function handlePaymentFromCheckStatus(VirtualAccount $va, $data): ?Payment
+    {
+        $invoice = $va->invoice;
+        $customer = $invoice->customerPackage->customer;
+
+        $payment = app(\App\Services\PaymentService::class)->recordIncomingPaymentWithAllocations(
+            $customer,
+            (float) ($va->total_amount - $va->fee_amount ?? 0),
+            $va->paymentMethod,
+            $data['transaction_id'] ?? null,
+            $invoice
+        );
+
+        app(\App\Services\ReceivableService::class)->syncForCustomer($customer);
+
+        return $payment;
     }
 }

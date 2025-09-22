@@ -158,21 +158,10 @@ class MidtransService
             return false;
         }
 
-        $orderIdArr = explode('-', $data['order_id']);
+        $orderIdArr = explode('#', $data['order_id']);
         $orderId = $orderIdArr[1] ?? null;
         $this->setOrderId($orderId);
         $orderIdType = $orderIdArr[0];
-        $voucherService = new VoucherService();
-        $voucher = $voucherService->buildData()->where([
-            'order_id' => $orderId,
-            'status' => '0'
-        ])->first();
-        if (empty($voucher)) {
-            return false;
-        }
-
-        $voucher->status = true;
-        $success = $voucher->save();
 
         LogMidtrans::create([
             'orderid' => $this->getOrderId(),
@@ -180,31 +169,18 @@ class MidtransService
             'act' => LogMidtrans::CALLBACK
         ]);
 
-        if ($success && strtoupper($orderIdType) == self::VOUCHER) {
-            // GenerateMikrotikVoucherJob::dispatch($voucher->code, $voucher->duration, $voucher->duration_type);
-            $service = new MikrotikAPI();
-            $createdVoucher = $service->createVoucher($voucher->code, $voucher->duration, $voucher->duration_type);
-            if (!empty($createdVoucher['name']) && $createdVoucher['name'] == $voucher->code) {
-                $voucher->status = true;
-                SendWhatsappMessageJob::dispatch($voucher);
-            }
+        $handler = null;
+        if (strtoupper($orderIdType) == self::VOUCHER) {
+            $handler = new \App\Services\Midtrans\VoucherNotificationHandler();
+        } elseif (strtoupper($orderIdType) == self::INVOICE) {
+            $handler = new \App\Services\Midtrans\InvoiceNotificationHandler();
         }
 
-        if ($success) {
-            // proses payment
-            $payService = new PaymentService();
-            $payRecord = [
-                'total_amount' => $data['gross_amount'],
-                'reference_id' => $data['transaction_id'],
-                'payment_datetime' => $data['transaction_time'],
-                'voucher_id' => $voucher->id,
-                'price' => $voucher->price,
-                'fee_id' => $voucher->fee_id
-            ];
-            $payService->save($payRecord);
+        if ($handler) {
+            return $handler->handle($orderId, $data);
         }
 
-        return $success;
+        return false;
     }
 
     public function setOrderId($orderId): void
@@ -217,6 +193,24 @@ class MidtransService
         return $this->orderId;
     }
 
+    public function generateQRIS($uniqueId, $amount, $preOrderId = 'VOC')
+    {
+        $this->pathUrl = '/v2/charge';
+        $orderId = "$preOrderId#{$uniqueId}";
+        $this->setOrderId($uniqueId);
+
+        $data = [
+            "transaction_details" => [
+                "order_id" => $orderId,
+                "gross_amount" => $amount,
+            ],
+            "payment_type" => 'gopay'
+        ];
+
+        $response = $this->request($data);
+        return $response;
+    }
+
     public function chargeVirtualAccount($orderId, Invoices $invoice, PaymentMethod $paymentMethod, $feeAmount = 0)
     {
         $this->pathUrl = '/v2/charge';
@@ -226,7 +220,7 @@ class MidtransService
 
         $data = [
             "transaction_details" => [
-                "order_id" => $orderId,
+                "order_id" => self::INVOICE . "#{$orderId}",
                 "gross_amount" => $invoice->balance_due + $feeAmount,
             ],
             "customer_details" => [

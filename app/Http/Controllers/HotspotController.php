@@ -73,7 +73,9 @@ class HotspotController extends Controller
 
         $imgUrl = $statusUrl = '';
         foreach ($response['actions'] as $action) {
-            if ($action['name'] == 'generate-qr-code') {
+            if ($action['name'] == 'generate-qr-code-v2') {
+                $imgUrl = $action['url'];
+            } elseif ($action['name'] == 'generate-qr-code') {
                 $imgUrl = $action['url'];
             }
             if ($action['name'] == 'get-status') {
@@ -127,7 +129,7 @@ class HotspotController extends Controller
     public function midtransCallback(MidtransCallbackRequest $request, MidtransService $service)
     {
         $service->handleNotification($request->all());
-        return response();
+        return response()->json();
     }
 
     public function getVoucherDetails($sealcode, VoucherService $service)
