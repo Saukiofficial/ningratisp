@@ -15,11 +15,18 @@ use Inertia\Response;
 
 class AuthController extends Controller
 {
+
+    const GUARD = 'customers';
+
     /**
      * Display the login page.
      */
-    public function index(): Response
+    public function index(): RedirectResponse|Response
     {
+        if (Auth::guard(self::GUARD)->check()) {
+            return to_route('dashboard');
+        }
+
         return Inertia::render('Customer/Login');
     }
 
@@ -41,7 +48,7 @@ class AuthController extends Controller
             ]);
         }
 
-        Auth::guard('customers')->login($customer, $request->boolean('remember'));
+        Auth::guard(self::GUARD)->login($customer, $request->boolean('remember'));
 
         $request->session()->regenerate();
 
@@ -53,7 +60,7 @@ class AuthController extends Controller
      */
     public function logOut(Request $request): RedirectResponse
     {
-        Auth::guard('customers')->logout();
+        Auth::guard(self::GUARD)->logout();
 
         $request->session()->invalidate();
 
