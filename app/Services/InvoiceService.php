@@ -29,7 +29,6 @@ class InvoiceService
             $exists = Invoices::query()
                 ->where('customer_package_id', $cp->id)
                 ->whereDate('period_start', $periodStart->toDateString())
-                ->where('invoice_type', Invoices::TYPE_MONTHLY)
                 ->where('status', '!=', Invoices::STATUS_CANCELLED)
                 ->exists();
 
@@ -37,7 +36,12 @@ class InvoiceService
                 continue;
             }
 
-            $invoice = $this->generateInvoiceForCustomerPackage($cp, $periodStart, $periodEnd);
+            $invoice = $this->generateInvoiceForCustomerPackage(
+                $cp,
+                $periodStart,
+                $periodEnd,
+                $date
+            );
             if ($invoice && $invoice->exists) {
                 $created++;
             }
@@ -46,15 +50,17 @@ class InvoiceService
         return $created;
     }
 
-    public function generateInvoiceForCustomerPackage(CustomerPackages $cp, Carbon $periodStart, Carbon $periodEnd): Invoices
+    public function generateInvoiceForCustomerPackage(CustomerPackages $cp, Carbon $periodStart, Carbon $periodEnd, Carbon $date = null): Invoices
     {
         // Create invoice shell
+        $invoice_date = $date?->toDateString() ?? Carbon::now()->toDateString();
+        $due_date = $date?->copy()->addDays(30)->toDateString() ?? Carbon::now()->copy()->addDays(30)->toDateString();
         $invoice = new Invoices();
         $invoice->fill([
             'invoice_number' => $this->makeInvoiceNumber($cp, $periodStart),
             'customer_package_id' => $cp->id,
-            'invoice_date' => Carbon::now()->toDateString(),
-            'due_date' => Carbon::now()->copy()->addDays(30)->toDateString(),
+            'invoice_date' => $invoice_date,
+            'due_date' => $due_date,
             'period_start' => $periodStart->toDateString(),
             'period_end' => $periodEnd->toDateString(),
             'status' => Invoices::STATUS_UNPAID,
