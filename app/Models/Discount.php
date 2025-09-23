@@ -10,6 +10,17 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Discount extends Model
 {
+
+    // applicable state
+    const FOR_INVOICE = 'invoice';
+    const FOR_PACKAGE = 'package';
+    const FOR_CUSTOMER = 'customer';
+
+    // category type
+    const TYPE_FREE_FOREVER = 'free_forever';
+    const TYPE_LOAN = 'loan';
+    const TYPE_NORMAL = 'normal';
+
     use HasFactory;
 
     protected $guarded = ['id'];
@@ -68,5 +79,23 @@ class Discount extends Model
         if ($this->start_date && $this->start_date->toDateString() > $today) return false;
         if ($this->end_date && $this->end_date->toDateString() < $today) return false;
         return true;
+    }
+
+    public static function getApplicableStatus(): array
+    {
+        return [
+            self::FOR_CUSTOMER => 'Customer',
+            self::FOR_INVOICE => 'Invoice',
+            self::FOR_PACKAGE => 'Package'
+        ];
+    }
+
+    public static function getCategoryStatus(): array
+    {
+        return [
+            self::TYPE_FREE_FOREVER => 'Free Forever',
+            self::TYPE_LOAN => 'Loan / Adjustment',
+            self::TYPE_NORMAL => 'Normal (Default)'
+        ];
     }
 }
