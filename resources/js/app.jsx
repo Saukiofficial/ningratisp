@@ -9,7 +9,6 @@ import { ToastContainer } from 'react-toastify';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
-
 const pages = import.meta.glob('./Pages/**/*.{jsx,tsx}');
 
 createInertiaApp({

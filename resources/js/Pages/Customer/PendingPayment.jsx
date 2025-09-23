@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { toast } from 'react-toastify';
+import { useEcho } from '@laravel/echo-react';
 
 // Reusable Confirmation Modal
 const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, children, isProcessing, confirmText = 'Confirm', cancelText = 'Cancel', confirmColor = 'blue' }) => {
@@ -71,12 +72,61 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, children, isProc
     );
 };
 
+const PaymentSuccessModal = ({ isOpen, onClose, countdown }) => {
+    if (!isOpen) return null;
+
+    const progress = (countdown / 10) * 100;
+
+    return (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md text-center p-8 transform transition-all">
+                <div className="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-green-100 mb-5">
+                    <svg className="h-12 w-12 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                </div>
+                <h3 className="text-3xl font-bold text-gray-900">Pembayaran Berhasil!</h3>
+                <p className="text-gray-600 mt-3 mb-6">
+                    Terima kasih! Pembayaran Anda telah kami terima dan invoice telah lunas.
+                </p>
+                <button
+                    onClick={onClose}
+                    className="w-full px-6 py-3 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition duration-150"
+                >
+                    Lihat Invoice
+                </button>
+                <div className="mt-4">
+                    <p className="text-sm text-gray-500">
+                        Anda akan dialihkan dalam {countdown} detik...
+                    </p>
+                    <div className="w-full bg-gray-200 rounded-full h-1.5 mt-2">
+                        <div
+                            className="bg-green-500 h-1.5 rounded-full transition-all duration-1000 linear"
+                            style={{ width: `${progress}%` }}
+                        ></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 export default function PendingPayment({ virtualAccount, flash }) {
     const [timeLeft, setTimeLeft] = useState(null);
     const [isCancelling, setIsCancelling] = useState(false);
     const [isCheckingStatus, setIsCheckingStatus] = useState(false);
     const [isCopied, setIsCopied] = useState(false);
     const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+    const [isPaymentSuccess, setIsPaymentSuccess] = useState(false);
+    const [paidInvoiceId, setPaidInvoiceId] = useState(null);
+    const [countdown, setCountdown] = useState(10);
+
+    useEcho('InvoicePaid', 'CustomerInvoicePaidEvent', (e) => {
+        if (e.va && e.va.id === virtualAccount.id) {
+            setPaidInvoiceId(e.va.invoice_id);
+            setIsPaymentSuccess(true);
+        }
+    })
 
     useEffect(() => {
         const calculateTimeLeft = () => {
@@ -100,6 +150,35 @@ export default function PendingPayment({ virtualAccount, flash }) {
 
         return () => clearInterval(timer);
     }, [virtualAccount.expired_at]);
+
+    const redirectToInvoice = () => {
+        if (paidInvoiceId) {
+            router.visit(route('invoices.show', paidInvoiceId));
+        }
+    };
+
+    // Timer for redirect on success
+    useEffect(() => {
+        let timer;
+        let countdownInterval;
+        if (isPaymentSuccess) {
+            timer = setTimeout(redirectToInvoice, 10000);
+            setCountdown(10);
+            countdownInterval = setInterval(() => {
+                setCountdown(prev => {
+                    if (prev <= 1) {
+                        clearInterval(countdownInterval);
+                        return 0;
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
+        }
+        return () => {
+            clearTimeout(timer);
+            clearInterval(countdownInterval);
+        };
+    }, [isPaymentSuccess, paidInvoiceId]);
 
     const formatRupiah = (number) => {
         return new Intl.NumberFormat('id-ID', {
@@ -164,6 +243,12 @@ export default function PendingPayment({ virtualAccount, flash }) {
     return (
         <AuthenticatedLayout>
             <Head title={`Pembayaran Invoice #${virtualAccount.invoice.invoice_number}`} />
+
+            <PaymentSuccessModal
+                isOpen={isPaymentSuccess}
+                onClose={redirectToInvoice}
+                countdown={countdown}
+            />
 
             <ConfirmationModal
                 isOpen={isCancelModalOpen}

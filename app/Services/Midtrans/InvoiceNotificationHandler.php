@@ -2,6 +2,7 @@
 
 namespace App\Services\Midtrans;
 
+use App\Events\CustomerInvoicePaidEvent;
 use App\Models\Invoices;
 use App\Models\VirtualAccount;
 use App\Services\InvoiceService;
@@ -32,6 +33,8 @@ class InvoiceNotificationHandler implements NotificationHandlerInterface
         if (!empty($payment)) {
             $va->status = $data['transaction_status'];
             $va->save();
+
+            event(new CustomerInvoicePaidEvent($va));
         }
         app(\App\Services\ReceivableService::class)->syncForInvoice($invoice);
 
