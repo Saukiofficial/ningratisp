@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Head, Link, usePage, router } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { route } from 'ziggy-js';
 
 export default function Tagihan({ tagihans, filters, invoice_statuses }) {
     const { flash } = usePage().props;
@@ -157,7 +158,7 @@ export default function Tagihan({ tagihans, filters, invoice_statuses }) {
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                {tagihan.status === invoice_statuses.paid ? (
+                                                {/* {tagihan.status === invoice_statuses.paid ? (
                                                     <a href={`/tagihan/${tagihan.id}/struk`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-900 font-semibold transition duration-150">
                                                         Cetak Struk
                                                     </a>
@@ -165,7 +166,11 @@ export default function Tagihan({ tagihans, filters, invoice_statuses }) {
                                                     <Link href={`/pembayaran/${tagihan.id}`} className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 transition duration-150">
                                                         Bayar Sekarang
                                                     </Link>
-                                                )}
+                                                )} */}
+
+                                                <Link href={route('invoices.show', tagihan.id)} className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 transition duration-150" >
+                                                    Lihat
+                                                </Link>
                                             </td>
                                         </tr>
                                     ))}

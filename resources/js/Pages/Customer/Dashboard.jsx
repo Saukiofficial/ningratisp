@@ -1,6 +1,7 @@
 import React from 'react';
 import { Head, Link } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { route } from 'ziggy-js';
 
 
 const UserCircleIcon = () => (
@@ -129,7 +130,7 @@ export default function Dashboard({ pelanggan, statusLangganan, unpaid_invoices,
                                         <p className="text-sm font-medium text-gray-500">Jatuh Tempo: {formatDate(unpaid_invoices[0].due_date)}</p>
                                         <p className="text-xl font-bold text-gray-800 mt-1">{formatRupiah(unpaid_invoices[0].balance_due)}</p>
                                     </div>
-                                    <Link href={`/pembayaran/${unpaid_invoices[0].id}`} className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700 transition duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                    <Link href={route('invoices.show', unpaid_invoices[0].id)} className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700 transition duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                                         Bayar Sekarang
                                     </Link>
                                 </div>
