@@ -3,11 +3,80 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { toast } from 'react-toastify';
 
+// Reusable Confirmation Modal
+const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, children, isProcessing, confirmText = 'Confirm', cancelText = 'Cancel', confirmColor = 'blue' }) => {
+    if (!isOpen) return null;
+
+    const colorClasses = {
+        blue: 'bg-blue-600 hover:bg-blue-700',
+        red: 'bg-red-600 hover:bg-red-700',
+    };
+
+    const iconContainerClasses = {
+        blue: 'bg-blue-100 text-blue-600',
+        red: 'bg-red-100 text-red-600',
+    };
+
+    const Icon = () => {
+        if (confirmColor === 'red') {
+            return (
+                <svg className="h-8 w-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126z" />
+                </svg>
+            );
+        }
+        return (
+            <svg className="h-8 w-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 21z" />
+            </svg>
+        );
+    };
+
+    return (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50 p-4" onClick={onClose}>
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+                <div className="p-6 text-center">
+                    <div className={`mx-auto flex items-center justify-center h-16 w-16 rounded-full ${iconContainerClasses[confirmColor]} mb-4`}>
+                        <Icon />
+                    </div>
+                    <h3 className="text-2xl font-bold text-gray-900">{title}</h3>
+                </div>
+                <div className="px-6 pb-6 text-center text-gray-600">
+                    {children}
+                </div>
+                <div className="bg-gray-50 px-6 py-4 rounded-b-2xl flex justify-end space-x-3">
+                    <button
+                        onClick={onClose}
+                        disabled={isProcessing}
+                        className="px-6 py-2.5 bg-white border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {cancelText}
+                    </button>
+                    <button
+                        onClick={onConfirm}
+                        disabled={isProcessing}
+                        className={`px-6 py-2.5 text-white font-bold rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[150px] ${colorClasses[confirmColor]}`}>
+                        {isProcessing ? (
+                            <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        ) : (
+                            confirmText
+                        )}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 export default function PendingPayment({ virtualAccount, flash }) {
     const [timeLeft, setTimeLeft] = useState(null);
     const [isCancelling, setIsCancelling] = useState(false);
     const [isCheckingStatus, setIsCheckingStatus] = useState(false);
     const [isCopied, setIsCopied] = useState(false);
+    const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
 
     useEffect(() => {
         const calculateTimeLeft = () => {
@@ -43,9 +112,15 @@ export default function PendingPayment({ virtualAccount, flash }) {
     const handleCancel = () => {
         setIsCancelling(true);
         router.post(route('virtual-accounts.cancel', virtualAccount.id), {}, {
-            onFinish: () => setIsCancelling(false),
-            onSuccess: () => toast.success(flash.success),
-            onError: (errors) => toast.error(flash.error),
+            onSuccess: () => {
+                setIsCancelling(false);
+                setIsCancelModalOpen(false);
+            },
+            onError: (errors) => {
+                setIsCancelling(false);
+                const firstError = Object.values(errors)[0];
+                toast.error(firstError || 'Gagal membatalkan pembayaran.');
+            },
         });
     };
 
@@ -89,6 +164,21 @@ export default function PendingPayment({ virtualAccount, flash }) {
     return (
         <AuthenticatedLayout>
             <Head title={`Pembayaran Invoice #${virtualAccount.invoice.invoice_number}`} />
+
+            <ConfirmationModal
+                isOpen={isCancelModalOpen}
+                onClose={() => setIsCancelModalOpen(false)}
+                onConfirm={handleCancel}
+                title="Konfirmasi Pembatalan"
+                isProcessing={isCancelling}
+                confirmText="Ya, Batalkan"
+                cancelText="Tidak"
+                confirmColor="red"
+            >
+                <p>
+                    Apakah Anda yakin ingin membatalkan pembayaran ini? Tindakan ini tidak dapat diurungkan.
+                </p>
+            </ConfirmationModal>
 
             <div className="py-12">
                 <div className="max-w-2xl mx-auto sm:px-6 lg:px-8">
@@ -139,11 +229,10 @@ export default function PendingPayment({ virtualAccount, flash }) {
                                     {isCheckingStatus ? 'Memeriksa...' : 'Cek Status Pembayaran'}
                                 </button>
                                 <button
-                                    onClick={handleCancel}
-                                    disabled={isCancelling}
-                                    className="inline-flex justify-center items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                                    onClick={() => setIsCancelModalOpen(true)}
+                                    className="inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700"
                                 >
-                                    {isCancelling ? 'Membatalkan...' : 'Batalkan Pembayaran'}
+                                    Batalkan Pembayaran
                                 </button>
                             </div>
 
@@ -159,4 +248,3 @@ export default function PendingPayment({ virtualAccount, flash }) {
         </AuthenticatedLayout>
     );
 }
-
