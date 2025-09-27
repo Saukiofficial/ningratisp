@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Discounts;
 use App\Filament\Resources\Discounts\Pages\CreateDiscount;
 use App\Filament\Resources\Discounts\Pages\EditDiscount;
 use App\Filament\Resources\Discounts\Pages\ListDiscounts;
+use App\Filament\Resources\Discounts\Pages\ViewDiscount;
 use App\Filament\Resources\Discounts\Schemas\DiscountForm;
 use App\Filament\Resources\Discounts\Tables\DiscountsTable;
 use App\Models\Discount;
@@ -44,6 +45,7 @@ class DiscountResource extends Resource
         return [
             'index' => ListDiscounts::route('/'),
             'create' => CreateDiscount::route('/create'),
+            'view' => ViewDiscount::route('/{record}'),
             'edit' => EditDiscount::route('/{record}/edit'),
         ];
     }

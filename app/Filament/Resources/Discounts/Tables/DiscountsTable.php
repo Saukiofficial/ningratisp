@@ -2,9 +2,12 @@
 
 namespace App\Filament\Resources\Discounts\Tables;
 
+use App\Models\Discount;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -18,18 +21,22 @@ class DiscountsTable
         return $table
             ->columns([
                 TextColumn::make('name')
-                    ->searchable()
-                    ->sortable(),
+                    ->searchable(),
                 TextColumn::make('code')
-                    ->searchable()
-                    ->sortable(),
+                    ->copyable()
+                    ->searchable(),
                 TextColumn::make('type')
                     ->badge()
-                    ->sortable(),
+                    ->formatStateUsing(
+                        fn(string $state) => Discount::getAmountType()[$state]
+                    ),
                 TextColumn::make('value')
                     ->label('Value')
-                    ->numeric(2)
-                    ->sortable(),
+                    ->formatStateUsing(function ($state, $record) {
+                        return ($record->type === Discount::FIXED_AMOUNT) ?
+                            'IDR ' . number_format($state, 0, ',', '.') :
+                            intval($state) . '%';
+                    }),
                 TextColumn::make('max_discount_amount')
                     ->label('Max Amount')
                     ->money('IDR')
@@ -38,11 +45,12 @@ class DiscountsTable
                 TextColumn::make('applicable_to')
                     ->label('Applicable To')
                     ->badge()
-                    ->sortable(),
+                    ->formatStateUsing(
+                        fn(string $state) => Discount::getApplicableStatus()[$state]
+                    ),
                 TextColumn::make('customer_category')
                     ->label('Customer Category')
                     ->badge()
-                    ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('package.name')
                     ->label('Package')
@@ -57,12 +65,11 @@ class DiscountsTable
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 IconColumn::make('is_active')
-                    ->boolean()
-                    ->sortable(),
-                IconColumn::make('auto_apply')
-                    ->boolean()
-                    ->label('Auto Apply')
-                    ->sortable(),
+                    ->label('Active?')
+                    ->boolean(),
+                // IconColumn::make('auto_apply')
+                //     ->boolean()
+                //     ->label('Auto Apply'),
                 TextColumn::make('used_count')
                     ->label('Used')
                     ->numeric()
@@ -90,6 +97,7 @@ class DiscountsTable
                     ]),
             ])
             ->recordActions([
+                ViewAction::make(),
                 EditAction::make(),
             ])
             ->toolbarActions([

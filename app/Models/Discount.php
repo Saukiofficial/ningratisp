@@ -11,15 +11,19 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Discount extends Model
 {
 
-    // applicable state
+    // applicable on
     const FOR_INVOICE = 'invoice';
     const FOR_PACKAGE = 'package';
     const FOR_CUSTOMER = 'customer';
 
-    // category type
+    // category for user
     const TYPE_FREE_FOREVER = 'free_forever';
     const TYPE_LOAN = 'loan';
     const TYPE_NORMAL = 'normal';
+
+    // type
+    const PERCENTAGE = 'percentage';
+    const FIXED_AMOUNT = 'fixed_amount';
 
     use HasFactory;
 
@@ -46,7 +50,7 @@ class Discount extends Model
 
     public function customers(): BelongsToMany
     {
-        return $this->belongsToMany(Customer::class, 'customer_discounts')
+        return $this->belongsToMany(Customer::class, CustomerDiscount::class)
             ->withTimestamps();
     }
 
@@ -97,5 +101,22 @@ class Discount extends Model
             self::TYPE_LOAN => 'Loan / Adjustment',
             self::TYPE_NORMAL => 'Normal (Default)'
         ];
+    }
+
+    public static function getAmountType(): array
+    {
+        return [
+            self::PERCENTAGE => 'Percentage (%)',
+            self::FIXED_AMOUNT => 'Fixed Price (Rp)'
+        ];
+    }
+
+    public static function generateRandomCode($length = 10): string
+    {
+        return strtoupper(fake()->bothify(
+            collect(
+                str_split(str_repeat('#?', $length))
+            )->random($length)->join('')
+        ));
     }
 }
