@@ -13,6 +13,9 @@ use Illuminate\Support\Facades\DB;
 
 class PaymentService
 {
+    public function __construct(protected DiscountService $discountService)
+    {
+    }
     public function recordIncomingVoucherPayment(Voucher $voucher, array $callbackData) {}
 
     public function recordIncomingPayment(
@@ -199,9 +202,24 @@ class PaymentService
                 $invoice->recalculateTotals();
                 $invoice->save();
 
+                $this->deactivateDiscountIfUsed($invoice);
+
                 $remaining = max(round($remaining - $toAllocate, 2), 0.0);
             }
         });
+    }
+
+    private function deactivateDiscountIfUsed(Invoices $invoice): void
+    {
+        if ($invoice->payment_status === Payment::STATUS_PAID && $invoice->discount_id) {
+            $customer = $invoice->customerPackage->customer;
+            $customer->discounts()
+                ->wherePivot('discount_id', $invoice->discount_id)
+                ->wherePivot('is_active', true)
+                ->first()
+                ?->pivot
+                ->update(['is_active' => false]);
+        }
     }
 
     public function autoAllocate(Payment $payment, Customer $customer, array $invoiceIds = []): void
@@ -252,6 +270,8 @@ class PaymentService
 
                 $invoice->recalculateTotals();
                 $invoice->save();
+
+                $this->deactivateDiscountIfUsed($invoice);
 
                 $remaining = max(round($remaining - $toAllocate, 2), 0.0);
             }

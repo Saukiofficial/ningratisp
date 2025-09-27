@@ -127,7 +127,7 @@ class Invoices extends BaseModel
                 ->sum('line_total');
 
             $this->subtotal = round($charges, 2);
-            $this->discount_amount = round(abs($discountLines), 2);
+            // $this->discount_amount = round(abs($discountLines), 2);
             $this->tax_amount = round($taxLines, 2);
             $this->total_amount = round($this->subtotal - $this->discount_amount + $this->tax_amount, 2);
         }

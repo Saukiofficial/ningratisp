@@ -37,6 +37,9 @@ class InvoicesTable
                 TextColumn::make('total_amount')
                     ->money('IDR')
                     ->sortable(),
+                TextColumn::make('discount_amount')
+                    ->money('IDR')
+                    ->sortable(),
                 TextColumn::make('paid_amount')
                     ->money('IDR')
                     ->sortable(),
@@ -66,13 +69,11 @@ class InvoicesTable
             ->recordActions([
                 ActionGroup::make([
 
-                    EditAction::make(),
                     Action::make('record_payment')
                         ->label('Record Payment')
                         ->icon('heroicon-o-banknotes')
                         ->schema([
                             Section::make([
-
                                 TextInput::make('amount')
                                     ->label('Amount')
                                     ->numeric()
@@ -209,7 +210,7 @@ class InvoicesTable
                 ]),
             ])
             ->checkIfRecordIsSelectableUsing(
-                fn(Invoices $record) => $record->payment_status == Invoices::STATUS_UNPAID
+                fn(Invoices $record) => $record->status == Invoices::STATUS_UNPAID
             )
             ->defaultSort('updated_at', 'desc');
     }

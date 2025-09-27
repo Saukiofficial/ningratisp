@@ -107,7 +107,7 @@ class DiscountService
 
         if ($discount->type === Discount::PERCENTAGE) {
             $discountAmount = ($subtotal * $discount->value) / 100;
-            if ($discount->max_discount_amount && $discountAmount > $discount->max_discount_amount) {
+            if (!empty(floatval($discount->max_discount_amount)) && $discountAmount > $discount->max_discount_amount) {
                 $discountAmount = $discount->max_discount_amount;
             }
         } elseif ($discount->type === Discount::FIXED_AMOUNT) {
