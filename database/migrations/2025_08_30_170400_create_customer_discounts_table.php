@@ -17,7 +17,6 @@ return new class extends Migration
             $table->text('notes')->nullable();
             $table->timestamps();
 
-            $table->unique(['customer_id', 'discount_id']);
             $table->index(['is_active']);
         });
     }

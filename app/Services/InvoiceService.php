@@ -9,6 +9,10 @@ use Illuminate\Support\Facades\DB;
 
 class InvoiceService
 {
+    public function __construct(
+        protected DiscountService $discountService
+    ) {}
+
     public function generateMonthlyInvoicesForDate(Carbon $date): int
     {
         $periodStart = $date->copy()->startOfMonth();
@@ -50,7 +54,7 @@ class InvoiceService
         return $created;
     }
 
-    public function generateInvoiceForCustomerPackage(CustomerPackages $cp, Carbon $periodStart, Carbon $periodEnd, Carbon $date = null): Invoices
+    public function generateInvoiceForCustomerPackage(CustomerPackages $cp, Carbon $periodStart, Carbon $periodEnd, ?Carbon $date = null): Invoices
     {
         // Create invoice shell
         $invoice_date = $date?->toDateString() ?? Carbon::now()->toDateString();
@@ -78,6 +82,9 @@ class InvoiceService
         // Recalculate totals and persist
         $invoice->recalculateTotals();
         $invoice->save();
+
+        // Apply discounts if applicable
+        $this->discountService->calculateInvoiceDiscount($invoice);
 
         return $invoice;
     }
