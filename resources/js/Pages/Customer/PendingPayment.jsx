@@ -207,8 +207,6 @@ export default function PendingPayment({ virtualAccount, flash }) {
         setIsCheckingStatus(true);
         router.post(route('virtual-accounts.check-status', virtualAccount.id), {}, {
             onFinish: () => setIsCheckingStatus(false),
-            onSuccess: () => toast.success(flash.success),
-            onError: (errors) => toast.error(flash.error),
         });
     };
 
