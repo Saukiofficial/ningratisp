@@ -151,7 +151,14 @@ export default function Tagihan({ tagihans, filters, invoice_statuses }) {
                                     {tagihans.data.map((tagihan) => (
                                         <tr key={tagihan.id} className="hover:bg-gray-100 transition duration-150 cursor-pointer" onClick={() => router.visit(route('invoices.show', tagihan.id))}>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{formatDate(tagihan.invoice_date)}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{formatRupiah(tagihan.balance_due)}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                                                <span>{formatRupiah(tagihan.balance_due)}</span>
+                                                {tagihan.discount && (
+                                                    <span className="ml-2 px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full" title={`Discount: ${tagihan.discount.name}`}>
+                                                        Voucher ({tagihan.discount.name})
+                                                    </span>
+                                                )}
+                                            </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm">
                                                 <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${tagihan.status === invoice_statuses.paid ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                                                     {tagihan.status === invoice_statuses.paid ? 'Lunas' : 'Belum Dibayar'}
@@ -186,7 +193,14 @@ export default function Tagihan({ tagihans, filters, invoice_statuses }) {
                                 <div className="flex justify-between items-start">
                                     <div>
                                         <p className="font-bold text-gray-800">{formatDate(tagihan.invoice_date)}</p>
-                                        <p className="text-sm text-gray-600">{formatRupiah(tagihan.balance_due)}</p>
+                                        <p className="text-sm text-gray-600">
+                                            <span>{formatRupiah(tagihan.balance_due)}</span>
+                                            {tagihan.discount && (
+                                                <span className="ml-2 px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full" title={`Discount: ${tagihan.discount.name}`}>
+                                                    Voucher (tagihan.discount.name)
+                                                </span>
+                                            )}
+                                        </p>
                                     </div>
                                     <span className={`px-2 py-1 text-xs font-semibold rounded-full ${tagihan.status === invoice_statuses.paid ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                                         {tagihan.status === invoice_statuses.paid ? 'Lunas' : 'Belum Dibayar'}

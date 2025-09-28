@@ -47,7 +47,7 @@ class InvoiceController extends Controller
             $query->where('invoice_date', '<=', $request->end_date);
         }
 
-        $invoices = $query->latest('invoice_date')->paginate(10)->withQueryString();
+        $invoices = $query->with('discount')->latest('invoice_date')->paginate(10)->withQueryString();
 
         return Inertia::render('Customer/Invoices/Index', [
             'tagihans' => $invoices,
@@ -129,14 +129,40 @@ class InvoiceController extends Controller
                 ];
             });
 
-        // $claimedDiscounts = auth()->user()->discounts()->wherePivot('is_active', true)->get();
-        $claimedDiscounts = auth()->user()->customerDiscounts()
-            ->with('discount')->where('is_active', true)->get();
+        // 1. Count how many times each discount_id is used on OTHER unpaid invoices
+        $usedCounts = auth()->user()->invoices()
+            ->where('invoices.status', Invoices::STATUS_UNPAID)
+            ->where('invoices.id', '!=', $invoice->id)
+            ->whereNotNull('discount_id')
+            ->get()
+            ->groupBy('discount_id')
+            ->map->count();
+
+        // 2. Get all active claims and group them by discount_id
+        $groupedClaims = auth()->user()->customerDiscounts()
+            ->with('discount')
+            ->where('is_active', true)
+            ->get()
+            ->groupBy('discount_id');
+
+        $availableDiscounts = collect();
+
+        // 3. Determine which claims are actually available
+        foreach ($groupedClaims as $discountId => $claims) {
+            $used = $usedCounts->get($discountId, 0);
+            $availableCount = $claims->count() - $used;
+
+            if ($availableCount > 0) {
+                // Take the number of available claims from the list and add them to our final collection
+                $availableClaims = $claims->take($availableCount);
+                $availableDiscounts = $availableDiscounts->merge($availableClaims);
+            }
+        }
 
         return Inertia::render('Customer/Invoices/Checkout', [
             'invoice' => $invoice->load('discount'),
             'paymentMethods' => $paymentMethods,
-            'claimedDiscounts' => $claimedDiscounts,
+            'claimedDiscounts' => $availableDiscounts->values(), // Pass the correctly filtered collection
             'flash' => $this->getFlash()
         ]);
     }
