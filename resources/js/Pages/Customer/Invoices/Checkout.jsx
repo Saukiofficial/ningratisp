@@ -72,6 +72,22 @@ const OrderSummary = ({ invoice, claimedDiscounts = [], selectedMethod, handleOp
 
     const formatRupiah = (number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number);
 
+    const processedDiscounts = claimedDiscounts.map(claimed => {
+        let discountAmount = 0;
+        const subtotal = parseFloat(invoice.subtotal);
+
+        if (claimed.discount.type === 'percentage') {
+            discountAmount = (subtotal * parseFloat(claimed.discount.value)) / 100;
+            if (claimed.discount.max_discount_amount && discountAmount > parseFloat(claimed.discount.max_discount_amount)) {
+                discountAmount = parseFloat(claimed.discount.max_discount_amount);
+            }
+        } else if (claimed.discount.type === 'fixed_amount') {
+            discountAmount = parseFloat(claimed.discount.value);
+        }
+
+        return { ...claimed, isApplicable: discountAmount < subtotal };
+    });
+
     return (
         <div className="bg-gray-50 rounded-2xl p-6 lg:p-8 space-y-6 sticky top-24">
             <h2 className="text-2xl font-bold text-gray-900">Ringkasan Pesanan</h2>
@@ -121,14 +137,25 @@ const OrderSummary = ({ invoice, claimedDiscounts = [], selectedMethod, handleOp
                             {errors.code && <p className="text-red-500 text-sm mt-1">{errors.code}</p>}
                         </form>
 
-                        {claimedDiscounts.length > 0 && (
+                        {processedDiscounts.length > 0 && (
                             <div className="mt-6">
                                 <h3 className="font-semibold text-gray-800 mb-2">Voucher Tersedia</h3>
                                 <div className="space-y-2 max-h-40 overflow-y-auto pr-2">
-                                    {claimedDiscounts.map(d => (
-                                        <div key={d.id} onClick={() => handleApplyDiscount(d.discount.id)} className="p-3 bg-white border border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition">
-                                            <p className="font-bold text-blue-600">{d.discount.name}</p>
-                                            <p className="text-sm text-gray-600">{d.discount.description}</p>
+                                    {processedDiscounts.map(pd => (
+                                        <div
+                                            key={pd.id}
+                                            onClick={() => pd.isApplicable && handleApplyDiscount(pd.discount.id)}
+                                            className={`p-3 border border-dashed rounded-lg transition ${pd.isApplicable
+                                                ? 'bg-white border-gray-300 cursor-pointer hover:border-blue-500 hover:bg-blue-50'
+                                                : 'bg-gray-100 border-gray-200 cursor-not-allowed opacity-70'
+                                                }`}
+                                            title={!pd.isApplicable ? 'Discount value is too high for this invoice' : ''}
+                                        >
+                                            <p className={`font-bold ${pd.isApplicable ? 'text-blue-600' : 'text-gray-500'}`}>{pd.discount.name}</p>
+                                            <p className="text-sm text-gray-600">{pd.discount.description}</p>
+                                            {!pd.isApplicable && (
+                                                <p className="text-xs text-red-500 font-semibold mt-1">Not applicable for this invoice</p>
+                                            )}
                                         </div>
                                     ))}
                                 </div>

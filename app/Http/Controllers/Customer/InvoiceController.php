@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Customer;
 use App\Http\Controllers\Controller;
 use App\Models\Fee;
 use App\Models\Customer\Invoices;
+use App\Models\Discount;
 use App\Models\PaymentMethod;
 use App\Models\VirtualAccount;
 use App\Services\DiscountService;
@@ -218,6 +219,24 @@ class InvoiceController extends Controller
 
         if (!$discount) {
             return back()->with('error', 'Invalid or expired discount.');
+        }
+
+        // Prevent discount from being greater than or equal to the invoice amount
+        $subtotal = $invoice->subtotal;
+        $discountAmount = 0;
+
+        if ($discount->type === Discount::PERCENTAGE) {
+            $discountAmount = ($subtotal * $discount->value) / 100;
+            if ($discount->max_discount_amount && $discountAmount > $discount->max_discount_amount) {
+                $discountAmount = $discount->max_discount_amount;
+            }
+        } elseif ($discount->type === Discount::FIXED_AMOUNT) {
+            $discountAmount = $discount->value;
+        }
+
+        if ($discountAmount >= $subtotal) {
+            return back()->with('error', 'The discount not allowed for this invoice');
+            // return back()->with('error', 'The discount value cannot be greater than or equal to the invoice amount.');
         }
 
         $invoice = $this->discountService->customerApplyDiscountToInvoice($invoice, $discount);
