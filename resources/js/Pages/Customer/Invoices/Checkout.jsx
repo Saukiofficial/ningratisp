@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Head, Link, router } from '@inertiajs/react';
+import React, { useState, useEffect } from 'react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { toast } from 'react-toastify';
 import { route } from 'ziggy-js';
@@ -54,59 +54,152 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, children, isProc
     );
 };
 
+const OrderSummary = ({ invoice, claimedDiscounts = [], selectedMethod, handleOpenConfirmation, isProcessing, summary }) => {
+    const { data, setData, post, processing, errors, clearErrors } = useForm({ code: '' });
 
-export default function Checkout({ invoice, paymentMethods, flash }) {
-    const [openMethod, setOpenMethod] = useState(null);
+    const handleClaimVoucher = (e) => {
+        e.preventDefault();
+        post(route('discounts.claim'), { onSuccess: () => setData('code', '') });
+    };
+
+    const handleApplyDiscount = (discountId) => {
+        router.post(route('invoices.apply-discount', { invoice: invoice.id }), { discount_id: discountId });
+    };
+
+    const handleRemoveDiscount = () => {
+        router.post(route('invoices.remove-discount', { invoice: invoice.id }));
+    };
+
+    const formatRupiah = (number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number);
+
+    return (
+        <div className="bg-gray-50 rounded-2xl p-6 lg:p-8 space-y-6 sticky top-24">
+            <h2 className="text-2xl font-bold text-gray-900">Ringkasan Pesanan</h2>
+            <div className="space-y-3 text-gray-700">
+                <div className="flex justify-between"><p>Subtotal</p><p className="font-medium">{formatRupiah(invoice.subtotal)}</p></div>
+                {invoice.discount_amount > 0 && (
+                    <div className="flex justify-between text-green-600">
+                        <p>Discount ({invoice.discount.name})</p>
+                        <p className="font-medium">- {formatRupiah(invoice.discount_amount)}</p>
+                    </div>
+                )}
+                {summary.fee > 0 && (
+                    <div className="flex justify-between">
+                        <p>Biaya Admin</p>
+                        <p className="font-medium">{formatRupiah(summary.fee)}</p>
+                    </div>
+                )}
+            </div>
+            <div className="border-t border-gray-200 pt-4 flex justify-between items-center">
+                <p className="text-lg font-bold text-gray-900">Total</p>
+                <p className="text-2xl font-bold text-blue-600">{formatRupiah(summary.grandTotal)}</p>
+            </div>
+
+            <div className="border-t border-gray-200 pt-6">
+                {invoice.discount ? (
+                    <div className="text-center">
+                        <p className="text-green-600 font-semibold">Discount applied: {invoice.discount.name}</p>
+                        <button onClick={handleRemoveDiscount} className="text-sm text-red-500 hover:underline mt-1">Remove</button>
+                    </div>
+                ) : (
+                    <>
+                        <form onSubmit={handleClaimVoucher} className="space-y-2">
+                            <label htmlFor="voucher-code" className="font-semibold text-gray-800">Punya Voucher?</label>
+                            <div className="flex space-x-2">
+                                <input
+                                    id="voucher-code"
+                                    type="text"
+                                    value={data.code}
+                                    onChange={e => setData('code', e.target.value.toUpperCase().replaceAll(" ", ""))}
+                                    onFocus={() => clearErrors('code')}
+                                    placeholder="Masukkan kode voucher"
+                                    className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                    maxLength={10}
+                                />
+                                <button type="submit" disabled={processing} className="px-4 py-2 bg-gray-800 text-white font-semibold rounded-lg hover:bg-gray-900 transition disabled:opacity-50">Claim</button>
+                            </div>
+                            {errors.code && <p className="text-red-500 text-sm mt-1">{errors.code}</p>}
+                        </form>
+
+                        {claimedDiscounts.length > 0 && (
+                            <div className="mt-6">
+                                <h3 className="font-semibold text-gray-800 mb-2">Voucher Tersedia</h3>
+                                <div className="space-y-2 max-h-40 overflow-y-auto pr-2">
+                                    {claimedDiscounts.map(d => (
+                                        <div key={d.id} onClick={() => handleApplyDiscount(d.discount.id)} className="p-3 bg-white border border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition">
+                                            <p className="font-bold text-blue-600">{d.discount.name}</p>
+                                            <p className="text-sm text-gray-600">{d.discount.description}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </>
+                )}
+            </div>
+            <div className="border-t border-gray-200 pt-6">
+                <button
+                    onClick={() => handleOpenConfirmation()}
+                    disabled={!selectedMethod || isProcessing}
+                    className="w-full bg-blue-600 text-white font-bold py-3.5 px-4 rounded-lg hover:bg-blue-700 transition shadow-lg hover:shadow-blue-500/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
+                >
+                    Bayar Sekarang
+                </button>
+                {!selectedMethod && <p className="text-xs text-center text-gray-500 mt-2">Pilih metode pembayaran untuk melanjutkan.</p>}
+            </div>
+        </div>
+    );
+};
+
+const CheckCircleIcon = (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+);
+
+export default function Checkout({ invoice, paymentMethods = [], claimedDiscounts = [], flash }) {
+    const [selectedMethod, setSelectedMethod] = useState(paymentMethods[0] || null);
     const [isProcessing, setIsProcessing] = useState(false);
     const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
     const [confirmationData, setConfirmationData] = useState(null);
+    const [summary, setSummary] = useState({ fee: 0, grandTotal: invoice.balance_due });
 
-    const toggleMethod = (id) => {
-        setOpenMethod(openMethod === id ? null : id);
+    const calculateFee = (fee) => {
+        if (!fee) return 0;
+        return fee.unit === 'p' ? (parseFloat(invoice.balance_due) * parseFloat(fee.amount)) / 100 : parseFloat(fee.amount);
     };
 
-    const handleOpenConfirmation = (method) => {
-        const fee = calculateFee(method.fee);
-        const total = parseFloat(invoice.balance_due) + fee;
-        setConfirmationData({ method, fee, total });
+    useEffect(() => {
+        if (selectedMethod) {
+            const fee = calculateFee(selectedMethod.fee);
+            const grandTotal = parseFloat(invoice.balance_due) + fee;
+            setSummary({ fee, grandTotal });
+        } else {
+            setSummary({ fee: 0, grandTotal: parseFloat(invoice.balance_due) });
+        }
+    }, [selectedMethod, invoice.balance_due]);
+
+    const handleOpenConfirmation = () => {
+        if (!selectedMethod) return;
+        setConfirmationData({
+            method: selectedMethod,
+            fee: summary.fee,
+            total: summary.grandTotal
+        });
         setIsConfirmationModalOpen(true);
     };
 
     const handlePayment = () => {
         if (!confirmationData) return;
-
         setIsProcessing(true);
-        router.post(route('invoices.pay', { invoice: invoice.id }), {
-            payment_method: confirmationData.method.id,
-        }, {
-            onSuccess: () => {
-                setIsProcessing(false);
-                setIsConfirmationModalOpen(false);
-                setConfirmationData(null);
-            },
-            onError: (errors) => {
-                setIsProcessing(false);
-                const firstError = Object.values(errors)[0];
-                toast.error(firstError || 'Terjadi kesalahan saat memproses pembayaran.');
-            },
+        router.post(route('invoices.pay', { invoice: invoice.id }), { payment_method: confirmationData.method.id }, {
+            onSuccess: () => setIsConfirmationModalOpen(false),
+            onError: (errors) => toast.error(Object.values(errors)[0] || 'Payment processing failed.'),
+            onFinish: () => setIsProcessing(false),
         });
     };
 
-    const formatRupiah = (number) => {
-        return new Intl.NumberFormat('id-ID', {
-            style: 'currency',
-            currency: 'IDR',
-            minimumFractionDigits: 0
-        }).format(number);
-    };
-
-    const calculateFee = (fee) => {
-        if (!fee) return 0;
-        if (fee.unit === 'p') {
-            return (parseFloat(invoice.balance_due) * parseFloat(fee.amount)) / 100;
-        }
-        return parseFloat(fee.amount);
-    };
+    const formatRupiah = (number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number);
 
     return (
         <AuthenticatedLayout>
@@ -125,18 +218,9 @@ export default function Checkout({ invoice, paymentMethods, flash }) {
                             Harap konfirmasi detail pembayaran Anda sebelum melanjutkan.
                         </p>
                         <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-left space-y-3">
-                            <div className="flex justify-between items-center">
-                                <span className="text-gray-500 text-sm">Metode</span>
-                                <span className="font-bold text-gray-900">{confirmationData.method.name}</span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                                <span className="text-gray-500 text-sm">Tagihan</span>
-                                <span className="font-semibold text-gray-900">{formatRupiah(invoice.balance_due)}</span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                                <span className="text-gray-500 text-sm">Biaya Admin</span>
-                                <span className="font-semibold text-gray-900">{formatRupiah(confirmationData.fee)}</span>
-                            </div>
+                            <div className="flex justify-between"><span className="text-gray-500 text-sm">Metode</span><span className="font-bold">{confirmationData.method.name}</span></div>
+                            <div className="flex justify-between"><span className="text-gray-500 text-sm">Tagihan</span><span className="font-semibold">{formatRupiah(invoice.balance_due)}</span></div>
+                            <div className="flex justify-between"><span className="text-gray-500 text-sm">Biaya Admin</span><span className="font-semibold">{formatRupiah(confirmationData.fee)}</span></div>
                         </div>
                         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-left">
                             <div className="flex justify-between items-center">
@@ -149,63 +233,48 @@ export default function Checkout({ invoice, paymentMethods, flash }) {
             </ConfirmationModal>
 
             <div className="py-12">
-                <div className="max-w-2xl mx-auto sm:px-6 lg:px-8">
-                    <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                        <div className="p-6 bg-white border-b border-gray-200">
-                            <div className="text-center mb-8">
-                                <h1 className="text-2xl font-bold text-gray-900">Checkout</h1>
-                                <p className="text-gray-600">Invoice #{invoice.invoice_number}</p>
-                                <p className="text-4xl font-bold text-blue-600 mt-2">{formatRupiah(invoice.balance_due)}</p>
-                            </div>
-
+                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12 items-start">
+                        <div className="lg:col-span-2 bg-white overflow-hidden shadow-sm sm:rounded-2xl p-6">
+                            <h1 className="text-2xl font-bold text-gray-900 mb-6">Pilih Metode Pembayaran</h1>
                             <div className="space-y-4">
                                 {paymentMethods.map((method) => {
+                                    const isSelected = selectedMethod && selectedMethod.id === method.id;
                                     const fee = calculateFee(method.fee);
-                                    const total = parseFloat(invoice.balance_due) + fee;
                                     return (
-                                        <div key={method.id} className="border border-gray-200 rounded-lg">
-                                            <button
-                                                onClick={() => toggleMethod(method.id)}
-                                                className="w-full flex items-center justify-between px-6 py-4 bg-gray-50 hover:bg-gray-100 transition duration-150 ease-in-out rounded-t-lg"
-                                            >
+                                        <div
+                                            key={method.id}
+                                            onClick={() => setSelectedMethod(method)}
+                                            className={`border rounded-lg p-4 cursor-pointer transition-all duration-200 ${isSelected ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-500' : 'border-gray-200 hover:border-gray-300'}`}>
+                                            <div className="flex justify-between items-center">
                                                 <span className="font-semibold text-lg text-gray-800">{method.name}</span>
-                                                <svg className={`h-6 w-6 text-gray-400 transform transition-transform ${openMethod === method.id ? 'rotate-90' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                                                </svg>
-                                            </button>
-                                            {openMethod === method.id && (
-                                                <div className="p-6 bg-white rounded-b-lg">
-                                                    <div className="flex justify-between items-center mb-4">
-                                                        <p className="text-gray-600">Biaya Admin:</p>
-                                                        <p className="font-semibold text-gray-800">{formatRupiah(fee)}</p>
-                                                    </div>
-                                                    <div className="flex justify-between items-center font-bold text-lg mb-6">
-                                                        <p>Total Pembayaran:</p>
-                                                        <p>{formatRupiah(total)}</p>
-                                                    </div>
-                                                    <button
-                                                        onClick={() => handleOpenConfirmation(method)}
-                                                        className="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition duration-150 ease-in-out"
-                                                    >
-                                                        Bayar Sekarang
-                                                    </button>
-                                                </div>
-                                            )}
+                                                {isSelected ? <CheckCircleIcon className="h-6 w-6 text-blue-600" /> : <div className="h-6 w-6 rounded-full border-2 border-gray-300" />}
+                                            </div>
+                                            <p className="text-sm text-gray-500 mt-1">Biaya Admin: {formatRupiah(fee)}</p>
                                         </div>
                                     );
                                 })}
                             </div>
+                        </div>
 
-                            <div className="mt-8 text-center">
+                        <div className="lg:col-span-1">
+                            <OrderSummary
+                                invoice={invoice}
+                                claimedDiscounts={claimedDiscounts}
+                                selectedMethod={selectedMethod}
+                                handleOpenConfirmation={handleOpenConfirmation}
+                                isProcessing={isProcessing}
+                                summary={summary}
+                            />
+                            <div className="mt-6 text-center">
                                 <Link href={route('invoices.show', { invoice: invoice.id })} className="text-sm text-gray-600 hover:text-gray-900">
-                                    Kembali ke Invoice
+                                    &larr; Kembali ke Invoice
                                 </Link>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-
         </AuthenticatedLayout>
     );
 }

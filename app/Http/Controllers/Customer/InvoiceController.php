@@ -7,12 +7,16 @@ use App\Models\Fee;
 use App\Models\Customer\Invoices;
 use App\Models\PaymentMethod;
 use App\Models\VirtualAccount;
+use App\Services\DiscountService;
 use App\Services\MidtransService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class InvoiceController extends Controller
 {
+    public function __construct(
+        protected DiscountService $discountService
+    ) {}
 
     /**
      * Display a listing of the resource.
@@ -85,7 +89,7 @@ class InvoiceController extends Controller
                 ];
             }),
             'subtotal' => $invoice->subtotal,
-            'discount_amount' => $invoice->discount,
+            'discount_amount' => $invoice->discount_amount,
             'total' => $invoice->total,
             'paid_amount' => $invoice->paid_amount,
             'balance_due' => $invoice->balance_due,
@@ -124,9 +128,14 @@ class InvoiceController extends Controller
                 ];
             });
 
+        // $claimedDiscounts = auth()->user()->discounts()->wherePivot('is_active', true)->get();
+        $claimedDiscounts = auth()->user()->customerDiscounts()
+            ->with('discount')->where('is_active', true)->get();
+
         return Inertia::render('Customer/Invoices/Checkout', [
-            'invoice' => $invoice,
+            'invoice' => $invoice->load('discount'),
             'paymentMethods' => $paymentMethods,
+            'claimedDiscounts' => $claimedDiscounts,
             'flash' => $this->getFlash()
         ]);
     }
@@ -195,5 +204,34 @@ class InvoiceController extends Controller
         } else {
             return to_route('invoices.checkout', $invoice)->with('error', 'Failed to create Virtual Account (' . $response['status_code'] . ').');
         }
+    }
+
+    public function applyDiscount(Request $request, Invoices $invoice)
+    {
+
+        $request->validate([
+            'discount_id' => 'required|exists:discounts,id',
+        ]);
+
+        $customer = auth()->user();
+        $discount = $customer->discounts()->where('discounts.id', $request->discount_id)->wherePivot('is_active', true)->first();
+
+        if (!$discount) {
+            return back()->with('error', 'Invalid or expired discount.');
+        }
+
+        $invoice = $this->discountService->customerApplyDiscountToInvoice($invoice, $discount);
+
+        return back()->with('success', 'Discount applied successfully.');
+    }
+
+    public function removeDiscount(Request $request, Invoices $invoice)
+    {
+        $invoice->discount_id = null;
+        $invoice->discount_amount = 0;
+        $invoice->recalculateTotals();
+        $invoice->save();
+
+        return back()->with('success', 'Discount removed.');
     }
 }

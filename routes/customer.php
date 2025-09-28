@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Customer\AuthController;
 use App\Http\Controllers\Customer\DashboardController;
+use App\Http\Controllers\Customer\DiscountController;
 use App\Http\Controllers\Customer\InvoiceController;
 use App\Http\Controllers\Customer\PendingPaymentController;
 use App\Http\Controllers\Customer\VirtualAccountController;
@@ -28,8 +29,13 @@ Route::prefix('customer')->group(function () {
     Route::group(['middleware' => 'auth:customers'], function () {
         Route::get('/dashboard', DashboardController::class)->name('dashboard');
         Route::get('/invoices/{invoice}/checkout', [InvoiceController::class, 'checkout'])->name('invoices.checkout');
-        Route::post('/invoices/{invoice}/pay', [InvoiceController::class, 'pay'])->name('invoices.pay');
-        Route::get('/pending-payment/{virtualAccount}', PendingPaymentController::class)->name('pending-payment.show');
+        Route::post('invoices/{invoice}/pay', [InvoiceController::class, 'pay'])->name('invoices.pay');
+        Route::post('invoices/{invoice}/discount', [InvoiceController::class, 'applyDiscount'])->name('invoices.apply-discount');
+        Route::post('invoices/{invoice}/discount/remove', [InvoiceController::class, 'removeDiscount'])->name('invoices.remove-discount');
+        Route::post('discounts/claim', [DiscountController::class, 'claim'])->name('discounts.claim')
+            ->middleware('throttle:customer_claim_discount');
+
+        Route::get('pending-payment/{virtualAccount}', PendingPaymentController::class)->name('pending-payment.show');
         Route::post('/virtual-accounts/{virtualAccount}/cancel', [VirtualAccountController::class, 'cancel'])->name('virtual-accounts.cancel');
         Route::post('/virtual-accounts/{virtualAccount}/check-status', [VirtualAccountController::class, 'checkStatus'])->name('virtual-accounts.check-status');
         Route::resource('/invoices', InvoiceController::class);

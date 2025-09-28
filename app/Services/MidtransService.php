@@ -228,12 +228,12 @@ class MidtransService
                 "email" => $customer->email,
                 "phone" => $customer->phone,
             ],
-            "item_details" => $invoice->items->map(function ($item) {
+            "item_details" => $invoice->items->map(function ($item) use ($invoice) {
                 return [
                     'id' => $item->id,
-                    'price' => $item->unit_price,
+                    'price' => $item->unit_price - $invoice->discount_amount,
                     'quantity' => 1,
-                    'name' => $item->description,
+                    'name' => $item->description . (!empty($invoice->discount_amount) ? ' (Diskon)' : null),
                 ];
             })->toArray(),
         ];

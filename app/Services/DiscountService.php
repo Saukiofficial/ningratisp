@@ -100,7 +100,7 @@ class DiscountService
         return true;
     }
 
-    private function applyDiscountToInvoice(Invoices $invoice, Discount $discount): Invoices
+    public function applyDiscountToInvoice(Invoices $invoice, Discount $discount, $recordDiscountUsage = true): Invoices
     {
         $subtotal = $invoice->subtotal;
         $discountAmount = 0;
@@ -122,13 +122,24 @@ class DiscountService
         $invoice->recalculateTotals();
         $invoice->save();
 
-        $this->recordDiscountUsage(
-            $discount,
-            $invoice->customerPackage->customer,
-            'Discount applied to invoice : ' . $invoice->invoice_number
-        );
+        if ($recordDiscountUsage) {
+            $this->recordDiscountUsage(
+                $discount,
+                $invoice->customerPackage->customer,
+                'Discount applied to invoice : ' . $invoice->invoice_number
+            );
+        }
 
         return $invoice;
+    }
+
+    public function customerApplyDiscountToInvoice(Invoices $invoice, Discount $discount): Invoices
+    {
+        return $this->applyDiscountToInvoice(
+            $invoice,
+            $discount,
+            false
+        );
     }
 
     private function recordDiscountUsage(Discount $discount, Customer $customer, ?string $notes = null): void

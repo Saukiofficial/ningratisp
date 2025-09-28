@@ -17,4 +17,5 @@ use Illuminate\Support\Facades\Broadcast;
 //     return (int) $user->id === (int) $id;
 // });
 
+Broadcast::routes(['middleware' => 'auth:customers']);
 Broadcast::channel('InvoicePaid', fn() => true);

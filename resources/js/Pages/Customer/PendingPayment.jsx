@@ -276,6 +276,10 @@ export default function PendingPayment({ virtualAccount, flash }) {
                                 {virtualAccount.payment_type === 'gopay' && virtualAccount.qris_url && (
                                     <div>
                                         <h2 className="text-lg font-semibold">Scan QRIS untuk Membayar</h2>
+                                        <div className="mt-2">
+                                            <p className="text-gray-600">Total Pembayaran</p>
+                                            <p className="text-3xl font-bold text-blue-600">{formatRupiah(virtualAccount.total_amount)}</p>
+                                        </div>
                                         <img src={route('qris.proxy', virtualAccount.transaction_id)} alt="QRIS Code" className="mx-auto mt-4" />
                                         <button
                                             onClick={() => downloadQris(route('qris.proxy', virtualAccount.transaction_id), virtualAccount.invoice.invoice_number)}
@@ -295,7 +299,7 @@ export default function PendingPayment({ virtualAccount, flash }) {
                                                 {isCopied ? 'Disalin!' : 'Salin'}
                                             </button>
                                         </div>
-                                        <p>Total Pembayaran: {formatRupiah(virtualAccount.invoice.balance_due)}</p>
+                                        <p>Total Pembayaran: {formatRupiah(virtualAccount.total_amount)}</p>
                                     </div>
                                 )}
                             </div>
