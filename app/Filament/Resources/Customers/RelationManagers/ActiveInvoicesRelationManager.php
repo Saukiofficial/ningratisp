@@ -75,8 +75,9 @@ class ActiveInvoicesRelationManager extends RelationManager
                                     ),
                                 TextInput::make('reference_id')
                                     ->label('Reference')
-                                    ->maxLength(100)
-                                    ->required(),
+                                    ->disabled()
+                                    ->dehydrated()
+                                    ->default('MAN-' . now()->unix()),
                             ])->columns(3),
                             FileUpload::make('file_path')
                                 ->label('Payment Struct')
@@ -162,8 +163,9 @@ class ActiveInvoicesRelationManager extends RelationManager
                                 ->dehydrated(),
                             TextInput::make('reference_id')
                                 ->label('Reference')
-                                ->maxLength(100)
-                                ->required(),
+                                ->disabled()
+                                ->dehydrated()
+                                ->default('MAN-' . now()->unix()),
                         ])->columns(3),
                         FileUpload::make('file_path')
                             ->label('Payment Struct')

@@ -97,8 +97,9 @@ class InvoicesTable
                                     ->dehydrated(),
                                 TextInput::make('reference_id')
                                     ->label('Reference')
-                                    ->maxLength(100)
-                                    ->required(),
+                                    ->disabled()
+                                    ->dehydrated()
+                                    ->default('MAN-' . now()->unix()),
                             ])->columns(3),
                             FileUpload::make('file_path')
                                 ->label('Payment Struct')
@@ -111,7 +112,7 @@ class InvoicesTable
                                 ])
                                 ->storeFileNamesIn('file_name')
                                 ->visibility('public')
-                                ->directory('payment-struct')
+                                ->directory('public/payment-struct')
                         ])
                         ->action(function (array $data, Invoices $record) {
                             $customer = $record->customerPackage?->customer;
