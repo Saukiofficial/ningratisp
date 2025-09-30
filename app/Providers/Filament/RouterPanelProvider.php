@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\DashboardPage;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -19,6 +20,7 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Leandrocfe\FilamentApexCharts\FilamentApexChartsPlugin;
 
 class RouterPanelProvider extends PanelProvider
 {
@@ -35,7 +37,7 @@ class RouterPanelProvider extends PanelProvider
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
-                Dashboard::class,
+                DashboardPage::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
@@ -60,6 +62,9 @@ class RouterPanelProvider extends PanelProvider
                 NavigationGroup::make()->label('Master'),
                 NavigationGroup::make()->label('Transactions'),
                 NavigationGroup::make()->label('Logs'),
+            ])
+            ->plugins([
+                FilamentApexChartsPlugin::make()
             ]);
         // ->viteTheme('resources/css/filament/router/theme.css');
     }
