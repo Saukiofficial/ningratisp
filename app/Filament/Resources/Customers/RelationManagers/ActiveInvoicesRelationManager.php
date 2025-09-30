@@ -5,6 +5,8 @@ namespace App\Filament\Resources\Customers\RelationManagers;
 use App\Models\CustomerPackages;
 use App\Models\Invoices;
 use App\Models\PaymentMethod;
+use App\Services\PaymentService;
+use App\Services\ReceivableService;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkAction;
@@ -197,7 +199,7 @@ class ActiveInvoicesRelationManager extends RelationManager
                         }
                         $invoiceIds = $records->pluck('id')->toArray();
 
-                        app(\App\Services\PaymentService::class)->recordIncomingPaymentWithAllocations(
+                        app(PaymentService::class)->recordIncomingPaymentWithAllocations(
                             $customer,
                             (float) ($data['amount'] ?? 0),
                             $method,
@@ -207,7 +209,7 @@ class ActiveInvoicesRelationManager extends RelationManager
                             fileName: $data['file_name']
                         );
 
-                        app(\App\Services\ReceivableService::class)->syncForCustomer($customer);
+                        app(ReceivableService::class)->syncForCustomer($customer);
 
                         Notification::make()
                             ->title('Payment recorded')

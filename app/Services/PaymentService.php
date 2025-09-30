@@ -13,9 +13,13 @@ use Illuminate\Support\Facades\DB;
 
 class PaymentService
 {
-    public function __construct(protected DiscountService $discountService)
-    {
-    }
+
+    protected $isManualPayment = true;
+
+    public function __construct(
+        protected DiscountService $discountService
+    ) {}
+
     public function recordIncomingVoucherPayment(Voucher $voucher, array $callbackData) {}
 
     public function recordIncomingPayment(
@@ -56,6 +60,7 @@ class PaymentService
                 'file_path' => $filePath,
                 'file_name' => $fileName,
                 'fee_id' => $method->fee->id,
+                'is_manual' => $this->isManualPayment
                 // Do not set invoice_id to allow allocations across multiple invoices
             ]);
             $payment->save();
@@ -106,6 +111,7 @@ class PaymentService
                 'file_path' => $filePath,
                 'file_name' => $fileName,
                 'fee_id' => $method->fee->id,
+                'is_manual' => $this->isManualPayment
                 // Do not set invoice_id to allow allocations across multiple invoices
             ]);
             $payment->save();
@@ -301,6 +307,7 @@ class PaymentService
                 'payment_method_id' => $payment->payment_method_id,
                 'payment_type' => 'refund',
                 'invoice_id' => $invoiceId,
+                'is_manual' => $this->isManualPayment
             ]);
             $refund->save();
 

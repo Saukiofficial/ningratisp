@@ -58,7 +58,7 @@ class VirtualAccountController extends Controller
         $invoice = $va->invoice;
         $customer = $invoice->customerPackage->customer;
 
-        $payment = app(\App\Services\PaymentService::class)->recordCallbackIncomingPaymentWithAllocations(
+        $payment = app(\App\Services\PaymentAutoService::class)->recordCallbackIncomingPaymentWithAllocations(
             $customer,
             (float) ($data['gross_amount'] ?? 0),
             ($va->total_amount - $va->fee_amount ?? 0),

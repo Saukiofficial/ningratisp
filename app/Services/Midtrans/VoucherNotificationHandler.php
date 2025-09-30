@@ -48,7 +48,8 @@ class VoucherNotificationHandler implements NotificationHandlerInterface
                 'price' => $voucher->price,
                 'fee_id' => $voucher->fee_id,
                 'description' => 'Voucher payment',
-                'payment_method_id' => $methodId
+                'payment_method_id' => $methodId,
+                'is_manual' => false
             ];
             $payService->save($payRecord);
         }

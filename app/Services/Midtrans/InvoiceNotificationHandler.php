@@ -3,10 +3,9 @@
 namespace App\Services\Midtrans;
 
 use App\Events\CustomerInvoicePaidEvent;
-use App\Models\Invoices;
 use App\Models\VirtualAccount;
-use App\Services\InvoiceService;
-use App\Services\PaymentService;
+use App\Services\PaymentAutoService;
+use App\Services\ReceivableService;
 
 class InvoiceNotificationHandler implements NotificationHandlerInterface
 {
@@ -22,7 +21,7 @@ class InvoiceNotificationHandler implements NotificationHandlerInterface
         $invoice = $va->invoice;
         $customer = $invoice->customerPackage->customer;
 
-        $payment = app(\App\Services\PaymentService::class)->recordCallbackIncomingPaymentWithAllocations(
+        $payment = app(PaymentAutoService::class)->recordCallbackIncomingPaymentWithAllocations(
             $customer,
             (float) ($data['gross_amount'] ?? 0),
             ($va->total_amount - $va->fee_amount ?? 0),
@@ -36,7 +35,7 @@ class InvoiceNotificationHandler implements NotificationHandlerInterface
 
             event(new CustomerInvoicePaidEvent($va));
         }
-        app(\App\Services\ReceivableService::class)->syncForInvoice($invoice);
+        app(ReceivableService::class)->syncForInvoice($invoice);
 
         return !empty($payment);
     }
