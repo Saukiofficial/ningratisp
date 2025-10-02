@@ -121,7 +121,9 @@ export default function PendingPayment({ virtualAccount, flash }) {
     const [paidInvoiceId, setPaidInvoiceId] = useState(null);
     const [countdown, setCountdown] = useState(10);
 
-    useEcho('InvoicePaid', 'CustomerInvoicePaidEvent', (e) => {
+    const { auth } = usePage().props;
+
+    useEcho(`InvoicePaid.${auth.user.id}`, 'CustomerInvoicePaidEvent', (e) => {
         if (e.va && e.va.id === virtualAccount.id) {
             setPaidInvoiceId(e.va.invoice_id);
             setIsPaymentSuccess(true);
