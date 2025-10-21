@@ -9,4 +9,12 @@ use Illuminate\Routing\Controller as BaseController;
 class Controller extends BaseController
 {
     use AuthorizesRequests, ValidatesRequests;
+
+    protected function getFlash(): array
+    {
+        return [
+            'success' => session('success'),
+            'error' => session('error'),
+        ];
+    }
 }

@@ -4,7 +4,11 @@ namespace App\Services;
 
 use App\Helpers\MikrotikAPI;
 use App\Jobs\GenerateMikrotikVoucherJob;
+use App\Jobs\SendWhatsappMessageJob;
+use App\Models\Fee;
+use App\Models\Invoices;
 use App\Models\LogMidtrans;
+use App\Models\PaymentMethod;
 use App\Services\Model\PaymentService;
 use App\Services\Model\VoucherService;
 use Carbon\Carbon;
@@ -22,6 +26,7 @@ class MidtransService
 
     // optional property
     protected $orderId;
+    protected bool $shouldLog = true;
 
     public function __construct()
     {
@@ -60,9 +65,13 @@ class MidtransService
             case 'patch':
                 $driver = $driver->patch($url, $data);
                 break;
+            case 'get':
+                $driver = $driver->get($url, $data);
+                break;
 
             default:
-                $driver = $driver->post($url, $data);
+                $dataToSend = empty($data) ? new \stdClass() : $data;
+                $driver = $driver->post($url, $dataToSend);
                 break;
         }
 
@@ -82,13 +91,20 @@ class MidtransService
             ];
         }
 
-        LogMidtrans::create([
-            'orderid' => $this->getOrderId(),
-            'request' => json_encode($data),
-            'response' => json_encode($response),
-        ]);
+        if ($this->shouldLog) {
+            LogMidtrans::create([
+                'orderid' => $this->getOrderId(),
+                'request' => json_encode($data),
+                'response' => json_encode($response),
+            ]);
+        }
 
         return $response;
+    }
+
+    public function setShouldLog($state = true): void
+    {
+        $this->shouldLog = $state;
     }
 
     public function paymentLink($uniqueId, $amount, $expired_at, $desc = null, $channels = ['other_qris'])
@@ -142,21 +158,10 @@ class MidtransService
             return false;
         }
 
-        $orderIdArr = explode('-', $data['order_id']);
+        $orderIdArr = explode('#', $data['order_id']);
         $orderId = $orderIdArr[1] ?? null;
         $this->setOrderId($orderId);
         $orderIdType = $orderIdArr[0];
-        $voucherService = new VoucherService();
-        $voucher = $voucherService->buildData()->where([
-            'order_id' => $orderId,
-            'status' => '0'
-        ])->first();
-        if (empty($voucher)) {
-            return false;
-        }
-
-        $voucher->status = true;
-        $success = $voucher->save();
 
         LogMidtrans::create([
             'orderid' => $this->getOrderId(),
@@ -164,27 +169,18 @@ class MidtransService
             'act' => LogMidtrans::CALLBACK
         ]);
 
-        if ($success && strtoupper($orderIdType) == self::VOUCHER) {
-            // GenerateMikrotikVoucherJob::dispatch($voucher->code, $voucher->duration, $voucher->duration_type);
-            $service = new MikrotikAPI();
-            $service->createVoucher($voucher->code, $voucher->duration, $voucher->duration_type);
+        $handler = null;
+        if (strtoupper($orderIdType) == self::VOUCHER) {
+            $handler = new \App\Services\Midtrans\VoucherNotificationHandler();
+        } elseif (strtoupper($orderIdType) == self::INVOICE) {
+            $handler = new \App\Services\Midtrans\InvoiceNotificationHandler();
         }
 
-        if ($success) {
-            // proses payment
-            $payService = new PaymentService();
-            $payRecord = [
-                'total_amount' => $data['gross_amount'],
-                'reference_id' => $data['transaction_id'],
-                'payment_datetime' => $data['transaction_time'],
-                'voucher_id' => $voucher->id,
-                'price' => $voucher->price,
-                'fee_id' => $voucher->fee_id
-            ];
-            $payService->save($payRecord);
+        if ($handler) {
+            return $handler->handle($orderId, $data);
         }
 
-        return $success;
+        return false;
     }
 
     public function setOrderId($orderId): void
@@ -200,7 +196,7 @@ class MidtransService
     public function generateQRIS($uniqueId, $amount, $preOrderId = 'VOC')
     {
         $this->pathUrl = '/v2/charge';
-        $orderId = "$preOrderId-{$uniqueId}";
+        $orderId = "$preOrderId#{$uniqueId}";
         $this->setOrderId($uniqueId);
 
         $data = [
@@ -212,6 +208,80 @@ class MidtransService
         ];
 
         $response = $this->request($data);
+        return $response;
+    }
+
+    public function chargeVirtualAccount($orderId, Invoices $invoice, PaymentMethod $paymentMethod, $feeAmount = 0)
+    {
+        $this->pathUrl = '/v2/charge';
+        $this->setOrderId($orderId);
+
+        $customer = $invoice->customerPackage->customer;
+
+        $data = [
+            "transaction_details" => [
+                "order_id" => self::INVOICE . "#{$orderId}",
+                "gross_amount" => $invoice->balance_due + $feeAmount,
+            ],
+            "customer_details" => [
+                "first_name" => $customer->full_name ?? $customer->user_name,
+                "email" => $customer->email,
+                "phone" => $customer->phone,
+            ],
+            "item_details" => $invoice->items->map(function ($item) use ($invoice) {
+                return [
+                    'id' => $item->id,
+                    'price' => $item->unit_price - $invoice->discount_amount,
+                    'quantity' => 1,
+                    'name' => $item->description . (!empty($invoice->discount_amount) ? ' (Diskon)' : null),
+                ];
+            })->toArray(),
+        ];
+
+        // add fee into item details
+        $data['item_details'][] = [
+            'price' => $feeAmount,
+            'quantity' => 1,
+            'name' => 'Fee ' . $paymentMethod->name
+        ];
+
+        switch ($paymentMethod->midtrans_code) {
+            case 'bca_va':
+                $data['payment_type'] = 'bank_transfer';
+                $data['bank_transfer'] = ['bank' => 'bca'];
+                break;
+            case 'bri_va':
+                $data['payment_type'] = 'bank_transfer';
+                $data['bank_transfer'] = ['bank' => 'bri'];
+                break;
+            case 'mandiri':
+                $data['payment_type'] = 'echannel';
+                $data['echannel'] = ['bill_info1' => 'Payment for:', 'bill_info2' => 'Invoice #' . $invoice->invoice_number];
+                break;
+            default:
+                $data['payment_type'] = 'gopay';
+                break;
+        }
+
+        $response = $this->request($data);
+        return $response;
+    }
+
+    public function cancelVirtualAccount($orderId)
+    {
+        $this->pathUrl = "/v2/{$orderId}/cancel";
+        $this->setOrderId($orderId);
+
+        $response = $this->request([], 'post');
+        return $response;
+    }
+
+    public function getStatusVirtualAccount($orderId)
+    {
+        $this->pathUrl = "/v2/{$orderId}/status";
+        $this->setShouldLog(false);
+
+        $response = $this->request([], 'get');
         return $response;
     }
 }

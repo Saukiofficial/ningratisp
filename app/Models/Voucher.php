@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Voucher extends Model
 {
@@ -25,6 +26,11 @@ class Voucher extends Model
     public function fee()
     {
         return $this->belongsTo(Fee::class);
+    }
+
+    public function payment(): HasOne
+    {
+        return $this->hasOne(Payment::class, 'voucher_id');
     }
 
     public static function pricesDetail(): array

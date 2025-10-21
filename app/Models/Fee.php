@@ -12,4 +12,12 @@ class Fee extends Model
     // unit
     const NOMINAL = 'n';
     const PERCENTAGE = 'p';
+
+    public static function feeUnitLabel(): array
+    {
+        return [
+            self::NOMINAL => 'Harga Tetap',
+            self::PERCENTAGE => 'Persen'
+        ];
+    }
 }

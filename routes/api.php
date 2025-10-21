@@ -2,6 +2,8 @@
 
 use App\Helpers\MikrotikAPI;
 use App\Http\Controllers\HotspotController;
+use App\Http\Middleware\VerifyCsrfToken;
+use App\Http\Controllers\QrisProxyController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -16,6 +18,8 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+Route::get('/qris-image/{transactionId}', QrisProxyController::class)->name('qris.proxy');
+
 Route::group(['prefix' => 'midtrans'], function () {
     Route::get('voucher', [HotspotController::class, 'preVoucherRequest']);
     Route::post('requestvoucher', [HotspotController::class, 'voucherRequest'])->name('voucherRequest');
@@ -24,3 +28,5 @@ Route::group(['prefix' => 'midtrans'], function () {
     // Route::post('paymentstate', [HotspotController::class, '']);
 });
 Route::get('voucherdetails/{sealcode?}', [HotspotController::class, 'getVoucherDetails'])->name('voucherDetails');
+Route::middleware(['throttle:check_voucher'])
+    ->post('check-invoice', [HotspotController::class, 'checkInvoice']);

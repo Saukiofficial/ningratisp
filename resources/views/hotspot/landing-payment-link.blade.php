@@ -143,11 +143,11 @@
                                                             </div>
                                                             <div class="col">
                                                                 <small id="channel_fee" class="text-muted">Biaya admin:
-                                                                    {{ TaxCalculate::getLabelTax($channel->fee()?->amount ?? 0, $channel->fee()?->unit) }}</small>
+                                                                    {{ TaxCalculate::getLabelTax($channel->fee?->amount ?? 0, $channel->fee?->unit) }}</small>
                                                             </div>
                                                             <div class="col">
                                                                 <small id="channel_total" class="text-muted">Total:
-                                                                    Rp{{ number_format(TaxCalculate::calculate($price, $channel->fee()?->amount, $channel->fee()?->unit), 0, ',', '.') }}</small>
+                                                                    Rp{{ number_format(TaxCalculate::calculate($price, $channel->fee?->amount, $channel->fee?->unit), 0, ',', '.') }}</small>
                                                             </div>
                                                         </div>
                                                     </div>

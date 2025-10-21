@@ -46,19 +46,24 @@ class HotspotController extends Controller
         $voucher = $service->generateVoucher($request->validated('pointer'));
         $channelId = 'qris';
         $channel = $pmService->buildData()->where('code', '=', $channelId)->firstOrFail();
-        $fee = $channel->fee();
+        $fee = $channel->fee;
         $total = TaxCalculate::calculate($voucher->price, $fee->amount, $fee->unit);
         if (empty($voucher)) {
             throw new Exception('error');
         }
         $sealcode = $request->seal_code;
-        $voucher->fill(['seal_code' => $sealcode, 'fee_id' => $fee->id]);
+        $voucher->fill([
+            'seal_code' => $sealcode,
+            'fee_id' => $fee->id,
+            'whatsapp_number' => $request->whatsapp_number ?? null
+        ]);
         $voucher->save();
 
         try {
             $pg = new MidtransService();
             $response = $pg->generateQRIS($voucher->order_id, $total);
         } catch (Exception $e) {
+            $voucher->delete();
             return abort(500);
         }
 
@@ -68,7 +73,9 @@ class HotspotController extends Controller
 
         $imgUrl = $statusUrl = '';
         foreach ($response['actions'] as $action) {
-            if ($action['name'] == 'generate-qr-code') {
+            if ($action['name'] == 'generate-qr-code-v2') {
+                $imgUrl = $action['url'];
+            } elseif ($action['name'] == 'generate-qr-code') {
                 $imgUrl = $action['url'];
             }
             if ($action['name'] == 'get-status') {
@@ -90,7 +97,7 @@ class HotspotController extends Controller
         $voucher = $service->generateVoucher($request->validated('pointer'));
         $channelId = $request->validated('channel_id');
         $channel = $pmService->get($channelId);
-        $fee = $channel->fee();
+        $fee = $channel->fee;
         $total = TaxCalculate::calculate($voucher->price, $fee->amount, $fee->unit);
         if (empty($voucher)) {
             throw new Exception('error');
@@ -122,6 +129,7 @@ class HotspotController extends Controller
     public function midtransCallback(MidtransCallbackRequest $request, MidtransService $service)
     {
         $service->handleNotification($request->all());
+        return response()->json();
     }
 
     public function getVoucherDetails($sealcode, VoucherService $service)
@@ -150,5 +158,25 @@ class HotspotController extends Controller
         }
 
         return response()->json($response);
+    }
+
+    public function checkInvoice(Request $request, VoucherService $service)
+    {
+        $invoiceRequest = str_replace(
+            'inv-',
+            '',
+            strtolower($request->invoice_number)
+        );
+
+        $voucher = $service->buildData('payment')
+            ->where('order_id', $invoiceRequest)
+            ->first();
+        if (empty($voucher) || empty($voucher->payment()->exists())) {
+            return [
+                'status' => 'fail'
+            ];
+        }
+
+        return ['status' => 'success', 'voucher_code' => $voucher->code];
     }
 }
