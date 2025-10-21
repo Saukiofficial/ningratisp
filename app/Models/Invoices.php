@@ -11,15 +11,22 @@ class Invoices extends BaseModel
 {
     use HasFactory;
 
+    // const invoice status
     const STATUS_UNPAID = 'unpaid';
     const STATUS_PAID = 'paid';
     const STATUS_OVERDUE = 'overdue';
     const STATUS_CANCELLED = 'cancelled';
 
+    // const invoice type
     const TYPE_MONTHLY = 'monthly';
     const TYPE_LOAN = 'loan_settlement';
     const TYPE_ADJUSTMENT = 'adjustment';
     const TYPE_MANUAL = 'manual';
+
+    // Const report type
+    const REPORT_MONTHLY = 'monthly';
+    const REPORT_ANNUALY = 'annualy';
+    const REPORT_DATE_RANGE = 'date_range';
 
     public static function getStatusLabel(): array
     {
@@ -27,7 +34,7 @@ class Invoices extends BaseModel
             self::STATUS_UNPAID => 'Belum bayar',
             self::STATUS_PAID => 'Sudah bayar',
             self::STATUS_OVERDUE => 'Mencapai batas bayar',
-            self::STATUS_CANCELLED => 'Dibatalkan'
+            self::STATUS_CANCELLED => 'Dibatalkan',
         ];
     }
 
@@ -52,20 +59,29 @@ class Invoices extends BaseModel
         ];
     }
 
+    public static function getInvoiceReportLabel(): array
+    {
+        return [
+            self::REPORT_MONTHLY => 'Laporan Bulanan',
+            self::REPORT_ANNUALY => 'Laporan Tahunan',
+            self::REPORT_DATE_RANGE => 'Laporan jarak waktu',
+        ];
+    }
+
     protected $guarded = ['id'];
 
     protected $casts = [
-        'invoice_date'   => 'date',
-        'due_date'       => 'date',
-        'period_start'   => 'date',
-        'period_end'     => 'date',
-        'amount'         => 'decimal:2',
-        'tax_amount'     => 'decimal:2',
-        'total_amount'   => 'decimal:2',
-        'subtotal'       => 'decimal:2',
+        'invoice_date' => 'date',
+        'due_date' => 'date',
+        'period_start' => 'date',
+        'period_end' => 'date',
+        'amount' => 'decimal:2',
+        'tax_amount' => 'decimal:2',
+        'total_amount' => 'decimal:2',
+        'subtotal' => 'decimal:2',
         'discount_amount' => 'decimal:2',
-        'paid_amount'    => 'decimal:2',
-        'balance_due'    => 'decimal:2',
+        'paid_amount' => 'decimal:2',
+        'balance_due' => 'decimal:2',
     ];
 
     // Relationships
