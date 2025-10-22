@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\CustomerPackages;
 use App\Models\Invoices;
+use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -31,8 +32,12 @@ class InvoiceService
 
         foreach ($packages as $cp) {
             $exists = Invoices::query()
-                ->where('customer_package_id', $cp->id)
-                ->whereDate('period_start', $periodStart->toDateString())
+                ->whereHas('customerPackage.customer', function (Builder $query) use ($cp) {
+                    return $query->where('id', $cp->customer_id);
+                })
+                // ->where('customer_package_id', $cp->id)
+                ->whereYear('period_start', $periodStart->format('Y'))
+                ->whereMonth('period_start', $periodStart->format('m'))
                 ->where('status', '!=', Invoices::STATUS_CANCELLED)
                 ->exists();
 

@@ -19,6 +19,7 @@
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.8",
         "leandrocfe/filament-apex-charts": "^4.0@beta",
+        "maatwebsite/excel": "^3.1",
         "predis/predis": "^3.1",
         "tightenco/ziggy": "^2.6",
         "valentin-morice/filament-json-column": "dev-dev"

@@ -25,9 +25,8 @@ class CustomersTable
                 TextColumn::make('username')
                     ->searchable()
                     ->sortable(),
-                // TextColumn::make('full_name')
-                //     ->searchable()
-                //     ->sortable(),
+                TextColumn::make('full_name')
+                    ->searchable(),
                 TextColumn::make('pppProfile.profile_name')
                     ->label('PPP Profile')
                     ->sortable(),
