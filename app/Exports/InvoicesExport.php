@@ -9,7 +9,8 @@ use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithColumnFormatting;
 use Maatwebsite\Excel\Concerns\WithHeadings;
-use Maatwebsite\Excel\Concerns\WithMapping;
+use Maatwebsite\Excel\Concerns\WithMapping; // Add this concern
+use Maatwebsite\Excel\Concerns\WithStartRow;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
 use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
@@ -18,7 +19,7 @@ class InvoicesExport implements
     FromCollection,
     WithColumnFormatting,
     WithHeadings,
-    WithMapping
+    WithStartRow
 {
     protected $startDate;
 
@@ -98,11 +99,16 @@ class InvoicesExport implements
         $columnIndex = 1; // Start from the second column (index 1) for dates
 
         foreach ($period as $date) {
-            $formats[Coordinate::stringFromColumnIndex($columnIndex)] = NumberFormat::FORMAT_TEXT;
+            $formats[Coordinate::stringFromColumnIndex($columnIndex)] = NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1;
             $columnIndex++;
         }
 
         return $formats;
+    }
+
+    public function startRow(): int
+    {
+        return 2; // Apply formatting from the second row onwards
     }
 
     protected function generateDatePeriod(): CarbonPeriod
