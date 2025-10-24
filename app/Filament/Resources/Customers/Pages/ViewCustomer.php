@@ -7,12 +7,7 @@ use App\Filament\Resources\Customers\RelationManagers\ActiveInvoicesRelationMana
 use App\Filament\Resources\Customers\RelationManagers\AllInvoicesRelationManager;
 use App\Filament\Resources\Customers\RelationManagers\CustomerPackagesRelationManager;
 use App\Filament\Resources\Customers\RelationManagers\PaymentsRelationManager;
-use App\Models\CustomerPackages;
-use App\Models\Packages;
 use Filament\Actions\Action;
-use Filament\Forms;
-use Filament\Notifications\Notification;
-use Illuminate\Validation\Rule;
 use Filament\Actions\EditAction;
 use Filament\Resources\Pages\ViewRecord;
 
@@ -24,6 +19,9 @@ class ViewCustomer extends ViewRecord
     {
         return [
             EditAction::make(),
+            Action::make('isolir')
+                ->color('danger')
+                ->requiresConfirmation(),
         ];
     }
 
