@@ -4,7 +4,8 @@ namespace App\Services;
 
 use App\Models\CustomerPackages;
 use App\Models\Invoices;
-use Illuminate\Contracts\Database\Query\Builder;
+use App\Models\Payment;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -45,6 +46,16 @@ class InvoiceService
                 continue;
             }
 
+            // has active invoice (except manual invoice) with not isolir
+            $activeInvoice = $cp->customer->invoices
+                ->where('invoices.status', Invoices::STATUS_UNPAID)
+                ->where(function (Builder $query) {
+                    $query->whereNull('isolir_at')->orWhere('isolir_at', '');
+                });
+            if ($activeInvoice->isNotEmpty()) {
+                continue;
+            }
+
             $invoice = $this->generateInvoiceForCustomerPackage(
                 $cp,
                 $periodStart,
@@ -64,7 +75,7 @@ class InvoiceService
         // Create invoice shell
         $invoice_date = $date?->toDateString() ?? Carbon::now()->toDateString();
         $due_date = $date?->copy()->addDays(30)->toDateString() ?? Carbon::now()->copy()->addDays(30)->toDateString();
-        $invoice = new Invoices();
+        $invoice = new Invoices;
         $invoice->fill([
             'invoice_number' => $this->makeInvoiceNumber($cp, $periodStart),
             'customer_package_id' => $cp->id,
@@ -76,6 +87,7 @@ class InvoiceService
             'invoice_type' => Invoices::TYPE_MONTHLY,
             'amount' => $cp->package->price,
         ]);
+        $invoice->amount = $this->generateRemainingAmount($invoice);
         $invoice->save();
 
         // Add main charge line from package price
@@ -124,7 +136,7 @@ class InvoiceService
     {
         DB::transaction(function () use ($customerPackageId, $dueDate, $batch) {
             $customerPackage = CustomerPackages::with(['package', 'customer'])->find($customerPackageId);
-            if (!$customerPackage) {
+            if (! $customerPackage) {
                 throw new \Exception('Selected package not found.');
             }
 
@@ -143,7 +155,7 @@ class InvoiceService
         $periodEnd = $dueDate->copy()->endOfMonth();
 
         // Create invoice shell
-        $invoice = new Invoices();
+        $invoice = new Invoices;
         $invoice->fill([
             'invoice_number' => $this->makeManualInvoiceNumber($cp, $periodStart),
             'customer_package_id' => $cp->id,
@@ -178,6 +190,7 @@ class InvoiceService
             ->whereYear('invoice_date', (int) $periodStart->format('Y'))
             ->whereMonth('invoice_date', (int) $periodStart->format('m'))
             ->count() + 1;
+
         return sprintf('INV-%s-%04d', $ym, $seq);
     }
 
@@ -189,6 +202,54 @@ class InvoiceService
             ->whereYear('invoice_date', (int) $periodStart->format('Y'))
             ->whereMonth('invoice_date', (int) $periodStart->format('m'))
             ->count() + 1;
+
         return sprintf('INV-MAN-%s-%04d', $ym, $seq);
+    }
+
+    private function generateRemainingAmount(Invoices $invoice, $minPrice = 10000): float
+    {
+        $customer = $invoice->customerPackage->customer;
+
+        // Find the last successful payment for this customer on any invoice.
+        $lastPayment = Payment::query()
+            ->whereHas('invoice.customerPackage', function (Builder $query) use ($customer) {
+                $query->where('customer_id', $customer->id);
+            })
+            ->where('is_cancel', false) // Assuming 'paid' is the status for a successful payment.
+            ->latest('payment_datetime')
+            ->first();
+
+        if (empty($lastPayment)) {
+            // No previous payment, so the full amount is due.
+            return (float) $invoice->amount;
+        }
+
+        $lastPaymentDate = Carbon::parse($lastPayment->payment_datetime);
+        $currentInvoiceDate = Carbon::parse($invoice->invoice_date);
+
+        // Assuming a fixed 30-day billing cycle for proration calculation.
+        $daysInBillingCycle = 30;
+
+        $daysSinceLastPayment = ceil($lastPaymentDate->diffInDays($currentInvoiceDate));
+
+        if ($daysSinceLastPayment < $daysInBillingCycle) {
+            // There is an overlap from the previous payment period.
+            $packagePrice = (float) $invoice->customerPackage->package->price;
+            $dailyRate = $packagePrice / $daysInBillingCycle;
+
+            // Calculate the credit for the unused days from the previous cycle.
+            $overlappingDays = $daysInBillingCycle - $daysSinceLastPayment;
+            $creditAmount = $dailyRate * $overlappingDays;
+
+            // The new amount is the full price minus the credit.
+            $proratedAmount = $packagePrice - $creditAmount;
+
+            // Ensure the amount is not negative.
+            $amount = ceil(max(0, $proratedAmount));
+            return $amount < $minPrice ? $minPrice : $amount;
+        }
+
+        // If the last payment was more than a billing cycle ago, charge the full amount.
+        return (float) $invoice->amount;
     }
 }

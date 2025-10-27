@@ -11,6 +11,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Discount extends Model
 {
 
+    use HasFactory;
+
     // applicable on
     const FOR_INVOICE = 'invoice';
     const FOR_PACKAGE = 'package';
