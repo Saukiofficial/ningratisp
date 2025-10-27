@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\CustomerPackages;
+use App\Models\InvoiceItem;
 use App\Models\Invoices;
 use App\Models\Payment;
 use Illuminate\Database\Eloquent\Builder;
@@ -11,6 +12,8 @@ use Illuminate\Support\Facades\DB;
 
 class InvoiceService
 {
+    private bool $hasAdjustment = false;
+
     public function __construct(
         protected DiscountService $discountService
     ) {}
@@ -74,7 +77,7 @@ class InvoiceService
     {
         // Create invoice shell
         $invoice_date = $date?->toDateString() ?? Carbon::now()->toDateString();
-        $due_date = $date?->copy()->addDays(30)->toDateString() ?? Carbon::now()->copy()->addDays(30)->toDateString();
+        $due_date = $date?->copy()->addDays(10)->toDateString() ?? Carbon::now()->copy()->addDays(30)->toDateString();
         $invoice = new Invoices;
         $invoice->fill([
             'invoice_number' => $this->makeInvoiceNumber($cp, $periodStart),
@@ -94,7 +97,19 @@ class InvoiceService
         $pkg = $cp->package;
         $price = $pkg ? (float) $pkg->price : 0.0;
         $desc = $pkg ? ("Langganan Bulanan: {$pkg->name}") : 'Langganan Bulanan';
-        $this->addItem($invoice, 'charge', $desc, 1, $price);
+        $this->addItem($invoice, InvoiceItem::ITEM_CHARGE, $desc, 1, $price);
+
+        // add adjustment charge
+        if ($this->hasAdjustment) {
+            $this->addItem(
+                $invoice,
+                InvoiceItem::ITEM_ADJUSTMENT,
+                'Penyesuaian (' . $desc . ')',
+                1,
+                - ($price - $invoice->amount)
+            );
+            $this->hasAdjustment = false;
+        }
 
         // Recalculate totals and persist
         $invoice->recalculateTotals();
@@ -212,7 +227,7 @@ class InvoiceService
 
         // Find the last successful payment for this customer on any invoice.
         $lastPayment = Payment::query()
-            ->whereHas('invoice.customerPackage', function (Builder $query) use ($customer) {
+            ->whereHas('allocations.invoice.customerPackage', function (Builder $query) use ($customer) {
                 $query->where('customer_id', $customer->id);
             })
             ->where('is_cancel', false) // Assuming 'paid' is the status for a successful payment.
@@ -225,7 +240,7 @@ class InvoiceService
         }
 
         $lastPaymentDate = Carbon::parse($lastPayment->payment_datetime);
-        $currentInvoiceDate = Carbon::parse($invoice->invoice_date);
+        $currentInvoiceDate = Carbon::parse($invoice->due_date);
 
         // Assuming a fixed 30-day billing cycle for proration calculation.
         $daysInBillingCycle = 30;
@@ -246,6 +261,8 @@ class InvoiceService
 
             // Ensure the amount is not negative.
             $amount = ceil(max(0, $proratedAmount));
+            $this->hasAdjustment = true;
+
             return $amount < $minPrice ? $minPrice : $amount;
         }
 

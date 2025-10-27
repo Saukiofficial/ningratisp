@@ -8,6 +8,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class InvoiceItem extends Model
 {
+    const ITEM_CHARGE = 'charge';
+    const ITEM_DISCOUNT = 'discount';
+    const ITEM_TAX = 'tax';
+    const ITEM_ADJUSTMENT = 'adjustment';
+
     use HasFactory;
 
     protected $guarded = ['id'];
@@ -27,7 +32,7 @@ class InvoiceItem extends Model
     {
         static::saving(function (self $item) {
             // Default line_total to quantity * unit_price for charge/tax/adjustment
-            if ($item->item_type === 'discount') {
+            if ($item->item_type === self::ITEM_DISCOUNT) {
                 // Ensure discounts are negative lines
                 $amount = (float) ($item->quantity ?? 1) * (float) ($item->unit_price ?? 0);
                 $item->line_total = -abs($amount);

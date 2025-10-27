@@ -116,6 +116,10 @@ class PaymentService
             ]);
             $payment->save();
 
+            // disable isolir at
+            $customer->isolir_at = null;
+            $customer->save();
+
             if ($invoice) {
                 // Allocate to the provided invoice up to its balance due
                 $this->allocatePaymentToInvoices($payment, [
