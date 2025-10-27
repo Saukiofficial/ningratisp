@@ -221,7 +221,7 @@ class InvoiceService
         return sprintf('INV-MAN-%s-%04d', $ym, $seq);
     }
 
-    private function generateRemainingAmount(Invoices $invoice, $minPrice = 10000): float
+    private function generateRemainingAmount(Invoices $invoice, $minAmount = 10000): float
     {
         $customer = $invoice->customerPackage->customer;
 
@@ -259,11 +259,11 @@ class InvoiceService
             // The new amount is the full price minus the credit.
             $proratedAmount = $packagePrice - $creditAmount;
 
-            // Ensure the amount is not negative.
-            $amount = ceil(max(0, $proratedAmount));
+            // Ensure the amount is not negative and return thousand
+            $amount = ceil(max(0, $proratedAmount) / 1000) * 1000;
             $this->hasAdjustment = true;
 
-            return $amount < $minPrice ? $minPrice : $amount;
+            return $amount < $minAmount ? $minAmount : $amount;
         }
 
         // If the last payment was more than a billing cycle ago, charge the full amount.

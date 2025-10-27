@@ -28,6 +28,16 @@ class InvoiceItem extends Model
         return $this->belongsTo(Invoices::class, 'invoice_id');
     }
 
+    public static function getItemLabel(): array
+    {
+        return [
+            self::ITEM_ADJUSTMENT => 'Adjustment (Penyesuaian)',
+            self::ITEM_CHARGE => 'Charge (Biaya tagihan)',
+            self::ITEM_DISCOUNT => 'Discount (Potongan tagihan)',
+            self::ITEM_TAX => 'Tax (Pajak tagihan)'
+        ];
+    }
+
     protected static function booted(): void
     {
         static::saving(function (self $item) {
