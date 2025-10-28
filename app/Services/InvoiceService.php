@@ -49,13 +49,13 @@ class InvoiceService
                 continue;
             }
 
-            // has active invoice (except manual invoice) with not isolir
-            $activeInvoice = $cp->customer->invoices
+            // skip if has active invoice (except manual invoice) with isolir
+            $customer = $cp->customer;
+            $activeInvoice = $customer->invoices()
                 ->where('invoices.status', Invoices::STATUS_UNPAID)
-                ->where(function (Builder $query) {
-                    $query->whereNull('isolir_at')->orWhere('isolir_at', '');
-                });
-            if ($activeInvoice->isNotEmpty()) {
+                ->first();
+
+            if ($activeInvoice && !empty($customer->isolir_at)) {
                 continue;
             }
 
@@ -201,24 +201,38 @@ class InvoiceService
     private function makeInvoiceNumber(CustomerPackages $cp, Carbon $periodStart): string
     {
         $ym = $periodStart->format('Ym');
-        $seq = Invoices::query()
-            ->whereYear('invoice_date', (int) $periodStart->format('Y'))
-            ->whereMonth('invoice_date', (int) $periodStart->format('m'))
-            ->count() + 1;
+        $latestInvoice = Invoices::query()
+            ->whereYear('invoice_date', $periodStart->year)
+            ->whereMonth('invoice_date', $periodStart->month)
+            ->orderByDesc('invoice_number')
+            ->first('invoice_number');
 
-        return sprintf('INV-%s-%04d', $ym, $seq);
+        if ($latestInvoice && preg_match('/INV-\d{6}-(\d{4})/', $latestInvoice->invoice_number, $matches)) {
+            $nextSeq = (int) $matches[1] + 1;
+        } else {
+            $nextSeq = 1;
+        }
+
+        return sprintf('INV-%s-%04d', $ym, $nextSeq);
     }
 
     private function makeManualInvoiceNumber(CustomerPackages $cp, Carbon $periodStart): string
     {
         $ym = $periodStart->format('Ym');
-        $seq = Invoices::query()
+        $latestInvoice = Invoices::query()
             ->where('invoice_type', Invoices::TYPE_MANUAL)
-            ->whereYear('invoice_date', (int) $periodStart->format('Y'))
-            ->whereMonth('invoice_date', (int) $periodStart->format('m'))
-            ->count() + 1;
+            ->whereYear('invoice_date', $periodStart->year)
+            ->whereMonth('invoice_date', $periodStart->month)
+            ->orderByDesc('invoice_number')
+            ->first('invoice_number');
 
-        return sprintf('INV-MAN-%s-%04d', $ym, $seq);
+        if ($latestInvoice && preg_match('/INV-\d{6}-(\d{4})/', $latestInvoice->invoice_number, $matches)) {
+            $nextSeq = (int) $matches[1] + 1;
+        } else {
+            $nextSeq = 1;
+        }
+
+        return sprintf('INV-MAN-%s-%04d', $ym, $nextSeq);
     }
 
     private function generateRemainingAmount(Invoices $invoice, $minAmount = 10000): float
