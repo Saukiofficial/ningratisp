@@ -30,7 +30,7 @@ class PingCustomerJob implements ShouldQueue
     public function handle(): void
     {
         $mikrotik = new MikrotikAPI;
-        $response = $mikrotik->ping($this->customer->remote_address);
+        $response = $mikrotik->ping($this->customer->remote_address, 4);
 
         if (isset($response['error'])) {
             Cache::increment('ping_all_customers_offline');
@@ -41,12 +41,12 @@ class PingCustomerJob implements ShouldQueue
 
         $packetLoss = 0;
         foreach ($response as $line) {
-            if ($line['packet-loss'] > 0) {
+            if ($line['packet-loss'] > 0 && in_array($line['status'], ['packet rejected', 'timeout'])) {
                 $packetLoss = $line['packet-loss'];
             }
         }
 
-        $status = $packetLoss < 5 ? 'online' : 'offline';
+        $status = $packetLoss < 50 ? 'online' : 'offline';
 
         if ($status === 'online') {
             Cache::increment('ping_all_customers_online');

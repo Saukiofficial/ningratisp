@@ -19,17 +19,17 @@ class PingAllCustomersJob implements ShouldQueue
     /**
      * Create a new job instance.
      */
-    public function __construct(public User $user)
-    {
-        //
-    }
+    public function __construct(
+        public User $user,
+        public ?int $limit = null
+    ) {}
 
     /**
      * Execute the job.
      */
     public function handle(): void
     {
-        $customers = Customer::whereNotNull('remote_address')->limit(10)->get();
+        $customers = Customer::whereNotNull('remote_address')->limit($this->limit)->get();
         $totalCustomers = $customers->count();
 
         Cache::put('ping_all_customers_total', $totalCustomers);
