@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Packages extends BaseModel
 {
+    use HasFactory;
+
     public function customerPackages(): HasMany
     {
         return $this->hasMany(CustomerPackages::class);

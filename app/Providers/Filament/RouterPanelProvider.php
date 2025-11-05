@@ -8,7 +8,6 @@ use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Navigation\NavigationGroup;
-use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
@@ -64,8 +63,9 @@ class RouterPanelProvider extends PanelProvider
                 NavigationGroup::make()->label('Logs'),
             ])
             ->plugins([
-                FilamentApexChartsPlugin::make()
-            ]);
+                FilamentApexChartsPlugin::make(),
+            ])
+            ->databaseNotifications();
         // ->viteTheme('resources/css/filament/router/theme.css');
     }
 }

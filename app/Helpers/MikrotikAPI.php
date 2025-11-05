@@ -324,6 +324,16 @@ class MikrotikAPI
         return $this->request(['interface' => $interface, 'once' => ''], 'post');
     }
 
+    public function ping(string $ipAddress, $count = 5)
+    {
+        $this->action = str(__FUNCTION__)->snake('-');
+        $this->setPathUrl('/tool/ping');
+        $this->setShouldLog(false);
+        // $this->setRequestTimeout(5);
+
+        return $this->request(['address' => $ipAddress, 'count' => $count], 'post');
+    }
+
     public function isolirClient(string $username, bool $enabled = true, ?string $additionalNotes = null)
     {
         $this->action = str(__FUNCTION__)->snake('-');
@@ -351,6 +361,7 @@ class MikrotikAPI
         ];
 
         $response = $this->request($data, HttpRequestOperation::PATCH);
+
         return $response;
     }
 }

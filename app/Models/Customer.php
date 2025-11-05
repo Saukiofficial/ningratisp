@@ -3,14 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User;
+use Illuminate\Support\Facades\Hash;
 
 class Customer extends User
 {
@@ -20,7 +19,7 @@ class Customer extends User
 
     protected $hidden = [
         'password',
-        'password_pptp'
+        'password_pptp',
     ];
 
     protected $casts = [
@@ -60,7 +59,6 @@ class Customer extends User
         return $this->hasOne(CustomerPackages::class)->where('status', customerPackages::STATUS_ACTIVE);
     }
 
-
     public function invoices(): HasManyThrough
     {
         return $this->hasManyThrough(
@@ -68,8 +66,6 @@ class Customer extends User
             CustomerPackages::class,
             'customer_id',            // Foreign key on customer_packages
             'customer_package_id',    // Foreign key on invoices
-            'id',
-            'id'
         );
     }
 
@@ -162,6 +158,7 @@ class Customer extends User
         if ($this->profile_override && $this->rate_limit) {
             return $this->rate_limit;
         }
+
         return $this->pppProfile->rate_limit ?? null;
     }
 
@@ -170,6 +167,7 @@ class Customer extends User
         if ($this->profile_override && $this->session_timeout_override) {
             return $this->session_timeout_override;
         }
+
         return $this->pppProfile->session_timeout ?? null;
     }
 
@@ -178,6 +176,7 @@ class Customer extends User
         if ($this->profile_override && $this->idle_timeout_override) {
             return $this->idle_timeout_override;
         }
+
         return $this->pppProfile->idle_timeout ?? null;
     }
 
@@ -186,6 +185,7 @@ class Customer extends User
         if ($this->profile_override && $this->only_one_override !== null) {
             return $this->only_one_override;
         }
+
         return $this->pppProfile->only_one ?? false;
     }
 
@@ -202,9 +202,10 @@ class Customer extends User
      */
     public function getDaysUntilExpiryAttribute()
     {
-        if (!$this->expiry_date) {
+        if (! $this->expiry_date) {
             return null;
         }
+
         return now()->diffInDays($this->expiry_date, false);
     }
 
@@ -265,8 +266,8 @@ class Customer extends User
             $script .= " caller-id=\"{$this->caller_id}\"";
         }
 
-        if (!$this->is_active || $this->status !== 'active') {
-            $script .= " disabled=yes";
+        if (! $this->is_active || $this->status !== 'active') {
+            $script .= ' disabled=yes';
         }
 
         return $script;
@@ -295,6 +296,6 @@ class Customer extends User
             $i++;
         }
 
-        return round($bytes, 2) . ' ' . $units[$i];
+        return round($bytes, 2).' '.$units[$i];
     }
 }

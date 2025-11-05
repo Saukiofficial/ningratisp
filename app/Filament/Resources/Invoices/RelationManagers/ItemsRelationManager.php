@@ -2,10 +2,12 @@
 
 namespace App\Filament\Resources\Invoices\RelationManagers;
 
+use App\Models\InvoiceItem;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
+use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -18,12 +20,7 @@ class ItemsRelationManager extends RelationManager
         return $schema
             ->components([
                 Select::make('item_type')
-                    ->options([
-                        'charge' => 'Charge',
-                        'discount' => 'Discount',
-                        'tax' => 'Tax',
-                        'adjustment' => 'Adjustment',
-                    ])
+                    ->options(InvoiceItem::getItemLabel())
                     ->default('charge')
                     ->required(),
                 TextInput::make('description')
@@ -48,11 +45,12 @@ class ItemsRelationManager extends RelationManager
                 TextColumn::make('item_type')
                     ->label('Type')
                     ->badge()
-                    ->color(fn (string $state) => match ($state) {
-                        'charge' => 'success',
-                        'discount' => 'danger',
-                        'tax' => 'warning',
-                        'adjustment' => 'gray',
+                    ->formatStateUsing(fn(string $state) => InvoiceItem::getItemLabel()[$state])
+                    ->color(fn(string $state) => match ($state) {
+                        InvoiceItem::ITEM_CHARGE => 'success',
+                        InvoiceItem::ITEM_DISCOUNT => 'danger',
+                        InvoiceItem::ITEM_TAX => 'warning',
+                        InvoiceItem::ITEM_ADJUSTMENT => 'info',
                         default => 'gray',
                     })
                     ->sortable(),
@@ -65,10 +63,12 @@ class ItemsRelationManager extends RelationManager
                     ->alignRight(),
                 TextColumn::make('unit_price')
                     ->money('IDR')
-                    ->alignRight(),
+                    ->alignRight()
+                    ->summarize(Sum::make()->label('Total')),
                 TextColumn::make('line_total')
                     ->money('IDR')
-                    ->alignRight(),
+                    ->alignRight()
+                    ->summarize(Sum::make()->label('Total')),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->toggleable(isToggledHiddenByDefault: true),
