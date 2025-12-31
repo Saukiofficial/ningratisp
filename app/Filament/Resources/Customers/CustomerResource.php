@@ -6,6 +6,7 @@ use App\Filament\Resources\Customers\Pages\CreateCustomer;
 use App\Filament\Resources\Customers\Pages\EditCustomer;
 use App\Filament\Resources\Customers\Pages\ListCustomers;
 use App\Filament\Resources\Customers\Pages\ViewCustomer;
+use App\Filament\Resources\Customers\RelationManagers\InvoicesRelationManager;
 use App\Filament\Resources\Customers\Schemas\CustomerForm;
 use App\Filament\Resources\Customers\Schemas\CustomerInfolist;
 use App\Filament\Resources\Customers\Tables\CustomersTable;
@@ -18,6 +19,7 @@ use Filament\Tables\Table;
 use Filament\Actions\Action;
 use App\Helpers\MikrotikAPI;
 use App\Models\PppProfile;
+use Illuminate\Support\Facades\Hash;
 use UnitEnum;
 
 class CustomerResource extends Resource
@@ -57,7 +59,8 @@ class CustomerResource extends Resource
 
                             if (!$customer->exists) {
                                 $customer->username = $secret['name'];
-                                $customer->password = $secret['password']; // Assuming plain text password from MikroTik
+                                $customer->password_pptp = $secret['password']; // Assuming plain text password from MikroTik
+                                $customer->password = Hash::make($secret['password']); // Assuming plain text password from MikroTik
                                 $customer->service_name = $secret['service'] ?? null;
 
                                 // Find or create PPP Profile
@@ -98,7 +101,7 @@ class CustomerResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            // 'invoices' => InvoicesRelationManager::class
         ];
     }
 

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Customers\Schemas;
 
+use App\Models\Packages;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
@@ -27,8 +28,11 @@ class CustomerForm
                 TextInput::make('service_name')
                     ->maxLength(255)
                     ->visibleOn(['edit', 'view']),
-                Select::make('ppp_profile_id')
-                    ->relationship('pppProfile', 'profile_name')
+                // Select::make('ppp_profile_id')
+                //     ->relationship('pppProfile', 'profile_name')
+                //     ->required(),
+                Select::make('package_id')
+                    ->options(Packages::all()->pluck('name', 'id'))
                     ->required(),
                 Toggle::make('profile_override')
                     ->visibleOn(['edit', 'view']),

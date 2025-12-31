@@ -2,15 +2,35 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Facades\Hash;
 
-class Customer extends Model
+class Customer extends User
 {
+    use HasFactory;
+
     protected $guarded = ['id'];
 
     protected $hidden = [
         'password',
+        'password_pptp',
+    ];
+
+    protected $casts = [
+        'monthly_fee' => 'decimal:2',
+        'installation_date' => 'date',
+        'expiry_date' => 'date',
+        'last_login' => 'datetime',
+        'last_logout' => 'datetime',
+        'only_one_override' => 'boolean',
+        'profile_override' => 'boolean',
+        'is_active' => 'boolean',
     ];
 
     /**
@@ -19,6 +39,78 @@ class Customer extends Model
     public function pppProfile()
     {
         return $this->belongsTo(PppProfile::class);
+    }
+
+    /**
+     * Billing & Accounting relationships
+     */
+    public function customerPackages(): HasMany
+    {
+        return $this->hasMany(CustomerPackages::class, 'customer_id');
+    }
+
+    public function latestCustomerPackage(): HasOne
+    {
+        return $this->hasOne(CustomerPackages::class)->latestOfMany();
+    }
+
+    public function activePackage(): HasOne
+    {
+        return $this->hasOne(CustomerPackages::class)->where('status', customerPackages::STATUS_ACTIVE);
+    }
+
+    public function invoices(): HasManyThrough
+    {
+        return $this->hasManyThrough(
+            Invoices::class,
+            CustomerPackages::class,
+            'customer_id',            // Foreign key on customer_packages
+            'customer_package_id',    // Foreign key on invoices
+        );
+    }
+
+    public function virtualAccounts(): HasManyThrough
+    {
+        return $this->hasManyThrough(VirtualAccount::class, Invoices::class, 'customer_package_id', 'invoice_id');
+    }
+
+    public function payments(): HasManyThrough
+    {
+        return $this->hasManyThrough(
+            Payment::class,
+            Invoices::class,
+            'customer_package_id',
+            'invoice_id',
+            'id',
+            'id'
+        );
+    }
+
+    public function customerDiscounts(): HasMany
+    {
+        return $this->hasMany(CustomerDiscount::class);
+    }
+
+    public function discounts(): BelongsToMany
+    {
+        return $this->belongsToMany(Discount::class, 'customer_discounts')
+            ->withPivot(['is_active', 'applied_at', 'created_at', 'updated_at'])
+            ->withTimestamps();
+    }
+
+    public function primaryDiscount(): BelongsTo
+    {
+        return $this->belongsTo(Discount::class, 'discount_id');
+    }
+
+    public function credits(): HasMany
+    {
+        return $this->hasMany(CustomerCredit::class);
+    }
+
+    public function receivables(): HasMany
+    {
+        return $this->hasMany(AccountReceivable::class);
     }
 
     /**
@@ -53,6 +145,11 @@ class Customer extends Model
         return $query->where('expiry_date', '<=', now()->addDays($days));
     }
 
+    public function scopeCategory($query, string $category)
+    {
+        return $query->where('customer_category', $category);
+    }
+
     /**
      * Get effective settings (profile or override)
      */
@@ -61,6 +158,7 @@ class Customer extends Model
         if ($this->profile_override && $this->rate_limit) {
             return $this->rate_limit;
         }
+
         return $this->pppProfile->rate_limit ?? null;
     }
 
@@ -69,6 +167,7 @@ class Customer extends Model
         if ($this->profile_override && $this->session_timeout_override) {
             return $this->session_timeout_override;
         }
+
         return $this->pppProfile->session_timeout ?? null;
     }
 
@@ -77,6 +176,7 @@ class Customer extends Model
         if ($this->profile_override && $this->idle_timeout_override) {
             return $this->idle_timeout_override;
         }
+
         return $this->pppProfile->idle_timeout ?? null;
     }
 
@@ -85,6 +185,7 @@ class Customer extends Model
         if ($this->profile_override && $this->only_one_override !== null) {
             return $this->only_one_override;
         }
+
         return $this->pppProfile->only_one ?? false;
     }
 
@@ -101,9 +202,10 @@ class Customer extends Model
      */
     public function getDaysUntilExpiryAttribute()
     {
-        if (!$this->expiry_date) {
+        if (! $this->expiry_date) {
             return null;
         }
+
         return now()->diffInDays($this->expiry_date, false);
     }
 
@@ -164,8 +266,8 @@ class Customer extends Model
             $script .= " caller-id=\"{$this->caller_id}\"";
         }
 
-        if (!$this->is_active || $this->status !== 'active') {
-            $script .= " disabled=yes";
+        if (! $this->is_active || $this->status !== 'active') {
+            $script .= ' disabled=yes';
         }
 
         return $script;
@@ -173,9 +275,12 @@ class Customer extends Model
 
     protected static function booted()
     {
-        static::creating(
-            fn($record) => $record->billing_number = fake()->unique()->numerify('#######')
-        );
+        static::creating(function ($record) {
+            $record->billing_number = $record->billing_number ?? fake()->unique()->numerify('#######');
+            if (empty($record->customer_category)) {
+                $record->customer_category = 'normal';
+            }
+        });
     }
 
     /**
@@ -191,6 +296,6 @@ class Customer extends Model
             $i++;
         }
 
-        return round($bytes, 2) . ' ' . $units[$i];
+        return round($bytes, 2).' '.$units[$i];
     }
 }

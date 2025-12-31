@@ -43,3 +43,5 @@ Route::get('check-voucher', fn() => view('temp.voucher-check'));
 //     'mikrotik-test',
 //     fn(MikrotikAPI $api) => $api->test()
 // );
+
+require __DIR__.'/customer.php';

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Customers\Tables;
 
+use App\Models\Customer;
 use App\Models\PppProfile;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -25,24 +26,28 @@ class CustomersTable
                 TextColumn::make('username')
                     ->searchable()
                     ->sortable(),
-                // TextColumn::make('full_name')
-                //     ->searchable()
+                TextColumn::make('full_name')
+                    ->searchable(),
+                // TextColumn::make('pppProfile.profile_name')
+                //     ->label('PPP Profile')
                 //     ->sortable(),
-                TextColumn::make('pppProfile.profile_name')
-                    ->label('PPP Profile')
+                TextColumn::make('activePackage.package.name')
+                    // ->formatStateUsing(fn(string $state) => $state . '-')
+                    ->suffix(fn (Customer $record) => " ({$record->pppProfile->profile_name})"),
+                TextColumn::make('isolir_at')
                     ->sortable(),
-                TextColumn::make('status')
-                    ->sortable(),
-                TextColumn::make('payment_status')
-                    ->sortable(),
-                IconColumn::make('is_active')
-                    ->boolean()
-                    ->sortable(),
+                // TextColumn::make('status')
+                //     ->sortable(),
+                // TextColumn::make('payment_status')
+                //     ->sortable(),
+                // IconColumn::make('is_active')
+                //     ->boolean()
+                //     ->sortable(),
             ])
             ->filters([
                 SelectFilter::make('ppp_profile_id')
                     ->label('Paket')
-                    ->options(PppProfile::whereNotNull('rate_limit')->pluck('profile_name', 'id'))
+                    ->options(PppProfile::whereNotNull('rate_limit')->pluck('profile_name', 'id')),
             ])
             ->recordActions([
                 ViewAction::make(),
