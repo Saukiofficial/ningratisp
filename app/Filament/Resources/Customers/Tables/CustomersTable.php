@@ -4,10 +4,15 @@ namespace App\Filament\Resources\Customers\Tables;
 
 use App\Models\Customer;
 use App\Models\PppProfile;
+use App\Services\ZeroTierProxyService;
+use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
+use Filament\Notifications\Notification;
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -33,7 +38,7 @@ class CustomersTable
                 //     ->sortable(),
                 TextColumn::make('activePackage.package.name')
                     // ->formatStateUsing(fn(string $state) => $state . '-')
-                    ->suffix(fn (Customer $record) => " ({$record->pppProfile->profile_name})"),
+                    ->suffix(fn(Customer $record) => " ({$record->pppProfile->profile_name})"),
                 TextColumn::make('isolir_at')
                     ->sortable(),
                 // TextColumn::make('status')
@@ -50,8 +55,49 @@ class CustomersTable
                     ->options(PppProfile::whereNotNull('rate_limit')->pluck('profile_name', 'id')),
             ])
             ->recordActions([
-                ViewAction::make(),
-                EditAction::make(),
+                ActionGroup::make([
+                    ViewAction::make(),
+                    EditAction::make(),
+                    // Action::make('test_router')
+                    // ->action(
+                    //     fn()=>
+                    // ),
+                    Action::make('open_router')
+                        ->name('Router')
+                        ->icon(Heroicon::OutlinedCog)
+                        ->url(
+                            fn(Customer $record) => 'http://' . $record->remote_address
+                        )
+                        ->openUrlInNewTab(),
+                    Action::make('open_router_outside')
+                        ->hidden()
+                        ->action(function (Customer $record, ZeroTierProxyService $proxyService) {
+
+                            $proxy = $proxyService->createOrGetProxy(
+                                $record->id,
+                                $record->remote_address
+                            );
+
+                            if (!$proxy) {
+                                Notification::make()
+                                    ->title('Failed Create')
+                                    ->danger()
+                                    ->send();
+                                return;
+                            }
+
+                            Notification::make()
+                                ->title('Success Created')
+                                ->body('URL : ' . $proxy->proxy_url)
+                                ->actions([
+                                    Action::make('open_router_url')
+                                        ->button()
+                                        ->url($proxy->proxy_url)
+                                ])
+                                ->success()
+                                ->send();
+                        })
+                ])
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
