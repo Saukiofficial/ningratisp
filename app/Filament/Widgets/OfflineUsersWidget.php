@@ -7,10 +7,14 @@ use Carbon\Carbon;
 use Filament\Actions\Action;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
+
+use function Symfony\Component\Clock\now;
 
 class OfflineUsersWidget extends BaseWidget
 {
@@ -29,7 +33,7 @@ class OfflineUsersWidget extends BaseWidget
         $this->isConnected = $mikrotik->isConnected();
 
         return $table
-            ->records(function (int $page, int $recordsPerPage, ?string $search, ?string $sortColumn, ?string $sortDirection) use ($mikrotik): LengthAwarePaginator {
+            ->records(function (int $page, int $recordsPerPage, array $filters, ?string $search, ?string $sortColumn, ?string $sortDirection) use ($mikrotik): LengthAwarePaginator {
                 try {
 
                     // Test connection by trying to get secrets
@@ -43,16 +47,12 @@ class OfflineUsersWidget extends BaseWidget
                             return false;
                         }
 
-                        try {
-                            $lastLoggedOut = Carbon::parse($secret['last-logged-out']);
-                        } catch (\Exception $e) {
-                            return false; // Ignore invalid date formats
-                        }
-
                         return !in_array($secret['name'], $activeUsers);
                     })->map(function ($secret) {
                         // Convert array to object for easier column access
-                        $secret['last-logged-out'] = Carbon::parse($secret['last-logged-out']);
+                        $lastLoggedOut = Carbon::parse($secret['last-logged-out']);
+                        $secret['last-logged-out'] = $lastLoggedOut;
+                        $secret['status'] = $lastLoggedOut->diffInMonths() >= 1 ? 'expired' : 'offline';
                         return  $secret;
                     })
                         ->sortBy(
@@ -68,6 +68,10 @@ class OfflineUsersWidget extends BaseWidget
                                     strtolower($search),
                                 ),
                             ),
+                        )
+                        ->when(
+                            filled($status = strtolower($filters['status']['value']) ?? null),
+                            fn(Collection $data): Collection => $data->where('status', $status)
                         );
                     $this->total = $collection->count();
                 } catch (\Exception $e) {
@@ -119,6 +123,15 @@ class OfflineUsersWidget extends BaseWidget
                     })
                     ->since()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('status')
+            ])
+            ->filters([
+                SelectFilter::make('status')
+                    ->options([
+                        'expired' => 'Expired',
+                        'offline' => 'Offline'
+                    ])
+                    ->default('offline')
             ])
             ->defaultSort('last-logged-out')
             ->paginated([10, 25, 50])
