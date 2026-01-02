@@ -3,6 +3,7 @@
 namespace App\Filament\Widgets;
 
 use App\Helpers\MikrotikAPI;
+use Carbon\Carbon;
 use Filament\Support\Icons\Heroicon;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
@@ -23,16 +24,39 @@ class OnlineOfflineUsersStatWidget extends BaseWidget
             $mikrotik = new MikrotikAPI();
             $activePpp = $mikrotik->getPppActive();
             $users = $mikrotik->getPppSecrets();
-            $onlineUsers = 0;
+            $activeUsers = collect($mikrotik->getPppActive())->pluck('name')->all();
+            $onlineUsers = $offlineUsers = $expiredUsers = 0;
+            $inactiveUsers = [];
 
+            // online user
             if (is_array($activePpp) && (empty($activePpp) || isset($activePpp[0]))) {
                 $onlineUsers = count($activePpp);
             }
-            $offlineUsers = count($users) - $onlineUsers;
+
+            // find inactive user
+            foreach ($users as $user) {
+                if (!isset($user['name']) || !isset($user['last-logged-out'])) {
+                    continue;
+                }
+
+                if (!in_array($user['name'], $activeUsers)) {
+                    $inactiveUsers[] = $user;
+                }
+            }
+
+            // separete expired and offline user in inactive users
+            array_map(
+                function ($user) use (&$expiredUsers, &$offlineUsers) {
+                    return Carbon::parse($user['last-logged-out'])->diffInMonths() > 1
+                        ? $expiredUsers++ : $offlineUsers++;
+                },
+                $inactiveUsers
+            );
 
             // Cache the successful result
             cache()->put('online_users_count', $onlineUsers, now()->addMinutes(5));
             cache()->put('offline_users_count', $offlineUsers, now()->addMinutes(5));
+            cache()->put('expired_users_count', $expiredUsers, now()->addMinutes(5));
             cache()->put('mikrotik_status', 'online', now()->addMinutes(5));
 
             return [
@@ -44,12 +68,17 @@ class OnlineOfflineUsersStatWidget extends BaseWidget
                     ->description('PPPoE users currently offline')
                     ->color('danger')
                     ->icon(Heroicon::OutlinedSignalSlash),
+                Stat::make('Expired Users', $expiredUsers)
+                    ->description('Expired PPPoE users')
+                    ->color('danger')
+                    ->icon(Heroicon::OutlinedCalendarDateRange),
             ];
         } catch (\Exception $e) {
 
             // Try to get cached data
             $cachedCount = cache()->get('online_users_count', 0);
             $cachedCountOffline = cache()->get('offline_users_count', 0);
+            $cachedCountExpired = cache()->get('expired_users_count', 0);
             $lastKnownStatus = cache()->get('mikrotik_status', 'unknown');
 
             // Calculate how old the cached data is
@@ -61,6 +90,10 @@ class OnlineOfflineUsersStatWidget extends BaseWidget
                     ->color('danger')
                     ->icon('heroicon-o-exclamation-triangle'),
                 Stat::make('Offline Users', $cachedCountOffline)
+                    ->description($this->getOfflineDescription($cacheAge))
+                    ->color('danger')
+                    ->icon('heroicon-o-exclamation-triangle'),
+                Stat::make('Expired Users', $cachedCountExpired)
                     ->description($this->getOfflineDescription($cacheAge))
                     ->color('danger')
                     ->icon('heroicon-o-exclamation-triangle'),
@@ -117,6 +150,7 @@ class OnlineOfflineUsersStatWidget extends BaseWidget
         if (!$this->isMikrotikReachable()) {
             $cachedCount = cache()->get('online_users_count', 0);
             $cachedOfflineCount = cache()->get('offline_users_count', 0);
+            $cachedExpiredCount = cache()->get('expired_users_count', 0);
             $cacheAge = $this->getCacheAge();
 
             return [
@@ -125,6 +159,10 @@ class OnlineOfflineUsersStatWidget extends BaseWidget
                     ->color('warning')
                     ->icon('heroicon-o-wifi-x'),
                 Stat::make('Offline Users', $cachedOfflineCount)
+                    ->description("Connection failed - Last data: {$cacheAge}")
+                    ->color('warning')
+                    ->icon('heroicon-o-wifi-x'),
+                Stat::make('Expired Users', $cachedExpiredCount)
                     ->description("Connection failed - Last data: {$cacheAge}")
                     ->color('warning')
                     ->icon('heroicon-o-wifi-x'),
