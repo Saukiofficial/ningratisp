@@ -3,7 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Filament\Widgets\OfflineUsersWidget;
-use App\Filament\Widgets\OnlineUsersWidget;
+use App\Filament\Widgets\OnlineOfflineUsersStatWidget;
 use App\Filament\Widgets\TrafficWidget;
 use BackedEnum;
 use Filament\Pages\Page;
@@ -19,7 +19,7 @@ class InformationMikrotik extends Page
     {
         return [
             TrafficWidget::class,
-            OnlineUsersWidget::class,
+            OnlineOfflineUsersStatWidget::class,
             OfflineUsersWidget::class
         ];
     }

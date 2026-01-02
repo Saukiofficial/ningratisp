@@ -3,10 +3,11 @@
 namespace App\Filament\Widgets;
 
 use App\Helpers\MikrotikAPI;
+use Filament\Support\Icons\Heroicon;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
-class OnlineUsersWidget extends BaseWidget
+class OnlineOfflineUsersStatWidget extends BaseWidget
 {
     protected static ?int $sort = 2;
     protected static bool $isDiscovered = false;
@@ -21,26 +22,34 @@ class OnlineUsersWidget extends BaseWidget
 
             $mikrotik = new MikrotikAPI();
             $activePpp = $mikrotik->getPppActive();
+            $users = $mikrotik->getPppSecrets();
             $onlineUsers = 0;
 
             if (is_array($activePpp) && (empty($activePpp) || isset($activePpp[0]))) {
                 $onlineUsers = count($activePpp);
             }
+            $offlineUsers = count($users) - $onlineUsers;
 
             // Cache the successful result
             cache()->put('online_users_count', $onlineUsers, now()->addMinutes(5));
+            cache()->put('offline_users_count', $offlineUsers, now()->addMinutes(5));
             cache()->put('mikrotik_status', 'online', now()->addMinutes(5));
 
             return [
                 Stat::make('Online Users', $onlineUsers)
                     ->description('PPPoE users currently online')
                     ->color('success')
-                    ->icon('heroicon-o-signal'),
+                    ->icon(Heroicon::OutlinedSignal),
+                Stat::make('Offline Users', $offlineUsers)
+                    ->description('PPPoE users currently offline')
+                    ->color('danger')
+                    ->icon(Heroicon::OutlinedSignalSlash),
             ];
         } catch (\Exception $e) {
 
             // Try to get cached data
             $cachedCount = cache()->get('online_users_count', 0);
+            $cachedCountOffline = cache()->get('offline_users_count', 0);
             $lastKnownStatus = cache()->get('mikrotik_status', 'unknown');
 
             // Calculate how old the cached data is
@@ -48,6 +57,10 @@ class OnlineUsersWidget extends BaseWidget
 
             return [
                 Stat::make('Online Users', $cachedCount)
+                    ->description($this->getOfflineDescription($cacheAge))
+                    ->color('danger')
+                    ->icon('heroicon-o-exclamation-triangle'),
+                Stat::make('Offline Users', $cachedCountOffline)
                     ->description($this->getOfflineDescription($cacheAge))
                     ->color('danger')
                     ->icon('heroicon-o-exclamation-triangle'),
@@ -103,10 +116,15 @@ class OnlineUsersWidget extends BaseWidget
         // Check if Mikrotik is reachable before attempting API calls
         if (!$this->isMikrotikReachable()) {
             $cachedCount = cache()->get('online_users_count', 0);
+            $cachedOfflineCount = cache()->get('offline_users_count', 0);
             $cacheAge = $this->getCacheAge();
 
             return [
                 Stat::make('Online Users', $cachedCount)
+                    ->description("Connection failed - Last data: {$cacheAge}")
+                    ->color('warning')
+                    ->icon('heroicon-o-wifi-x'),
+                Stat::make('Offline Users', $cachedOfflineCount)
                     ->description("Connection failed - Last data: {$cacheAge}")
                     ->color('warning')
                     ->icon('heroicon-o-wifi-x'),

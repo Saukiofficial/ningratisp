@@ -9,6 +9,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 
 class OfflineUsersWidget extends BaseWidget
@@ -18,6 +19,9 @@ class OfflineUsersWidget extends BaseWidget
     protected bool $isConnected = true;
     protected string $connectionError = '';
     protected static bool $isDiscovered = false;
+    protected ?int $total = 0;
+
+    protected int|string|array $columnSpan = 'full';
 
     public function table(Table $table): Table
     {
@@ -25,7 +29,7 @@ class OfflineUsersWidget extends BaseWidget
         $this->isConnected = $mikrotik->isConnected();
 
         return $table
-            ->records(function () use ($mikrotik): array {
+            ->records(function (int $page, int $recordsPerPage, ?string $search, ?string $sortColumn, ?string $sortDirection) use ($mikrotik): LengthAwarePaginator {
                 try {
 
                     // Test connection by trying to get secrets
@@ -34,7 +38,7 @@ class OfflineUsersWidget extends BaseWidget
 
                     $this->connectionError = 'Router not connected';
 
-                    return collect($secrets)->filter(function ($secret) use ($activeUsers) {
+                    $collection = collect($secrets)->filter(function ($secret) use ($activeUsers) {
                         if (!isset($secret['name']) || !isset($secret['last-logged-out'])) {
                             return false;
                         }
@@ -45,24 +49,43 @@ class OfflineUsersWidget extends BaseWidget
                             return false; // Ignore invalid date formats
                         }
 
-                        return !in_array($secret['name'], $activeUsers) && $lastLoggedOut->diffInHours(now()) > 24;
+                        return !in_array($secret['name'], $activeUsers);
                     })->map(function ($secret) {
                         // Convert array to object for easier column access
+                        $secret['last-logged-out'] = Carbon::parse($secret['last-logged-out']);
                         return  $secret;
-                    })->values()->toArray();
+                    })
+                        ->sortBy(
+                            $sortColumn,
+                            SORT_REGULAR,
+                            $sortDirection === 'desc',
+                        )
+                        ->when(
+                            filled($search),
+                            fn(Collection $data): Collection => $data->filter(
+                                fn(array $record): bool => str_contains(
+                                    strtolower($record['name']),
+                                    strtolower($search),
+                                ),
+                            ),
+                        );
+                    $this->total = $collection->count();
                 } catch (\Exception $e) {
                     $this->isConnected = false;
                     $this->connectionError = $e->getMessage();
 
                     // Return dummy data to show connection status
-                    return [
+                    $collection = collect([
                         [
                             'name' => 'Connection Error',
                             'last-logged-out' => 'Unable to connect to MikroTik',
                             'status' => 'error'
                         ]
-                    ];
+                    ]);
                 }
+
+                $records = $collection->forPage($page, $recordsPerPage);
+                return new LengthAwarePaginator($records, $collection->count(), $recordsPerPage, $page);
             })
             ->columns([
                 Tables\Columns\TextColumn::make('name')
@@ -79,24 +102,25 @@ class OfflineUsersWidget extends BaseWidget
                         return 'heroicon-o-user';
                     }),
                 Tables\Columns\TextColumn::make('last-logged-out')
-                    ->label('Last Logged Out')
-                    ->formatStateUsing(function ($state, $record) {
-                        if (!$this->isConnected) {
-                            return $this->connectionError;
-                        }
+                    ->label('Last Active')
+                    // ->formatStateUsing(function ($state, $record) {
+                    //     if (!$this->isConnected) {
+                    //         return $this->connectionError;
+                    //     }
 
-                        try {
-                            return Carbon::parse($state)->format('Y-m-d H:i:s');
-                        } catch (\Exception $e) {
-                            return $state;
-                        }
-                    })
+                    //     try {
+                    //         return Carbon::parse($state)->format('Y-m-d H:i:s');
+                    //     } catch (\Exception $e) {
+                    //         return $state;
+                    //     }
+                    // })
                     ->color(function ($record) {
                         return isset($record->status) && $record->status === 'error' ? 'danger' : null;
                     })
+                    ->since()
                     ->sortable(),
             ])
-            ->defaultSort('last-logged-out', 'desc')
+            ->defaultSort('last-logged-out')
             ->paginated([10, 25, 50])
             ->poll('30s') // Auto-refresh every 30 seconds
             ->headerActions([
@@ -114,7 +138,7 @@ class OfflineUsersWidget extends BaseWidget
                     ->action(function () {
                         // Force refresh by clearing any cache if needed
                         $this->dispatch('$refresh');
-                    })
+                    }),
             ])
             ->emptyStateHeading($this->isConnected ? 'No Offline Users' : 'Connection Error')
             ->emptyStateDescription(
