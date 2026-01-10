@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class PppProfile extends Model
 {
@@ -28,6 +29,11 @@ class PppProfile extends Model
     public function customers()
     {
         return $this->hasMany(Customer::class,);
+    }
+
+    public function package(): HasOne
+    {
+        return $this->hasOne(Packages::class);
     }
 
     /**
