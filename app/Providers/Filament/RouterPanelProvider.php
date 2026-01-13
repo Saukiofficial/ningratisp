@@ -11,6 +11,7 @@ use Filament\Navigation\NavigationGroup;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\Support\Enums\Width;
 use Filament\Widgets\AccountWidget;
 use Filament\Widgets\FilamentInfoWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -65,7 +66,8 @@ class RouterPanelProvider extends PanelProvider
             ->plugins([
                 FilamentApexChartsPlugin::make(),
             ])
-            ->databaseNotifications();
+            ->databaseNotifications()
+            ->maxContentWidth(Width::Full);
         // ->viteTheme('resources/css/filament/router/theme.css');
     }
 }

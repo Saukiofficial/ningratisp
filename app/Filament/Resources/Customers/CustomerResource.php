@@ -60,7 +60,7 @@ class CustomerResource extends Resource
                             if (!$customer->exists) {
                                 $customer->username = $secret['name'];
                                 $customer->password_pptp = $secret['password']; // Assuming plain text password from MikroTik
-                                $customer->password = Hash::make($secret['password']); // Assuming plain text password from MikroTik
+                                $customer->setPasswordAttribute($secret['password']); // Assuming plain text password from MikroTik
                                 $customer->service_name = $secret['service'] ?? null;
 
                                 // Find or create PPP Profile
