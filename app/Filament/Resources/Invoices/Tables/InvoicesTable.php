@@ -91,7 +91,7 @@ class InvoicesTable
                                     ->preload()
                                     ->required()
                                     ->default(
-                                        PaymentMethod::query()->where('code', 'cash')->firstOrFail()->id
+                                        PaymentMethod::query()->where('code', 'cash')->first()?->id ?? null
                                     )
                                     ->disabled()
                                     ->dehydrated(),
