@@ -16,8 +16,11 @@ use Filament\Notifications\Notification;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class CustomersTable
 {
@@ -61,7 +64,11 @@ class CustomersTable
                     ->options(PppProfile::whereNotNull('rate_limit')->pluck('profile_name', 'id')),
                 SelectFilter::make('customer_category')
                     ->label('Category')
-                    ->options(Discount::getCategoryStatus())
+                    ->options(Discount::getCategoryStatus()),
+                Filter::make('isolir_at')
+                    ->label('Isolir')
+                    ->toggle()
+                    ->query(fn(Builder $query) => $query->whereNotNull('isolir_at'))
             ])
             ->recordActions([
                 ActionGroup::make([
