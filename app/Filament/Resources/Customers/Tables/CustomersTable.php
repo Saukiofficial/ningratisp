@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Customers\Tables;
 
 use App\Models\Customer;
+use App\Models\Discount;
 use App\Models\PppProfile;
 use App\Services\ZeroTierProxyService;
 use Filament\Actions\Action;
@@ -15,8 +16,11 @@ use Filament\Notifications\Notification;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class CustomersTable
 {
@@ -41,6 +45,11 @@ class CustomersTable
                     ->suffix(fn(Customer $record) => " ({$record->pppProfile->profile_name})"),
                 TextColumn::make('isolir_at')
                     ->sortable(),
+                TextColumn::make('customer_category')
+                    ->label('Category')
+                    ->formatStateUsing(
+                        fn($state) => Discount::getCategoryStatus()[$state]
+                    )
                 // TextColumn::make('status')
                 //     ->sortable(),
                 // TextColumn::make('payment_status')
@@ -53,6 +62,13 @@ class CustomersTable
                 SelectFilter::make('ppp_profile_id')
                     ->label('Paket')
                     ->options(PppProfile::whereNotNull('rate_limit')->pluck('profile_name', 'id')),
+                SelectFilter::make('customer_category')
+                    ->label('Category')
+                    ->options(Discount::getCategoryStatus()),
+                Filter::make('isolir_at')
+                    ->label('Isolir')
+                    ->toggle()
+                    ->query(fn(Builder $query) => $query->whereNotNull('isolir_at'))
             ])
             ->recordActions([
                 ActionGroup::make([

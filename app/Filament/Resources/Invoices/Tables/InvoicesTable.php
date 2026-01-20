@@ -10,6 +10,7 @@ use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -17,8 +18,12 @@ use Filament\Schemas\Components\Section;
 use Filament\Support\RawJs;
 use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\Indicator;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 
 class InvoicesTable
@@ -64,7 +69,41 @@ class InvoicesTable
             ])
             ->filters([
                 SelectFilter::make('payment_status')
-                    ->options(Payment::getStatusLabel())
+                    ->options(Payment::getStatusLabel()),
+                SelectFilter::make('status')
+                    ->options(Invoices::getStatusLabel())
+                    ->default(Invoices::STATUS_UNPAID),
+                Filter::make('invoice_date')
+                    ->schema([
+                        DatePicker::make('start_date'),
+                        DatePicker::make('end_date'),
+                    ])
+                    ->query(function (Builder $query, array $data) {
+                        return $query
+                            ->when(
+                                $data['start_date'],
+                                fn(Builder $query, $date): Builder => $query->whereDate('invoice_date', '>=', $date),
+                            )
+                            ->when(
+                                $data['end_date'],
+                                fn(Builder $query, $date): Builder => $query->whereDate('invoice_date', '<=', $date),
+                            );
+                    })
+                    ->indicateUsing(function (array $data): array {
+                        $indicators = [];
+
+                        if ($data['start_date'] ?? null) {
+                            $indicators[] = Indicator::make('Start: ' . Date::parse($data['start_date'])->format('d F Y'))
+                                ->removeField('from');
+                        }
+
+                        if ($data['end_date'] ?? null) {
+                            $indicators[] = Indicator::make('Until: ' . Date::parse($data['end_date'])->format('d F Y'))
+                                ->removeField('until');
+                        }
+
+                        return $indicators;
+                    })
             ])
             ->recordActions([
                 ActionGroup::make([
@@ -91,7 +130,7 @@ class InvoicesTable
                                     ->preload()
                                     ->required()
                                     ->default(
-                                        PaymentMethod::query()->where('code', 'cash')->firstOrFail()->id
+                                        PaymentMethod::query()->where('code', 'cash')->first()?->id ?? null
                                     )
                                     ->disabled()
                                     ->dehydrated(),

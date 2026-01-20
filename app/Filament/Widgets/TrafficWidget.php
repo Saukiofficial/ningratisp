@@ -20,7 +20,7 @@ class TrafficWidget extends BaseWidget
             }
 
             $mikrotik = new MikrotikAPI();
-            $interfaces = ['ether11', 'ether12'];
+            $interfaces = ['ether11', 'ether12', 'ether10'];
 
             $totalTx = 0;
             $totalRx = 0;
@@ -49,11 +49,11 @@ class TrafficWidget extends BaseWidget
 
             return [
                 Stat::make('Upload', number_format($txMbps, 2) . ' Mbps')
-                    ->description('Combined upload (ether11 + ether12)')
+                    ->description('Combined upload ' . implode(' + ', $interfaces))
                     ->color('info')
                     ->icon('heroicon-o-arrow-up'),
                 Stat::make('Download', number_format($rxMbps, 2) . ' Mbps')
-                    ->description('Combined download (ether11 + ether12)')
+                    ->description('Combined download ' . implode(' + ', $interfaces))
                     ->color('info')
                     ->icon('heroicon-o-arrow-down'),
             ];

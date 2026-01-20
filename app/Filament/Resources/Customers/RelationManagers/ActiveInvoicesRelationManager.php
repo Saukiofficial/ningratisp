@@ -73,7 +73,7 @@ class ActiveInvoicesRelationManager extends RelationManager
                                     ->preload()
                                     ->required()
                                     ->default(
-                                        PaymentMethod::query()->where('code', 'cash')->firstOrFail()->id
+                                        PaymentMethod::query()->where('code', 'cash')->first()?->id ?? null
                                     ),
                                 TextInput::make('reference_id')
                                     ->label('Reference')
@@ -159,7 +159,7 @@ class ActiveInvoicesRelationManager extends RelationManager
                                 ->preload()
                                 ->required()
                                 ->default(
-                                    PaymentMethod::query()->where('code', 'cash')->firstOrFail()->id
+                                    PaymentMethod::query()->where('code', 'cash')->first()?->id ?? null
                                 )
                                 ->disabled()
                                 ->dehydrated(),

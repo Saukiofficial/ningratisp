@@ -19,7 +19,7 @@ class Customer extends User
 
     protected $hidden = [
         'password',
-        'password_pptp',
+        // 'password_pptp',
     ];
 
     protected $casts = [
@@ -116,10 +116,9 @@ class Customer extends User
     /**
      * Automatically hash password when setting
      */
-    public function setPasswordAttribute($value)
+    public function setPasswordAttribute($value): void
     {
-        $this->attributes['password'] = $value;
-        // $this->attributes['password'] = Hash::make($value);
+        $this->attributes['password'] = Hash::make($value);
     }
 
     /**
@@ -296,6 +295,6 @@ class Customer extends User
             $i++;
         }
 
-        return round($bytes, 2).' '.$units[$i];
+        return round($bytes, 2) . ' ' . $units[$i];
     }
 }
