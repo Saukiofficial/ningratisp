@@ -1,7 +1,7 @@
 @extends('base-landing', ['title' => 'Ningrat ISP | Metode Pembayaran'])
 
 @push('head')
-    <link href="{{ asset('assets/css/bootstrap-icons.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('assets/vendor/bootstrap-icons/bootstrap-icons.min.css') }}" rel="stylesheet">
 
     <style>
         .payment-wrapper {
@@ -87,6 +87,41 @@
             display: none;
             /* Initially hidden */
         }
+
+        .whatsapp-input-group {
+            position: relative;
+        }
+
+        .whatsapp-input-group .form-control {
+            padding-left: 80px;
+        }
+
+        .whatsapp-prefix {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 10;
+            color: #6c757d;
+            font-weight: 500;
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #0d6efd, #0056b3);
+            color: white;
+        }
+
+        .modal-header .btn-close {
+            filter: invert(1) grayscale(100%) brightness(200%);
+        }
+
+        .payment-details {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-left: 4px solid #0d6efd;
+        }
     </style>
 @endpush
 
@@ -159,11 +194,11 @@
                                                             </div>
                                                             <div class="col">
                                                                 <small id="channel_fee" class="text-muted">Biaya admin:
-                                                                    {{ TaxCalculate::getLabelTax($channel->fee()?->amount ?? 0, $channel->fee()?->unit) }}</small>
+                                                                    {{ TaxCalculate::getLabelTax($channel->fee?->amount ?? 0, $channel->fee?->unit) }}</small>
                                                             </div>
                                                             <div class="col">
                                                                 <small id="channel_total" class="text-muted">Total:
-                                                                    Rp{{ number_format(TaxCalculate::calculate($price, $channel->fee()?->amount, $channel->fee()?->unit), 0, ',', '.') }}</small>
+                                                                    Rp{{ number_format(TaxCalculate::calculate($price, $channel->fee?->amount, $channel->fee?->unit), 0, ',', '.') }}</small>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -269,6 +304,65 @@
         </div>
     </div>
 
+    <!-- Payment Confirmation Modal -->
+    <div class="modal fade" id="paymentConfirmModal" tabindex="-1" aria-labelledby="paymentConfirmModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="paymentConfirmModalLabel">
+                        <i class="bi bi-credit-card me-2"></i>Konfirmasi Pembayaran
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="payment-details">
+                        <h6 class="fw-bold mb-2">Detail Pembayaran:</h6>
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Metode Pembayaran:</span>
+                            <span id="modal-payment-method" class="fw-bold"></span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Total Pembayaran:</span>
+                            <span id="modal-payment-total" class="fw-bold text-primary"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="whatsappNumber" class="form-label">
+                            <i class="bi bi-whatsapp text-success me-1"></i>
+                            Nomor WhatsApp <span class="text-muted">(Opsional)</span>
+                        </label>
+                        <div class="whatsapp-input-group">
+                            <span class="whatsapp-prefix">+62</span>
+                            <input type="tel" class="form-control" id="whatsappNumber" placeholder="8123456789"
+                                maxlength="12">
+                        </div>
+                        <div class="form-text">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Nomor WhatsApp untuk notifikasi voucher (tanpa +62 dan angka 0 di depan)
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info d-flex align-items-center" role="alert">
+                        <i class="bi bi-info-circle-fill me-2"></i>
+                        <div>
+                            <small>Pastikan data pembayaran sudah sesuai sebelum melanjutkan.</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-1"></i>Batal
+                    </button>
+                    <button type="button" class="btn btn-primary" id="confirmPaymentBtn">
+                        <i class="bi bi-check-circle me-1"></i>Buat Tagihan
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
         <div id="toast-copy" class="toast align-items-center text-bg-success border-0" role="alert"
             aria-live="assertive" aria-atomic="true">
@@ -291,78 +385,110 @@
 
 @push('script')
     <script>
-        function goConfirm(el) {
-            const c_name = $(el).find('#channel_name').text()
-            const c_total = $(el).find('#channel_total').text()
-            const msg = `Apakah data pembayaran sudah sesuai? <br><br>
-        <p>Metode pembayaran : ${c_name} <br>${c_total}</p>
-        <small class="text-muted text-small"><em>klik OK untuk melanjutkan</em></small>
-        `
-            bootbox.confirm({
-                message: msg,
-                buttons: {
-                    confirm: {
-                        label: 'Buat Tagihan',
-                        className: 'btn-primary bootbox-bayar'
-                    },
-                    cancel: {
-                        label: 'Batal',
-                        className: 'btn-secondary'
-                    }
-                },
-                callback: function(r) {
-                    // Disable the confirm button after clicking "OK"
-                    $('.bootbox-bayar').prop('disabled', true);
-                    if (r) {
-                        // $('[name="channel_id"]').val($(el).data('id'))
-                        // $('#form-req-voucher').submit()
-                        // $('.body-payment-method').remove()
-                        // $('.body-summary').show()
-                        // disableButton()
-                        // setTimeout(() => {
-                        //     checkStatus()
-                        // }, 2000);
+        let paymentConfirmModal;
 
-                        requestQRIS()
-                    }
-                }
-            });
+        document.addEventListener('DOMContentLoaded', function() {
+            paymentConfirmModal = new bootstrap.Modal(document.getElementById('paymentConfirmModal'));
+        });
+
+        function goConfirm(el) {
+            const c_name = $(el).find('#channel_name').text();
+            const c_total = $(el).find('#channel_total').text();
+
+            // Populate modal with payment details
+            $('#modal-payment-method').text(c_name);
+            $('#modal-payment-total').text(c_total);
+
+            // Show the modal
+            paymentConfirmModal.show();
         }
 
-        function requestQRIS() {
-            const loader = $('.request-qris-loader')
-            loader.css('display', 'flex')
+        // Handle confirm payment button click
+        $('#confirmPaymentBtn').on('click', function() {
+            // Disable the button to prevent multiple clicks
+            $(this).prop('disabled', true);
+            $(this).html('<span class="spinner-border spinner-border-sm me-1"></span>Memproses...');
+
+            // Get WhatsApp number
+            const whatsappNumber = $('#whatsappNumber').val().trim();
+
+            // Hide modal
+            paymentConfirmModal.hide();
+
+            // Call requestQRIS with WhatsApp number
+            requestQRIS(whatsappNumber);
+        });
+
+        // Reset modal when hidden
+        $('#paymentConfirmModal').on('hidden.bs.modal', function() {
+            $('#confirmPaymentBtn').prop('disabled', false);
+            $('#confirmPaymentBtn').html('<i class="bi bi-check-circle me-1"></i>Buat Tagihan');
+            $('#whatsappNumber').val('');
+        });
+
+        // WhatsApp number formatting
+        $('#whatsappNumber').on('input', function() {
+            let value = $(this).val().replace(/\D/g, ''); // Remove non-digits
+
+            // Remove leading zeros
+            value = value.replace(/^0+/, '');
+
+            // Limit to 12 digits (typical Indonesian mobile number length without country code)
+            if (value.length > 12) {
+                value = value.substring(0, 12);
+            }
+
+            $(this).val(value);
+        });
+
+        function requestQRIS(whatsappNumber = '') {
+            const loader = $('.request-qris-loader');
+            loader.css('display', 'flex');
 
             const form = $('#form-req-voucher');
-            console.log()
+
+            // Prepare data for AJAX request
+            const requestData = {
+                pointer: form.find('[name="pointer"]').val(),
+                channel_id: 'qris',
+                seal_code: form.find('[name="seal_code"]').val()
+            };
+
+            // Add WhatsApp number if provided
+            if (whatsappNumber) {
+                requestData.whatsapp_number = '+62' + whatsappNumber;
+            }
 
             $.ajax({
                 url: "{{ route('voucherRequest-qris') }}",
                 method: "POST",
-                data: {
-                    pointer: form.find('[name="pointer"]').val(),
-                    channel_id: 'qris',
-                    seal_code: form.find('[name="seal_code"]').val()
-                },
+                data: requestData,
                 success: function(resp) {
-                    loader.css('display', 'none')
-                    $('.body-payment-method').remove()
-                    $('.body-summary').show()
-                    disableButton()
+                    loader.css('display', 'none');
+                    $('.body-payment-method').remove();
+                    $('.body-summary').show();
+                    disableButton();
 
-                    let boxQris = $('#box-qris')
-                    boxQris.attr('src', resp.url)
+                    let boxQris = $('#box-qris');
+                    boxQris.attr('src', resp.url);
 
-                    checkStatus()
-                }
-            })
+                    checkStatus();
+                },
+                // error: function(xhr, status, error) {
+                //     loader.css('display', 'none');
+                //     console.error('Error requesting QRIS:', error);
+
+                //     // Show error message
+                //     const errorMsg = xhr.responseJSON?.message || 'Terjadi kesalahan saat memproses pembayaran';
+                //     alert('Error: ' + errorMsg);
+                // }
+            });
         }
 
         function disableButton() {
-            $('#flag-status').show()
-            $('#flag-msg').text('Pembayaran sedang berlangsung...')
-
-            $('#check-status-btn').show()
+            $('#flag-status').show();
+            $('#flag-msg').text('Pembayaran sedang berlangsung...');
+            $('#check-status-btn').show();
         }
 
         function checkStatus() {
@@ -373,18 +499,18 @@
                 success: function(response) {
                     if (!response.error && response.data.status == '1') {
                         // Optionally, handle further actions here
-                        $('#flag-status .spinner-border').hide()
-                        $('#flag-msg').text('Pembayaran telah berhasil')
-                        $('#flag-status').removeClass('btn-warning').addClass('btn-success')
-                        $('#coupon-code').html(`<strong>${response.data.code}</strong>`)
-                        $('.box-copy-button').show()
-                        $('#box-instr-qris').hide()
+                        $('#flag-status .spinner-border').hide();
+                        $('#flag-msg').text('Pembayaran telah berhasil');
+                        $('#flag-status').removeClass('btn-warning').addClass('btn-success');
+                        $('#coupon-code').html(`<strong>${response.data.code}</strong>`);
+                        $('.box-copy-button').show();
+                        $('#box-instr-qris').hide();
                     } else {
-                        $('#order_id').html(`<strong>${response.data.order_id}</strong>`)
-                        $('#item-name').html(`<strong>${response.data.description}</strong>`)
+                        $('#order_id').html(`<strong>${response.data.order_id}</strong>`);
+                        $('#item-name').html(`<strong>${response.data.description}</strong>`);
                     }
 
-                    $('#total-amount').html(`<strong>Rp ${response.data.total_amount}</strong>`)
+                    $('#total-amount').html(`<strong>Rp ${response.data.total_amount}</strong>`);
                 },
                 error: function(xhr, status, error) {
                     console.error('Error checking status:', error);
@@ -418,7 +544,7 @@
                 }
                 document.body.removeChild(textArea);
             }
-        })
+        });
 
         function showToast(message) {
             const toastElement = document.getElementById('toast-copy');

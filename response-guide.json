@@ -1,0 +1,155 @@
+{
+    "mandiri": {
+        "status_code": "201",
+        "status_message": "OK, Mandiri Bill transaction is successful",
+        "transaction_id": "a33d4b87-466e-49a0-8e4a-381282c704e0",
+        "order_id": "INV-MAN-202505-0001",
+        "merchant_id": "G514149311",
+        "gross_amount": "5000.00",
+        "currency": "IDR",
+        "payment_type": "echannel",
+        "transaction_time": "2025-09-21 08:59:36",
+        "transaction_status": "pending",
+        "fraud_status": "accept",
+        "bill_key": "417240129572",
+        "biller_code": "70012",
+        "expiry_time": "2025-09-22 08:59:36"
+    },
+    "qris": {
+        "status_code": "201",
+        "status_message": "Gopay transaction is created",
+        "transaction_id": "85f86936-b037-4423-a484-12299ea6471e",
+        "order_id": "INV-MAN-202505-000127 mf",
+        "merchant_id": "G514149311",
+        "gross_amount": "1007.00",
+        "currency": "IDR",
+        "payment_type": "gopay",
+        "transaction_time": "2025-09-21 09:06:58",
+        "transaction_status": "pending",
+        "fraud_status": "accept",
+        "actions": [
+            {
+                "name": "generate-qr-code",
+                "method": "GET",
+                "url": "https://api.sandbox.midtrans.com/v2/gopay/85f86936-b037-4423-a484-12299ea6471e/qr-code"
+            },
+            {
+                "name": "generate-qr-code-v2",
+                "method": "GET",
+                "url": "https://merchants-app.sbx.midtrans.com/v4/qris/gopay/A120250921020658BnVYleYSiMID/qr-code"
+            },
+            {
+                "name": "deeplink-redirect",
+                "method": "GET",
+                "url": "https://simulator.sandbox.midtrans.com/v2/deeplink/detail?tref=A120250921020658BnVYleYSiMID"
+            },
+            {
+                "name": "get-status",
+                "method": "GET",
+                "url": "https://api.sandbox.midtrans.com/v2/85f86936-b037-4423-a484-12299ea6471e/status"
+            },
+            {
+                "name": "cancel",
+                "method": "POST",
+                "url": "https://api.sandbox.midtrans.com/v2/85f86936-b037-4423-a484-12299ea6471e/cancel"
+            }
+        ],
+        "qr_string": "",
+        "expiry_time": "2025-09-21 09:21:58"
+    },
+    "bri": {
+        "status_code": "201",
+        "status_message": "Success, Bank Transfer transaction is created",
+        "transaction_id": "a760334b-a327-44e3-86bb-4ced4b53af0d",
+        "order_id": "INV-MAN-202505-000132 nt",
+        "merchant_id": "G514149311",
+        "gross_amount": "5000.00",
+        "currency": "IDR",
+        "payment_type": "bank_transfer",
+        "transaction_time": "2025-09-21 09:10:36",
+        "transaction_status": "pending",
+        "fraud_status": "accept",
+        "va_numbers": [
+            {
+                "bank": "bri",
+                "va_number": "493115725990625609"
+            }
+        ],
+        "expiry_time": "2025-09-22 09:10:36"
+    },
+    "bca": {
+        "status_code": "201",
+        "status_message": "Success, Bank Transfer transaction is created",
+        "transaction_id": "46319363-beca-4f40-89e9-f1fd79306c6d",
+        "order_id": "INV-MAN-202505-000161 fn",
+        "merchant_id": "G514149311",
+        "gross_amount": "5000.00",
+        "currency": "IDR",
+        "payment_type": "bank_transfer",
+        "transaction_time": "2025-09-21 09:12:12",
+        "transaction_status": "pending",
+        "fraud_status": "accept",
+        "va_numbers": [
+            {
+                "bank": "bca",
+                "va_number": "49311565601020835945540"
+            }
+        ],
+        "expiry_time": "2025-09-22 09:12:12"
+    },
+    "permata": {
+        "status_code": "201",
+        "status_message": "Success, PERMATA VA transaction is successful",
+        "transaction_id": "704f3fff-ca07-44be-a663-75e3f295995b",
+        "order_id": "INV-MAN-202505-000105 ey",
+        "merchant_id": "G514149311",
+        "gross_amount": "5000.00",
+        "currency": "IDR",
+        "payment_type": "bank_transfer",
+        "transaction_time": "2025-09-21 09:14:33",
+        "transaction_status": "pending",
+        "fraud_status": "accept",
+        "permata_va_number": "4930003778515613",
+        "expiry_time": "2025-09-22 09:14:33"
+    },
+    "cimb": {
+        "status_code": "201",
+        "status_message": "Success, Bank Transfer transaction is created",
+        "transaction_id": "f48791ce-7635-4016-9132-135d610667d1",
+        "order_id": "INV-MAN-202505-000167 bc",
+        "merchant_id": "G514149311",
+        "gross_amount": "5000.00",
+        "currency": "IDR",
+        "payment_type": "bank_transfer",
+        "transaction_time": "2025-09-21 09:15:13",
+        "transaction_status": "pending",
+        "fraud_status": "accept",
+        "va_numbers": [
+            {
+                "bank": "cimb",
+                "va_number": "9311120929348585"
+            }
+        ],
+        "expiry_time": "2025-09-22 09:15:13"
+    },
+    "bni": {
+        "status_code": "201",
+        "status_message": "Success, Bank Transfer transaction is created",
+        "transaction_id": "dfd9a735-522b-45e9-97da-80e196f360e9",
+        "order_id": "INV-MAN-202505-000111 zc",
+        "merchant_id": "G514149311",
+        "gross_amount": "5000.00",
+        "currency": "IDR",
+        "payment_type": "bank_transfer",
+        "transaction_time": "2025-09-21 09:26:15",
+        "transaction_status": "pending",
+        "fraud_status": "accept",
+        "va_numbers": [
+            {
+                "bank": "bni",
+                "va_number": "9884931188325106"
+            }
+        ],
+        "expiry_time": "2025-09-22 09:26:15"
+    }
+}

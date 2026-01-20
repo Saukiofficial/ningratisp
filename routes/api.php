@@ -3,6 +3,7 @@
 use App\Helpers\MikrotikAPI;
 use App\Http\Controllers\HotspotController;
 use App\Http\Middleware\VerifyCsrfToken;
+use App\Http\Controllers\QrisProxyController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -16,6 +17,8 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
+
+Route::get('/qris-image/{transactionId}', QrisProxyController::class)->name('qris.proxy');
 
 Route::group(['prefix' => 'midtrans'], function () {
     Route::get('voucher', [HotspotController::class, 'preVoucherRequest']);
