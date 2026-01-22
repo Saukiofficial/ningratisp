@@ -15,6 +15,7 @@ use Filament\Forms\Components\DateTimePicker;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Filament\Support\Enums\Operation;
 use Filament\Support\Icons\Heroicon;
 
 class CustomerForm
@@ -35,12 +36,14 @@ class CustomerForm
                         TextInput::make('phone')
                             ->tel(),
                         Textarea::make('address')
-                            ->columnSpanFull()
+                            ->columnSpanFull(),
+                        Toggle::make('auto_isolir')->default(true),
                     ])
                     ->columns()
                     ->columnSpanFull(),
                 Section::make('Security')
                     ->description('Account security information for password')
+                    ->visibleOn(Operation::Edit)
                     ->footerActions([
                         Action::make('update_password')
                             ->icon(Heroicon::OutlinedKey)
@@ -84,6 +87,7 @@ class CustomerForm
                     ])
                     ->afterHeader([
                         Action::make('sync')
+                            ->visible(fn(?Customer $record) => $record)
                     ])
                     ->columnSpanFull(),
             ]);

@@ -43,13 +43,16 @@ class CustomersTable
                 TextColumn::make('activePackage.package.name')
                     // ->formatStateUsing(fn(string $state) => $state . '-')
                     ->suffix(fn(Customer $record) => " ({$record->pppProfile->profile_name})"),
-                TextColumn::make('isolir_at')
-                    ->sortable(),
                 TextColumn::make('customer_category')
                     ->label('Category')
                     ->formatStateUsing(
                         fn($state) => Discount::getCategoryStatus()[$state]
-                    )
+                    ),
+                IconColumn::make('auto_isolir')->boolean()
+                    ->trueIcon(Heroicon::OutlinedCheckBadge)
+                    ->falseIcon(Heroicon::OutlinedXMark),
+                TextColumn::make('isolir_at')
+                    ->sortable(),
                 // TextColumn::make('status')
                 //     ->sortable(),
                 // TextColumn::make('payment_status')
@@ -68,7 +71,9 @@ class CustomersTable
                 Filter::make('isolir_at')
                     ->label('Isolir')
                     ->toggle()
-                    ->query(fn(Builder $query) => $query->whereNotNull('isolir_at'))
+                    ->query(fn(Builder $query) => $query->whereNotNull('isolir_at')),
+                TernaryFilter::make('auto_isolir')
+                    ->label('Auto Isolir'),
             ])
             ->recordActions([
                 ActionGroup::make([
