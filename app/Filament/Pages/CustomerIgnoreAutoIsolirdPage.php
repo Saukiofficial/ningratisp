@@ -25,7 +25,7 @@ class CustomerIgnoreAutoIsolirdPage extends Page implements HasTable, HasForms
     public function table(Table $table): Table
     {
         return $table
-            ->query(Customer::query())
+            ->query(Customer::query()->orderByRaw('INET_ATON(remote_address)'))
             ->filters([
                 SelectFilter::make('remote_address')
                     ->options([
