@@ -2,7 +2,7 @@
 
 namespace App\Filament\Widgets;
 
-use App\Helpers\MikrotikAPI;
+use App\Helpers\MikrotikAPINative;
 use Carbon\Carbon;
 use Filament\Actions\Action;
 use Filament\Support\Icons\Heroicon;
@@ -29,7 +29,7 @@ class OfflineUsersWidget extends BaseWidget
 
     public function table(Table $table): Table
     {
-        $mikrotik = new MikrotikAPI();
+        $mikrotik = new MikrotikAPINative();
         $this->isConnected = $mikrotik->isConnected();
 
         return $table

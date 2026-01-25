@@ -2,11 +2,12 @@
 
 namespace App\Filament\Widgets;
 
-use App\Helpers\MikrotikAPI;
+use App\Helpers\MikrotikAPINative;
 use Carbon\Carbon;
 use Filament\Support\Icons\Heroicon;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
+use Illuminate\Support\Facades\Cache;
 
 class OnlineOfflineUsersStatWidget extends BaseWidget
 {
@@ -21,10 +22,16 @@ class OnlineOfflineUsersStatWidget extends BaseWidget
                 throw new \Exception('');
             }
 
-            $mikrotik = new MikrotikAPI();
+            $mikrotik = new MikrotikAPINative();
+            if (empty(cache('ppp_secrets'))) {
+                Cache::remember('ppp_secrets', now()->addMinutes(5), function () use ($mikrotik) {
+                    return $mikrotik->getPppSecrets();
+                });
+            }
+            $cacheUsers = cache('ppp_secrets');
+
             $activePpp = $mikrotik->getPppActive();
-            $users = $mikrotik->getPppSecrets();
-            $activeUsers = collect($mikrotik->getPppActive())->pluck('name')->all();
+            $activeUsers = collect($activePpp)->pluck('name')->all();
             $onlineUsers = $offlineUsers = $expiredUsers = 0;
             $inactiveUsers = [];
 
@@ -34,7 +41,7 @@ class OnlineOfflineUsersStatWidget extends BaseWidget
             }
 
             // find inactive user
-            foreach ($users as $user) {
+            foreach ($cacheUsers as $user) {
                 if (!isset($user['name']) || !isset($user['last-logged-out'])) {
                     continue;
                 }
@@ -130,10 +137,10 @@ class OnlineOfflineUsersStatWidget extends BaseWidget
     private function isMikrotikReachable(): bool
     {
         // You can implement a simple ping or connection test here
-        // This is a basic example - adjust based on your MikrotikAPI class
+        // This is a basic example - adjust based on your MikrotikAPINative class
         try {
-            $mikrotik = new MikrotikAPI();
-            // Assuming your MikrotikAPI has a simple connection test method
+            $mikrotik = new MikrotikAPINative();
+            // Assuming your MikrotikAPINative has a simple connection test method
             // If not, you could do a basic socket connection test
             return $mikrotik->isConnected() ?? true;
         } catch (\Exception $e) {
