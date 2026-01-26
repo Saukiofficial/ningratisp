@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('speed'); // Contoh: "100 Mbps"
-            $table->decimal('price', 12, 2);
+            $table->unsignedBigInteger('price'); // Ubah dari decimal ke bigInteger untuk hilangkan desimal
             $table->text('description')->nullable();
             $table->json('features')->nullable(); // Disimpan sebagai JSON
             $table->enum('status', ['active', 'inactive'])->default('active');

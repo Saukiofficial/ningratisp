@@ -21,8 +21,14 @@ class Package extends Model
     // Otomatis convert JSON ke Array saat diakses
     protected $casts = [
         'features' => 'array',
-        'price' => 'decimal:2',
+        'price' => 'integer', // Ubah dari decimal:2 ke integer untuk hilangkan .00
     ];
+
+    // Accessor untuk format harga dengan pemisah ribuan
+    public function getFormattedPriceAttribute()
+    {
+        return number_format($this->price, 0, ',', '.');
+    }
 
     // Relasi: Satu paket bisa dimiliki banyak customer
     public function customers()

@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\User;
 use App\Models\Package;
 use App\Models\Complaint;
+use App\Models\CoverageArea; // Import Model CoverageArea
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -15,66 +16,82 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // 1. Buat Paket Internet Dummy (Wajib ada dulu sebelum Customer)
         $paketBasic = Package::create([
             'name' => 'Home Basic',
             'speed' => '20 Mbps',
             'price' => 150000,
-            'description' => 'Cocok untuk kebutuhan rumahan ringan.',
+            'description' => 'Cocok untuk kebutuhan rumahan ringan, browsing, dan streaming SD.',
         ]);
 
         Package::create([
             'name' => 'Super Stream',
             'speed' => '50 Mbps',
             'price' => 300000,
-            'description' => 'Ideal untuk streaming 4K dan meeting online.',
+            'description' => 'Ideal untuk keluarga, streaming 4K lancar, dan meeting online tanpa putus.',
         ]);
 
         $paketGamer = Package::create([
             'name' => 'Gamer Pro',
             'speed' => '100 Mbps',
             'price' => 500000,
-            'description' => 'Ping rendah dan prioritas trafik game.',
+            'description' => 'Ping rendah prioritas trafik game, upload cepat untuk streaming/konten kreator.',
         ]);
+        $areas = [
+            ['name' => 'Cangkreng', 'district' => 'Lenteng', 'city' => 'Sumenep'],
+            ['name' => 'Poreh', 'district' => 'Lenteng', 'city' => 'Sumenep'],
+            ['name' => 'Maddelan', 'district' => 'Lenteng', 'city' => 'Sumenep'],
+            ['name' => 'Tonggal', 'district' => 'Lenteng', 'city' => 'Sumenep'],
+            ['name' => 'Cankreng', 'district' => 'Lenteng', 'city' => 'Sumenep'],
+            ['name' => 'Moangan', 'district' => 'Lenteng', 'city' => 'Sumenep'],
+            ['name' => 'Banaressep', 'district' => 'Lenteng', 'city' => 'Sumenep'],
+        ];
 
-        // 2. Buat Akun ADMIN
+        // Pastikan tabel CoverageArea sudah ada (buat migration dulu jika belum)
+        // Jika belum ada model CoverageArea, bagian ini bisa dikomentari dulu
+        if (class_exists(CoverageArea::class)) {
+            foreach ($areas as $area) {
+                CoverageArea::create($area);
+            }
+        }
+
+        // 3. SEED USER (ADMIN)
         User::create([
             'name' => 'Administrator',
             'email' => 'admin@ningrat.com',
-            'password' => Hash::make('password'), // Password default
+            'password' => Hash::make('password'), // Password default: password
             'role' => 'admin',
             'status' => 'active',
-            'address' => 'Kantor Pusat Ningrat Net',
-            'package_id' => null, // Admin tidak perlu paket (pastikan kolom nullable di migration)
+            'address' => 'Kantor Pusat Ningrat Net, Surabaya',
+            'package_id' => null, // Admin tidak perlu paket
         ]);
 
-        // 3. Buat Akun CUSTOMER 1 (Aktif)
+        // 4. SEED USER (CUSTOMER 1 - AKTIF)
         $customer1 = User::create([
             'name' => 'Budi Santoso',
             'email' => 'customer@ningrat.com',
-            'password' => Hash::make('password'),
+            'password' => Hash::make('password'), // Password default: password
             'role' => 'customer',
             'status' => 'active',
-            'address' => 'Jl. Merdeka No. 45, Jakarta',
+            'address' => 'Jl. Merdeka No. 45, Lenteng, Sumenep',
             'package_id' => $paketBasic->id,
         ]);
 
-        // 4. Buat Akun CUSTOMER 2 (Suspended/Telat Bayar)
+        // 5. SEED USER (CUSTOMER 2 - SUSPENDED)
         User::create([
             'name' => 'Siti Aminah',
             'email' => 'siti@ningrat.com',
             'password' => Hash::make('password'),
             'role' => 'customer',
-            'status' => 'suspended',
-            'address' => 'Perumahan Griya Indah Blok A1',
+            'status' => 'suspended', // Contoh user telat bayar
+            'address' => 'Perumahan Griya Indah Blok A1, Poreh',
             'package_id' => $paketGamer->id,
         ]);
 
-        // 5. Buat Dummy Pengaduan
+        // 6. SEED PENGADUAN (COMPLAINT)
         Complaint::create([
             'user_id' => $customer1->id,
             'subject' => 'Internet Lambat saat Hujan',
-            'description' => 'Setiap hujan deras koneksi sering RTO, mohon dicek kabelnya.',
+            'description' => 'Setiap hujan deras koneksi sering RTO, mohon dicek kabel dropcore-nya.',
             'status' => 'pending',
         ]);
     }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Package;
 use App\Models\User;
+use App\Models\CoverageArea; // Pastikan Model ini ada atau dibuat
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Hash;
@@ -11,11 +12,9 @@ use Illuminate\Auth\Events\Registered;
 
 class LandingController extends Controller
 {
-    // --- MAIN PAGES ---
-
+    // --- MAIN ---
     public function index()
     {
-        // Mengambil data paket untuk ditampilkan di section 'Pilihan Paket' di Homepage
         $packages = Package::all();
         return Inertia::render('Landing/Home', ['packages' => $packages]);
     }
@@ -26,15 +25,47 @@ class LandingController extends Controller
         return Inertia::render('Landing/Packages', ['packages' => $packages]);
     }
 
-    // --- TENTANG KAMI PAGES ---
+    // --- CEK COVERAGE METHOD ---
+    public function checkCoverage(Request $request)
+    {
+        $request->validate(['area' => 'required|string|min:3']);
 
+        // Bersihkan input user (lowercase, trim)
+        $query = strtolower(trim($request->area));
+
+        // --- UPDATE: MENGGUNAKAN DATABASE ---
+        // Mencari apakah ada area di database yang cocok dengan input user
+        // Asumsi tabel 'coverage_areas' memiliki kolom 'name' atau 'kelurahan'/'kecamatan'
+        // Jika model CoverageArea belum ada, kode ini akan error.
+        // Pastikan Anda membuat modelnya: php artisan make:model CoverageArea -m
+
+        $isCovered = false;
+
+        // Cek keberadaan Model CoverageArea untuk menghindari error jika belum dibuat
+        if (class_exists(CoverageArea::class)) {
+            $isCovered = CoverageArea::where('name', 'LIKE', "%{$query}%")
+                        ->orWhere('district', 'LIKE', "%{$query}%") // Opsional: cari berdasarkan kecamatan
+                        ->exists();
+        } else {
+            // FALLBACK JIKA BELUM ADA DATABASE: (Sementara kosong atau logika lain)
+            // Untuk saat ini kita anggap false jika tabel belum siap
+            $isCovered = false;
+        }
+
+        if ($isCovered) {
+            return redirect()->back()->with('success', "Selamat! Area '$request->area' TERJANGKAU oleh layanan NingratNet. Silakan daftar sekarang!");
+        } else {
+            return redirect()->back()->with('error', "Maaf, area '$request->area' belum terjangkau saat ini. Silakan hubungi CS kami.");
+        }
+    }
+
+    // --- TENTANG KAMI PAGES ---
     public function aboutProfil() { return Inertia::render('Landing/About/Profil'); }
     public function aboutVisiMisi() { return Inertia::render('Landing/About/VisiMisi'); }
     public function aboutTopologi() { return Inertia::render('Landing/About/Topologi'); }
     public function aboutStruktur() { return Inertia::render('Landing/About/Struktur'); }
 
     // --- LAYANAN PAGES ---
-
     public function serviceCloud() { return Inertia::render('Landing/Services/Cloud'); }
     public function serviceManaged() { return Inertia::render('Landing/Services/Managed'); }
     public function serviceConsultant() { return Inertia::render('Landing/Services/Consultant'); }
@@ -43,82 +74,49 @@ class LandingController extends Controller
     public function serviceSecurity() { return Inertia::render('Landing/Services/Security'); }
 
     // --- TOOLS PAGES ---
-
     public function toolsSpeedTest()
     {
-        // Mengarahkan ke file SpeedTestNative.jsx yang ada di folder Landing/Tools
-        return Inertia::render('Landing/Tools/SpeedTestNative');
+        return Inertia::render('Landing/Tools/SpeedTest');
     }
 
     public function toolsTracking(Request $request)
     {
         $trackResult = null;
-
-        // Logika Pencarian Pelanggan
-        // Jika ada parameter 'query' di URL
         if ($request->has('query') && $request->query('query') != '') {
             $search = $request->query('query');
-
-            // Cari user berdasarkan ID atau Email
-            // Pastikan relasi 'package' dimuat (eager loading)
-            $user = User::with('package')
-                        ->where('id', $search)
-                        ->orWhere('email', 'LIKE', "%{$search}%")
-                        ->first();
+            $user = User::with('package')->where('id', $search)->orWhere('email', 'LIKE', "%{$search}%")->first();
 
             if ($user) {
-                // Return data spesifik untuk keamanan (jangan return password dll)
                 $trackResult = [
                     'id' => $user->id,
                     'name' => $user->name,
-                    // Masking email untuk privasi (opsional), misal: b***@gmail.com
                     'email' => $user->email,
                     'address' => $user->address,
                     'status' => $user->status,
                     'package' => $user->package
                 ];
             } else {
-                // Jika tidak ketemu, kirim flash message error via session props Inertia
-                // Atau bisa di-handle di frontend dengan mengecek null result
                 return Inertia::render('Landing/Tools/Tracking', [
                     'trackResult' => null,
-                    'flash' => [
-                        'error' => 'Pelanggan dengan ID atau Email tersebut tidak ditemukan.'
-                    ]
+                    'flash' => ['error' => 'Pelanggan dengan ID atau Email tersebut tidak ditemukan.']
                 ]);
             }
         }
-
-        return Inertia::render('Landing/Tools/Tracking', [
-            'trackResult' => $trackResult,
-            // Flash message standar Laravel (jika ada)
-            'flash' => session('flash') ?? []
-        ]);
+        return Inertia::render('Landing/Tools/Tracking', ['trackResult' => $trackResult, 'flash' => session('flash') ?? []]);
     }
 
-    // Fitur Search Umum (Opsional, jika Anda ingin memisahkan tracking dan search konten)
-    // Saat ini di Navbar diarahkan ke Tracking, jadi method ini bisa jadi fallback/future use
     public function toolsSearch()
     {
         return Inertia::render('Landing/Tools/Search');
     }
 
     // --- EXTRAS ---
-
-    public function coverage()
-    {
-        // Jika file Coverage.jsx belum dibuat, redirect ke Home
-        // return Inertia::render('Landing/Coverage');
-        return redirect()->route('home');
-    }
+    public function coverage() { return redirect()->route('home'); }
 
     // --- AUTH / REGISTRATION ---
-
     public function showRegister(Request $request)
     {
-        return Inertia::render('Landing/Register', [
-            'selectedPackage' => $request->query('package')
-        ]);
+        return Inertia::render('Landing/Register', ['selectedPackage' => $request->query('package')]);
     }
 
     public function storeRegister(Request $request)
@@ -138,13 +136,11 @@ class LandingController extends Controller
             'role' => 'customer',
             'address' => $request->address,
             'package_id' => $request->package_id,
-            'status' => 'active', // Default aktif setelah daftar
+            'status' => 'active',
         ]);
 
         event(new Registered($user));
-
         auth()->login($user);
-
         return redirect(route('customer.dashboard'));
     }
 }

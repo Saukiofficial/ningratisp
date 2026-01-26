@@ -23,7 +23,6 @@ export default function PackageCard({ pkg, highlight = false }) {
             <ul className="mb-8 space-y-3 text-gray-600">
                 <li className="flex items-center"><CheckCircle size={18} className="text-green-500 mr-2" /> Speed up to {pkg.speed}</li>
                 <li className="flex items-center"><CheckCircle size={18} className="text-green-500 mr-2" /> Unlimited Quota</li>
-                <li className="flex items-center"><CheckCircle size={18} className="text-green-500 mr-2" /> Free Installation</li>
             </ul>
 
             <Link
