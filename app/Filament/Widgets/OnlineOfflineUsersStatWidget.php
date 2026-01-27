@@ -23,12 +23,7 @@ class OnlineOfflineUsersStatWidget extends BaseWidget
             }
 
             $mikrotik = new MikrotikAPINative();
-            if (empty(cache('ppp_secrets'))) {
-                Cache::remember('ppp_secrets', now()->addMinutes(5), function () use ($mikrotik) {
-                    return $mikrotik->getPppSecrets();
-                });
-            }
-            $cacheUsers = cache('ppp_secrets');
+            $cacheUsers = $mikrotik->getPppSecrets();
 
             $activePpp = $mikrotik->getPppActive();
             $activeUsers = collect($activePpp)->pluck('name')->all();

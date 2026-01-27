@@ -16,7 +16,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Filament\Actions\Action;
-use App\Helpers\MikrotikAPI;
+use App\Helpers\MikrotikAPINative;
 use UnitEnum;
 
 class PppProfileResource extends Resource
@@ -46,7 +46,7 @@ class PppProfileResource extends Resource
                 Action::make('syncWithMikrotik')
                     ->label('Sync Profiles to MikroTik')
                     ->action(function () {
-                        $mikrotik = new MikrotikAPI();
+                        $mikrotik = new MikrotikAPINative();
                         $mikrotikProfiles = collect($mikrotik->getPppProfiles());
 
                         $localProfiles = PppProfile::all();

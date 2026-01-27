@@ -2,7 +2,7 @@
 
 namespace App\Services\Midtrans;
 
-use App\Helpers\MikrotikAPI;
+use App\Helpers\MikrotikAPINative;
 use App\Jobs\SendWhatsappMessageJob;
 use App\Models\PaymentMethod;
 use App\Services\Model\PaymentService;
@@ -29,7 +29,7 @@ class VoucherNotificationHandler implements NotificationHandlerInterface
         $methodId = PaymentMethod::query()->where('code', 'qris')->first()?->id ?? null;
 
         if ($success) {
-            $service = new MikrotikAPI();
+            $service = new MikrotikAPINative();
             $createdVoucher = $service->createVoucher($voucher->code, $voucher->duration, $voucher->duration_type);
             if (!empty($createdVoucher['name']) && $createdVoucher['name'] == $voucher->code) {
                 $voucher->status = true;

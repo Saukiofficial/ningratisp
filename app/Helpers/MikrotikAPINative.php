@@ -6,6 +6,7 @@ use App\Models\LogMikrotik;
 use App\Models\Voucher;
 use App\Trait\HasMikrotikConfiguration;
 use Exception;
+use Illuminate\Support\Facades\Cache;
 
 class MikrotikAPINative
 {
@@ -226,12 +227,27 @@ class MikrotikAPINative
         );
     }
 
-    public function getPppSecrets()
+    public function getPppSecrets($fromCache = true)
     {
+        $cacheKey = 'ppp_secrets';
         $this->action = str(__FUNCTION__)->snake('-');
         $this->setShouldLog(false);
 
-        return $this->request('/ppp/secret/print');
+        $response = !$fromCache ? $this->request('/ppp/secret/print') : cache($cacheKey);
+        if (empty($response) && $fromCache) {
+            $response = $this->request('/ppp/secret/print');
+
+            if (is_array($response) && !isset($response['error'])) {
+                Cache::remember($cacheKey, now()->addHour(), fn() => $response);
+            }
+        }
+
+        if (!$fromCache && (is_array($response) && !isset($response['error']))) {
+            Cache::delete($cacheKey);
+            Cache::remember($cacheKey, now()->addHour(), fn() => $response);
+        }
+
+        return $response;
     }
 
     public function getPppActive()

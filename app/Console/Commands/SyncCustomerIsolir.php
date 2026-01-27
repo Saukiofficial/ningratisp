@@ -2,9 +2,10 @@
 
 namespace App\Console\Commands;
 
-use App\Helpers\MikrotikAPI;
+use App\Helpers\MikrotikAPINative;
 use App\Models\Customer;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Date;
 
 class SyncCustomerIsolir extends Command
@@ -28,7 +29,7 @@ class SyncCustomerIsolir extends Command
      */
     public function handle()
     {
-        $mikrotikUsers = (new MikrotikAPI)->getPppSecrets();
+        $mikrotikUsers = (new MikrotikAPINative)->getPppSecrets();
         $mikrotikUsers = array_filter(
             $mikrotikUsers,
             fn($user) => !empty($user['comment'] ?? null)

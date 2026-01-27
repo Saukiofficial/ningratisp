@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\CustomerConnections\Actions;
 
-use App\Helpers\MikrotikAPI;
+use App\Helpers\MikrotikAPINative;
 use App\Models\CustomerConnection;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
@@ -15,7 +15,7 @@ class PingAction extends Action
             ->label('Ping')
             ->icon('heroicon-o-signal')
             ->action(function (CustomerConnection $record) {
-                $mikrotik = new MikrotikAPI;
+                $mikrotik = new MikrotikAPINative;
                 $response = $mikrotik->ping($record->ip_address);
 
                 if (isset($response['error'])) {
