@@ -11,6 +11,7 @@ use App\Http\Controllers\LandingController;
 // Customer Controllers (Tetap Dipakai)
 use App\Http\Controllers\Customer\DashboardController as CustomerDashboardController;
 use App\Http\Controllers\Customer\ComplaintController as CustomerComplaintController;
+use App\Helpers\MikrotikAPI;
 
 /*
 |--------------------------------------------------------------------------
@@ -60,45 +61,18 @@ Route::get('/register', [LandingController::class, 'showRegister'])->name('regis
 Route::post('/register', [LandingController::class, 'storeRegister'])->name('register.store');
 
 
-// =========================================================================
-// 2. AUTHENTICATION & BRIDGE
-// =========================================================================
+Route::get('/', function () {
+    return view('index');
+})->name('index');
 
-require __DIR__.'/auth.php';
+Route::get('/service-details', function () {
+    return view('service-details');
+})->name('service-details');
 
-// Route Jembatan (Bridge): Mengarahkan user setelah login
-Route::get('/dashboard', function () {
-    $user = auth()->user();
-
-    if ($user->role === 'admin') {
-        // UPDATE: Redirect Admin ke Panel Filament
-        return redirect('/admin');
-    }
-
-    // Customer tetap ke Dashboard React
-    return redirect()->route('customer.dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
-
-
-// =========================================================================
-// 3. ADMIN ROUTES (DIHAPUS - DIGANTIKAN FILAMENT)
-// =========================================================================
-// Grup route 'admin' manual sebelumnya dihapus karena Filament
-// menangani routingnya sendiri secara otomatis.
-
-
-// =========================================================================
-// 4. CUSTOMER PANEL ROUTES (TETAP DIPAKAI)
-// =========================================================================
-// Halaman dashboard untuk pelanggan (bukan admin) tetap menggunakan React/Inertia
-Route::middleware(['auth', 'verified', EnsureUserHasRole::class . ':customer'])
-    ->prefix('customer')
-    ->name('customer.')
-    ->group(function () {
-
-    // Dashboard Customer
-    Route::get('/dashboard', [CustomerDashboardController::class, 'index'])->name('dashboard');
-
-    // Pengaduan Customer
-    Route::resource('complaints', CustomerComplaintController::class)->only(['index', 'store']);
+Route::group(['prefix' => 'midtrans/payment'], function () {
+    Route::get('success', fn() => view('temp.thank-page'));
+    Route::get('failed', fn() => view('temp.failed-page'));
 });
+Route::get('check-voucher', fn() => view('temp.voucher-check'));
+
+require __DIR__ . '/customer.php';

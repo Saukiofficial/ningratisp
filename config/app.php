@@ -70,7 +70,7 @@ return [
     |
     */
 
-    'timezone' => 'UTC',
+    'timezone' => 'Asia/Jakarta',
 
     /*
     |--------------------------------------------------------------------------
@@ -165,9 +165,10 @@ return [
          */
         App\Providers\AppServiceProvider::class,
         App\Providers\AuthServiceProvider::class,
-        // App\Providers\BroadcastServiceProvider::class,
+        App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\Filament\AdminPanelProvider::class,
+        App\Providers\Filament\RouterPanelProvider::class,
         App\Providers\RouteServiceProvider::class,
     ])->toArray(),
 
@@ -183,7 +184,21 @@ return [
     */
 
     'aliases' => Facade::defaultAliases()->merge([
-        // 'Example' => App\Facades\Example::class,
+        'TaxCalculate' => App\Helpers\TaxCalculate::class
     ])->toArray(),
+
+    'mikrotik' => [
+        'url' => env('MIKROTIK_URL') ?? '',
+        'user' => env('MIKROTIK_USER') ?? '',
+        'password' => env('MIKROTIK_PASS') ?? '',
+        'host' => env('MIKROTIK_HOST'),
+        'port' => env('MIKROTIK_PORT'),
+        'ssl' => env('MIKROTIK_SSL', false),
+    ],
+
+    'waha' => [
+        'url' => env('WAHA_URL') ?? '',
+        'api_key' => env('WAHA_API_KEY') ?? ''
+    ]
 
 ];

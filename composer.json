@@ -8,23 +8,32 @@
     ],
     "license": "MIT",
     "require": {
-        "php": "^8.1",
-        "filament/filament": "3.2",
+        "php": "^8.2",
+        "bezhansalleh/filament-language-switch": "*",
+        "erag/laravel-pwa": "^1.9",
+        "filament/filament": "^4.0",
+        "flowframe/laravel-trend": "^0.4.0",
         "guzzlehttp/guzzle": "^7.2",
-        "inertiajs/inertia-laravel": "^0.6.3",
-        "laravel/framework": "^10.10",
-        "laravel/sanctum": "^3.2",
+        "inertiajs/inertia-laravel": "^2.0",
+        "laravel/framework": "^12.0",
+        "laravel/reverb": "^1.6",
+        "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.8",
-        "tightenco/ziggy": "^2.0"
+        "leandrocfe/filament-apex-charts": "^4.0@beta",
+        "maatwebsite/excel": "^3.1",
+        "predis/predis": "^3.1",
+        "staudenmeir/eloquent-has-many-deep": "^1.21",
+        "tightenco/ziggy": "^2.6",
+        "valentin-morice/filament-json-column": "dev-dev"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",
-        "laravel/breeze": "^1.29",
+        "laravel/boost": "^1.1",
         "laravel/pint": "^1.0",
-        "laravel/sail": "^1.18",
+        "laravel/sail": "^1.41",
         "mockery/mockery": "^1.4.4",
-        "nunomaduro/collision": "^7.0",
-        "phpunit/phpunit": "^10.1",
+        "nunomaduro/collision": "^8.1",
+        "pestphp/pest": "^4.1",
         "spatie/laravel-ignition": "^2.0"
     },
     "autoload": {
@@ -69,6 +78,6 @@
             "php-http/discovery": true
         }
     },
-    "minimum-stability": "stable",
+    "minimum-stability": "beta",
     "prefer-stable": true
 }

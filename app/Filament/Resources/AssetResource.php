@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\AssetResource\Pages;
 use App\Models\Asset;
+use BackedEnum;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -31,18 +32,19 @@ use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\Section as InfoSection;
 use Filament\Infolists\Components\Grid as InfoGrid;
+use UnitEnum;
 
 class AssetResource extends Resource
 {
     protected static ?string $model = Asset::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-cube';
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-cube';
 
     protected static ?string $navigationLabel = 'Kelola Aset';
 
     protected static ?string $modelLabel = 'Aset';
 
-    protected static ?string $navigationGroup = 'Inventaris';
+    protected static string|UnitEnum|null $navigationGroup = 'Inventaris';
 
     public static function form(Form $form): Form
     {
@@ -137,14 +139,14 @@ class AssetResource extends Resource
                 TextColumn::make('status')
                     ->badge()
                     ->label('Status')
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn(string $state): string => match ($state) {
                         'available' => 'success',
                         'in_use' => 'info',
                         'maintenance' => 'warning',
                         'broken' => 'danger',
                         default => 'gray',
                     })
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                    ->formatStateUsing(fn(string $state): string => match ($state) {
                         'available' => 'Tersedia',
                         'in_use' => 'Dipakai',
                         'maintenance' => 'Perbaikan',
@@ -196,7 +198,7 @@ class AssetResource extends Resource
                 ]),
             ])
             ->recordUrl(
-                fn ($record) => route('filament.admin.resources.assets.view', ['record' => $record])
+                fn($record) => route('filament.admin.resources.assets.view', ['record' => $record])
             );
     }
 
@@ -229,14 +231,14 @@ class AssetResource extends Resource
 
                                         TextEntry::make('status')
                                             ->badge()
-                                            ->color(fn (string $state): string => match ($state) {
+                                            ->color(fn(string $state): string => match ($state) {
                                                 'available' => 'success',
                                                 'in_use' => 'info',
                                                 'maintenance' => 'warning',
                                                 'broken' => 'danger',
                                                 default => 'gray',
                                             })
-                                            ->formatStateUsing(fn (string $state): string => match ($state) {
+                                            ->formatStateUsing(fn(string $state): string => match ($state) {
                                                 'available' => 'Tersedia',
                                                 'in_use' => 'Dipakai',
                                                 'maintenance' => 'Perbaikan',

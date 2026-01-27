@@ -3,29 +3,44 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
-use App\Models\User; // Import Model User
+use App\Models\Customer;
+use App\Models\Customer\Invoices;
+use App\Models\VirtualAccount;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function __invoke()
     {
-        /** @var User $user */
-        $user = Auth::user();
+        $user = auth()->user();
 
-        // Sekarang Intelephense tahu $user adalah User model yang punya method load()
-        $user->load('package');
+        $pendingVA = VirtualAccount::whereHas('invoice.customerPackage.customer', function ($query) use ($user) {
+            $query->where('id', $user->id);
+        })->where('status', 'pending')->where('expired_at', '>', now())->first();
 
-        $subscriptionData = [
-            'package_name' => $user->package ? $user->package->name : 'Tidak ada paket',
-            'speed' => $user->package ? $user->package->speed : '-',
-            'price' => $user->package ? $user->package->price : 0,
-            'status' => $user->status,
+        if ($pendingVA) {
+            return to_route('pending-payment.show', $pendingVA);
+        }
+
+        $customers = [
+            'id' => 1,
+            'nama' => $user->full_name ?? $user->username,
+            'username' => $user->username,
+            'kode_unik' => $user->billing_number,
+            'package' => $user->activePackage?->package ?? null
         ];
 
+        $unpaidInvoices = $user->invoices()
+            ->where('invoices.status', Invoices::STATUS_UNPAID)
+            ->latest('invoice_date')
+            ->get();
+
         return Inertia::render('Customer/Dashboard', [
-            'subscription' => $subscriptionData
+            'pelanggan' => $customers,
+            'statusLangganan' => $unpaidInvoices->isEmpty(),
+            'unpaid_invoices' => $unpaidInvoices,
+            'pending_va' => $pendingVA,
         ]);
     }
 }
