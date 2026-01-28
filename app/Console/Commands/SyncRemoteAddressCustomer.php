@@ -2,9 +2,10 @@
 
 namespace App\Console\Commands;
 
-use App\Helpers\MikrotikAPI;
+use App\Helpers\MikrotikAPINative;
 use App\Models\Customer;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Cache;
 
 class SyncRemoteAddressCustomer extends Command
 {
@@ -48,7 +49,8 @@ class SyncRemoteAddressCustomer extends Command
         $bar->setFormat(' %current%/%max% [%bar%] %percent:3s%%');
         $bar->start();
 
-        $customerMikrotik = (new MikrotikAPI)->getPppSecrets();
+        $customerMikrotik = (new MikrotikAPINative)->getPppSecrets();
+
         if (!empty($customerMikrotik['error'])) {
             $this->newLine();
             $this->components->error('Customer mikrotik empty or Connection problem');

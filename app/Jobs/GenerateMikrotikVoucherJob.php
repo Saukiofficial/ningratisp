@@ -2,7 +2,7 @@
 
 namespace App\Jobs;
 
-use App\Helpers\MikrotikAPI;
+use App\Helpers\MikrotikAPINative;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -38,7 +38,7 @@ class GenerateMikrotikVoucherJob implements ShouldQueue
      */
     public function handle(): void
     {
-        $service = new MikrotikAPI();
+        $service = new MikrotikAPINative();
         $service->createVoucher($this->code, $this->uptime, $this->uptimeType, $this->server, $this->profile);
     }
 }

@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Helpers\MikrotikAPI;
+use App\Helpers\MikrotikAPINative;
 use App\Models\Customer;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
@@ -31,10 +31,10 @@ class CheckActivePPP extends Command
         $this->info('Checking for inactive PPP users...');
 
         $customers = Customer::query()->get(['username',  'remote_address']);
-        $pppActive = (new MikrotikAPI)->getPppActive();
+        $pppActive = (new MikrotikAPINative())->getPppActive();
 
         if (isset($pppActive['error'])) {
-            $this->error('Failed to get active PPP list from MikroTik: '.$pppActive['message']);
+            $this->error('Failed to get active PPP list from MikroTik: ' . $pppActive['message']);
 
             return 1;
         }
@@ -50,7 +50,7 @@ class CheckActivePPP extends Command
         $fileName = 'inactive_ppp_users.json';
         Storage::put($fileName, json_encode(array_values($inactiveCustomers->toArray()), JSON_PRETTY_PRINT));
 
-        $this->info('Successfully exported '.$inactiveCustomers->count().' inactive PPP users to '.storage_path('app/'.$fileName));
+        $this->info('Successfully exported ' . $inactiveCustomers->count() . ' inactive PPP users to ' . storage_path('app/' . $fileName));
 
         return 0;
     }

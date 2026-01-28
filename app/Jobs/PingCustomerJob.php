@@ -2,7 +2,7 @@
 
 namespace App\Jobs;
 
-use App\Helpers\MikrotikAPI;
+use App\Helpers\MikrotikAPINative;
 use App\Models\Customer;
 use App\Models\CustomerConnection;
 use Illuminate\Bus\Queueable;
@@ -29,7 +29,7 @@ class PingCustomerJob implements ShouldQueue
      */
     public function handle(): void
     {
-        $mikrotik = new MikrotikAPI;
+        $mikrotik = new MikrotikAPINative;
         $response = $mikrotik->ping($this->customer->remote_address, 4);
 
         if (isset($response['error'])) {

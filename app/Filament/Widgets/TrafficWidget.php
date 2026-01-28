@@ -2,7 +2,7 @@
 
 namespace App\Filament\Widgets;
 
-use App\Helpers\MikrotikAPI;
+use App\Helpers\MikrotikAPINative;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
@@ -10,6 +10,7 @@ class TrafficWidget extends BaseWidget
 {
     protected static ?int $sort = 2;
     protected static bool $isDiscovered = false;
+    protected ?string $pollingInterval = '1s';
 
     protected function getStats(): array
     {
@@ -19,18 +20,18 @@ class TrafficWidget extends BaseWidget
                 throw new \Exception('');
             }
 
-            $mikrotik = new MikrotikAPI();
+            $mikrotik = new MikrotikAPINative();
             $interfaces = ['ether11', 'ether12', 'ether10'];
 
             $totalTx = 0;
             $totalRx = 0;
 
-            foreach ($interfaces as $interface) {
-                $trafficData = $mikrotik->getInterfaceTraffic($interface);
-
-                if (is_array($trafficData) && isset($trafficData[0])) {
-                    $totalTx += $trafficData[0]['tx-bits-per-second'] ?? 0;
-                    $totalRx += $trafficData[0]['rx-bits-per-second'] ?? 0;
+            $trafficDatas = $mikrotik->getInterfaceTraffic(implode(',', $interfaces));
+            if (is_array($trafficDatas) && !isset($trafficDatas['error'])) {
+                foreach ($trafficDatas as $trafficData) {
+                    $totalTx += $trafficData['tx-bits-per-second'] ?? 0;
+                    $totalRx += $trafficData['rx-bits-per-second'] ?? 0;
+                    $successfulInterfaces[] = $trafficData;
                 }
             }
 
@@ -108,8 +109,8 @@ class TrafficWidget extends BaseWidget
     private function isMikrotikReachable(): bool
     {
         try {
-            $mikrotik = new MikrotikAPI();
-            // Basic connection test - adjust based on your MikrotikAPI implementation
+            $mikrotik = new MikrotikAPINative();
+            // Basic connection test - adjust based on your MikrotikAPINative implementation
             return $mikrotik->isConnected() ?? true;
         } catch (\Exception $e) {
             return false;
@@ -152,7 +153,7 @@ class TrafficWidget extends BaseWidget
      */
     protected function getStatsWithPartialFailure(): array
     {
-        $mikrotik = new MikrotikAPI();
+        $mikrotik = new MikrotikAPINative();
         $interfaces = ['ether11', 'ether12'];
 
         $totalTx = 0;
@@ -160,20 +161,12 @@ class TrafficWidget extends BaseWidget
         $failedInterfaces = [];
         $successfulInterfaces = [];
 
-        foreach ($interfaces as $interface) {
-            try {
-                $trafficData = $mikrotik->getInterfaceTraffic($interface);
-
-                if (is_array($trafficData) && isset($trafficData[0])) {
-                    $totalTx += $trafficData[0]['tx-bits-per-second'] ?? 0;
-                    $totalRx += $trafficData[0]['rx-bits-per-second'] ?? 0;
-                    $successfulInterfaces[] = $interface;
-                } else {
-                    $failedInterfaces[] = $interface;
-                }
-            } catch (\Exception $e) {
-                $failedInterfaces[] = $interface;
-                \Log::warning("Failed to get traffic data for {$interface}: " . $e->getMessage());
+        $trafficDatas = $mikrotik->getInterfaceTraffic(implode(',', $interfaces));
+        if (is_array($trafficDatas) && !isset($trafficDatas['error'])) {
+            foreach ($trafficDatas as $trafficData) {
+                $totalTx += $trafficData['tx-bits-per-second'] ?? 0;
+                $totalRx += $trafficData['rx-bits-per-second'] ?? 0;
+                $successfulInterfaces[] = $trafficData;
             }
         }
 

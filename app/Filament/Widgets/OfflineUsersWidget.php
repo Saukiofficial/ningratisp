@@ -2,7 +2,7 @@
 
 namespace App\Filament\Widgets;
 
-use App\Helpers\MikrotikAPI;
+use App\Helpers\MikrotikAPINative;
 use Carbon\Carbon;
 use Filament\Actions\Action;
 use Filament\Support\Icons\Heroicon;
@@ -13,6 +13,7 @@ use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 
 use function Symfony\Component\Clock\now;
 
@@ -29,7 +30,7 @@ class OfflineUsersWidget extends BaseWidget
 
     public function table(Table $table): Table
     {
-        $mikrotik = new MikrotikAPI();
+        $mikrotik = new MikrotikAPINative();
         $this->isConnected = $mikrotik->isConnected();
 
         return $table

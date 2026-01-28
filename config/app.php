@@ -190,6 +190,9 @@ return [
         'url' => env('MIKROTIK_URL') ?? '',
         'user' => env('MIKROTIK_USER') ?? '',
         'password' => env('MIKROTIK_PASS') ?? '',
+        'host' => env('MIKROTIK_HOST'),
+        'port' => env('MIKROTIK_PORT'),
+        'ssl' => env('MIKROTIK_SSL', false),
     ],
 
     'waha' => [

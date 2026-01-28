@@ -2,11 +2,12 @@
 
 namespace App\Console\Commands;
 
-use App\Helpers\MikrotikAPI;
+use App\Helpers\MikrotikAPINative;
 use App\Models\Customer;
 use App\Models\CustomerPackages;
 use App\Models\PppProfile;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class SyncCustomerPppProfile extends Command
@@ -30,7 +31,7 @@ class SyncCustomerPppProfile extends Command
      */
     public function handle()
     {
-        $mikrotikUsers = (new MikrotikAPI)->getPppSecrets();
+        $mikrotikUsers = (new MikrotikAPINative)->getPppSecrets();
         $mikrotikUsers = array_column($mikrotikUsers, null, 'name');
 
         $pppProfiles = PppProfile::query()->pluck('id', 'profile_name');

@@ -18,8 +18,9 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Filament\Actions\Action;
-use App\Helpers\MikrotikAPI;
+use App\Helpers\MikrotikAPINative;
 use App\Models\PppProfile;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use UnitEnum;
 
@@ -50,8 +51,10 @@ class CustomerResource extends Resource
                 Action::make('syncWithMikrotik')
                     ->label('Sync Customers to MikroTik')
                     ->action(function () {
-                        $mikrotik = new MikrotikAPI();
-                        $secrets = collect($mikrotik->getPppSecrets());
+                        $mikrotik = new MikrotikAPINative();
+                        $secrets = collect(
+                            $mikrotik->getPppSecrets(fromCache: false)
+                        );
 
                         $syncedCount = 0;
 
