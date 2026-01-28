@@ -115,7 +115,7 @@ class Customer extends User
 
     public function complients(): HasMany
     {
-        return $this->hasMany(complients::class);
+        return $this->hasMany(Complient::class);
     }
 
     /**
