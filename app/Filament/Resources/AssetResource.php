@@ -17,8 +17,6 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Grid;
 
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ImageColumn;
@@ -32,6 +30,10 @@ use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\Section as InfoSection;
 use Filament\Infolists\Components\Grid as InfoGrid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Schema;
+use Filament\Support\Enums\TextSize;
 use UnitEnum;
 
 class AssetResource extends Resource
@@ -46,7 +48,7 @@ class AssetResource extends Resource
 
     protected static string|UnitEnum|null $navigationGroup = 'Inventaris';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $form): Schema
     {
         return $form
             ->schema([
@@ -183,32 +185,32 @@ class AssetResource extends Resource
             ->actions([
                 // KOSONG - Klik row untuk lihat detail
             ])
-            ->bulkActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make()
-                        ->requiresConfirmation()
-                        ->modalHeading('Hapus Aset Terpilih')
-                        ->modalDescription('Apakah Anda yakin ingin menghapus aset yang dipilih?')
-                        ->successNotification(
-                            Notification::make()
-                                ->success()
-                                ->title('Aset Dihapus')
-                                ->body('Aset berhasil dihapus dari sistem.')
-                        ),
-                ]),
-            ])
+            // ->bulkActions([
+            //     BulkActionGroup::make([
+            //         DeleteBulkAction::make()
+            //             ->requiresConfirmation()
+            //             ->modalHeading('Hapus Aset Terpilih')
+            //             ->modalDescription('Apakah Anda yakin ingin menghapus aset yang dipilih?')
+            //             ->successNotification(
+            //                 Notification::make()
+            //                     ->success()
+            //                     ->title('Aset Dihapus')
+            //                     ->body('Aset berhasil dihapus dari sistem.')
+            //             ),
+            //     ]),
+            // ])
             ->recordUrl(
                 fn($record) => route('filament.admin.resources.assets.view', ['record' => $record])
             );
     }
 
-    public static function infolist(Infolist $infolist): Infolist
+    public static function infolist(Schema $infolist): Schema
     {
         return $infolist
             ->schema([
-                InfoSection::make('Detail Aset')
+                Section::make('Detail Aset')
                     ->schema([
-                        InfoGrid::make(3)
+                        Grid::make(3)
                             ->schema([
                                 ImageEntry::make('image')
                                     ->label('Foto Aset')
@@ -216,13 +218,13 @@ class AssetResource extends Resource
                                     ->height(200)
                                     ->square(),
 
-                                InfoGrid::make(1)
+                                Grid::make(1)
                                     ->columnSpan(2)
                                     ->schema([
                                         TextEntry::make('name')
                                             ->label('Nama Aset')
                                             ->weight('bold')
-                                            ->size(TextEntry\TextEntrySize::Large),
+                                            ->size(TextSize::Large),
 
                                         TextEntry::make('serial_number')
                                             ->label('Serial Number')
@@ -249,9 +251,9 @@ class AssetResource extends Resource
                             ]),
                     ]),
 
-                InfoSection::make('Informasi Tambahan')
+                Section::make('Informasi Tambahan')
                     ->schema([
-                        InfoGrid::make(3)
+                        Grid::make(3)
                             ->schema([
                                 TextEntry::make('type')->label('Tipe Perangkat'),
                                 TextEntry::make('purchase_date')->label('Tanggal Beli')->date(),

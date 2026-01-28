@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ComplaintResource\Pages;
 use App\Models\Complaint;
+use BackedEnum;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -13,24 +14,27 @@ use Filament\Tables\Table;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\Section;
+use Filament\Schemas\Schema;
 // Import Komponen Table
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Schemas\Components\Section;
+use UnitEnum;
 
 class ComplaintResource extends Resource
 {
     protected static ?string $model = Complaint::class;
-    protected static ?string $navigationIcon = 'heroicon-o-exclamation-circle';
+
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-exclamation-circle';
 
     protected static ?string $navigationLabel = 'Pengaduan';
 
     protected static ?string $modelLabel = 'Tiket Pengaduan';
 
-    protected static ?string $navigationGroup = 'Layanan Pelanggan';
+    protected static string|UnitEnum|null $navigationGroup = 'Layanan Pelanggan';
 
 
     public static function getNavigationBadge(): ?string
@@ -38,7 +42,7 @@ class ComplaintResource extends Resource
         return static::getModel()::where('status', 'pending')->count() ?: null;
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $form): Schema
     {
         return $form
             ->schema([
@@ -91,12 +95,12 @@ class ComplaintResource extends Resource
 
                 TextColumn::make('status')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn(string $state): string => match ($state) {
                         'pending' => 'warning',
                         'resolved' => 'success',
                         default => 'gray',
                     })
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                    ->formatStateUsing(fn(string $state): string => match ($state) {
                         'pending' => 'Menunggu',
                         'resolved' => 'Selesai',
                         default => $state,
@@ -115,17 +119,17 @@ class ComplaintResource extends Resource
                         'pending' => 'Menunggu',
                         'resolved' => 'Selesai',
                     ]),
-            ])
-            ->actions([
-                EditAction::make()
-                    ->label('Proses'),
-                DeleteAction::make(),
-            ])
-            ->bulkActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
             ]);
+        // ->actions([
+        //     EditAction::make()
+        //         ->label('Proses'),
+        //     DeleteAction::make(),
+        // ])
+        // ->bulkActions([
+        //     BulkActionGroup::make([
+        //         DeleteBulkAction::make(),
+        //     ]),
+        // ]);
     }
 
     public static function getRelations(): array

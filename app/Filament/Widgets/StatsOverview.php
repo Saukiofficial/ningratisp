@@ -11,9 +11,6 @@ class StatsOverview extends BaseWidget
     // Mengatur agar widget ini tampil paling atas (urutan 1)
     protected static ?int $sort = 1;
 
-    // Mengatur refresh otomatis setiap 15 detik (opsional)
-    protected static ?string $pollingInterval = '15s';
-
     protected function getStats(): array
     {
         return [

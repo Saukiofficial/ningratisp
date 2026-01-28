@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\CoverageAreaResource\Pages;
 use App\Models\CoverageArea;
+use BackedEnum;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -11,29 +12,29 @@ use Filament\Tables;
 use Filament\Tables\Table;
 // Tambahkan import komponen Form
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Section;
+use Filament\Schemas\Schema;
 // Tambahkan import komponen Table
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Schemas\Components\Section;
+use UnitEnum;
 
 class CoverageAreaResource extends Resource
 {
     protected static ?string $model = CoverageArea::class;
 
-
-    protected static ?string $navigationIcon = 'heroicon-o-map';
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-map';
 
     protected static ?string $navigationLabel = 'Coverage Area';
 
     protected static ?string $modelLabel = 'Area Jangkauan';
 
-    protected static ?string $navigationGroup = 'Manajemen Layanan';
+    protected static string|UnitEnum|null $navigationGroup = 'Manajemen Layanan';
 
-
-    public static function form(Form $form): Form
+    public static function form(Schema $form): Schema
     {
         return $form
             ->schema([
@@ -88,18 +89,16 @@ class CoverageAreaResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->label('Dibuat'),
             ])
-            ->filters([
-
-            ])
-            ->actions([
-                EditAction::make(),
-                DeleteAction::make(),
-            ])
-            ->bulkActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
-            ]);
+            ->filters([]);
+        // ->actions([
+        //     EditAction::make(),
+        //     DeleteAction::make(),
+        // ])
+        // ->bulkActions([
+        //     BulkActionGroup::make([
+        //         DeleteBulkAction::make(),
+        //     ]),
+        // ]);
     }
 
     public static function getRelations(): array

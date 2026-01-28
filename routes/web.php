@@ -61,9 +61,9 @@ Route::get('/register', [LandingController::class, 'showRegister'])->name('regis
 Route::post('/register', [LandingController::class, 'storeRegister'])->name('register.store');
 
 
-Route::get('/', function () {
-    return view('index');
-})->name('index');
+// Route::get('/', function () {
+//     return view('index');
+// })->name('index');
 
 Route::get('/service-details', function () {
     return view('service-details');
