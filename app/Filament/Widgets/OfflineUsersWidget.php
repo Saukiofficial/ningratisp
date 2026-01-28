@@ -15,8 +15,6 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
-use function Symfony\Component\Clock\now;
-
 class OfflineUsersWidget extends BaseWidget
 {
     protected static ?int $sort = 3;
@@ -39,7 +37,16 @@ class OfflineUsersWidget extends BaseWidget
 
                     // Test connection by trying to get secrets
                     $secrets = $mikrotik->getPppSecrets();
-                    $activeUsers = collect($mikrotik->getPppActive())->pluck('name')->all();
+
+                    if (empty(cache('ppp_active'))) {
+                        $response = $mikrotik->getPppActive();
+                        if (is_array($response) && !isset($response['error'])) {
+                            Cache::remember('ppp_active', now()->addMinutes(5), fn() => $response);
+                        }
+                    }
+                    $activePpp = cache('ppp_active');
+
+                    $activeUsers = collect($activePpp)->pluck('name')->all();
 
                     $this->connectionError = 'Router not connected';
 
