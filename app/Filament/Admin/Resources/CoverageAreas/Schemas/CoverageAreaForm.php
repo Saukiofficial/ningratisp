@@ -13,6 +13,7 @@ class CoverageAreaForm
         return $schema
             ->components([
                 Section::make('Informasi Wilayah')
+                    ->columnSpanFull()
                     ->description('Tambahkan data wilayah yang tercover layanan NingratNet.')
                     ->schema([
                         TextInput::make('name')

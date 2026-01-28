@@ -11,7 +11,7 @@ export default function Tracking({ trackResult, flash }) {
 
     const handleSearch = (e) => {
         e.preventDefault();
-        get(route('tools.tracking'), {
+        get(route('customer.tools.tracking'), {
             preserveState: true,
             preserveScroll: true,
         });
@@ -19,7 +19,7 @@ export default function Tracking({ trackResult, flash }) {
 
     // Helper warna status
     const getStatusColor = (status) => {
-        switch(status) {
+        switch (status) {
             case 'active': return 'bg-green-100 text-green-700 border-green-200';
             case 'suspended': return 'bg-red-100 text-red-700 border-red-200';
             case 'pending': return 'bg-yellow-100 text-yellow-700 border-yellow-200';

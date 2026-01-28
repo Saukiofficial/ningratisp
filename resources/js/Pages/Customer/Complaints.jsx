@@ -43,10 +43,9 @@ export default function Complaints({ complaints }) {
                                     <p className="text-gray-600 mt-1">{item.description}</p>
                                     <span className="text-xs text-gray-400 mt-2 block">{item.created_at}</span>
                                 </div>
-                                <div className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 ${
-                                    item.status === 'resolved' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
-                                }`}>
-                                    {item.status === 'resolved' ? <CheckCircle size={14}/> : <Clock size={14}/>}
+                                <div className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 ${item.status === 'resolved' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+                                    }`}>
+                                    {item.status === 'resolved' ? <CheckCircle size={14} /> : <Clock size={14} />}
                                     {item.status === 'resolved' ? 'Selesai' : 'Menunggu'}
                                 </div>
                             </div>

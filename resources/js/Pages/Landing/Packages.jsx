@@ -158,7 +158,7 @@ export default function Packages({ packages }) {
 
                                             {/* CTA Button */}
                                             <Link
-                                                href={route('register', { package: pkg.id })}
+                                                href={route('customer.register', { package: pkg.id })}
                                                 className={`block w-full text-center ${config.button} text-white py-4 rounded-xl font-bold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1`}
                                             >
                                                 Activate Now

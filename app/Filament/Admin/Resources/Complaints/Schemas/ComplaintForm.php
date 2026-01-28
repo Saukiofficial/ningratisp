@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\Complaints\Schemas;
 
+use App\Models\Complaint;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -15,9 +16,10 @@ class ComplaintForm
         return $schema
             ->components([
                 Section::make('Detail Tiket')
+                    ->columnSpanFull()
                     ->schema([
                         Select::make('user_id')
-                            ->relationship('user', 'name')
+                            ->relationship('customer', 'username')
                             ->label('Pelanggan')
                             ->disabled()
                             ->required(),
@@ -35,10 +37,7 @@ class ComplaintForm
 
                         Select::make('status')
                             ->label('Status Tiket')
-                            ->options([
-                                'pending' => 'Menunggu (Pending)',
-                                'resolved' => 'Selesai (Resolved)',
-                            ])
+                            ->options(Complaint::getStatusLabel())
                             ->required()
                             ->native(false),
                     ])->columns(2),

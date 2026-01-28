@@ -20,7 +20,7 @@ export default function CustomerLayout({ children, title }) {
                     </Link>
                 </nav>
                 <div className="p-4 border-t border-gray-50">
-                    <Link href={route('logout')} method="post" as="button" className="flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-50 rounded-lg w-full transition">
+                    <Link href={route('customer.logout')} method="post" as="button" className="flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-50 rounded-lg w-full transition">
                         <LogOut size={20} /> Logout
                     </Link>
                 </div>

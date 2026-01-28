@@ -20,7 +20,7 @@ export default function ConfirmPassword() {
     const submit = (e) => {
         e.preventDefault();
 
-        post(route('password.confirm'));
+        post(route('customer.password.confirm'));
     };
 
     return (

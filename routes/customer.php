@@ -18,9 +18,9 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::prefix('customer')->group(function () {
+Route::prefix('customer')->as('customer.')->group(function () {
 
-    Route::get('/', fn() => to_route('login'));
+    Route::get('/', fn() => to_route('customer.login'));
 
     Route::get('/login', [AuthController::class, 'index'])->name('login');
     Route::post('/login', [AuthController::class, 'authProcess'])->name('login.auth');

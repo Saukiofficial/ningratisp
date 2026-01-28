@@ -47,7 +47,7 @@ export default function Login() {
 
     function submit(e) {
         e.preventDefault();
-        post(route('login.auth'));
+        post(route('customer.login.auth'));
     }
 
     return (

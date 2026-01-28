@@ -14,7 +14,7 @@ class PendingPaymentController extends Controller
         $this->authorize('view', $virtualAccount);
 
         if ($virtualAccount->status != VirtualAccount::STATUS_PENDING) {
-            return to_route('invoices.index');
+            return to_route('customer.invoices.index');
         }
 
         $virtualAccount->load(['invoice.items', 'paymentMethod']);

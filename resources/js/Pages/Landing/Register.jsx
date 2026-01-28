@@ -17,7 +17,7 @@ export default function Register({ selectedPackage }) {
 
     const submit = (e) => {
         e.preventDefault();
-        post(route('register.store')); // Pastikan route ini ada di web.php
+        post(route('customer.register.store')); // Pastikan route ini ada di web.php
     };
 
     return (

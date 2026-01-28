@@ -22,7 +22,7 @@ export default function Tagihan({ tagihans, filters, invoice_statuses }) {
     };
 
     const applyFilters = () => {
-        router.get(route('invoices.index'), filterState, {
+        router.get(route('customer.invoices.index'), filterState, {
             preserveState: true,
             replace: true,
         });

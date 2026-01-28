@@ -24,7 +24,7 @@ export default function AuthenticatedLayout({ children }) {
 
     const handleLogout = (e) => {
         e.preventDefault();
-        router.post((route('logout')));
+        router.post((route('customer.logout')));
     };
 
     return (
@@ -40,18 +40,18 @@ export default function AuthenticatedLayout({ children }) {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between h-16">
                         <div className="flex items-center space-x-8">
-                            <Link href={route('dashboard')} className="text-2xl font-bold text-blue-600">NingratNet</Link>
+                            <Link href={route('customer.dashboard')} className="text-2xl font-bold text-blue-600">NingratNet</Link>
 
                             <div className="hidden sm:flex sm:space-x-8">
                                 <Link
-                                    href={route('dashboard')}
+                                    href={route('customer.dashboard')}
                                     className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition duration-150 ease-in-out ${url.startsWith('/dashboard') ? 'border-blue-500 text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                                         }`}
                                 >
                                     Dashboard
                                 </Link>
                                 <Link
-                                    href={route('invoices.index')}
+                                    href={route('customer.invoices.index')}
                                     className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition duration-150 ease-in-out ${url.startsWith('/tagihan') ? 'border-blue-500 text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                                         }`}
                                 >
@@ -77,11 +77,11 @@ export default function AuthenticatedLayout({ children }) {
 
             <div className="sm:hidden fixed bottom-0 left-0 z-50 w-full h-16 bg-white border-t border-gray-200">
                 <div className="grid h-full max-w-lg grid-cols-2 mx-auto font-medium">
-                    <Link href={route('dashboard')} className="inline-flex flex-col items-center justify-center px-5 hover:bg-gray-50">
+                    <Link href={route('customer.dashboard')} className="inline-flex flex-col items-center justify-center px-5 hover:bg-gray-50">
                         <HomeIcon isActive={url.startsWith('/dashboard')} />
                         <span className={`text-sm ${url.startsWith('/dashboard') ? 'text-blue-600' : 'text-gray-500'}`}>Dashboard</span>
                     </Link>
-                    <Link href={route('invoices.index')} className="inline-flex flex-col items-center justify-center px-5 hover:bg-gray-50">
+                    <Link href={route('customer.invoices.index')} className="inline-flex flex-col items-center justify-center px-5 hover:bg-gray-50">
                         <DocumentIcon isActive={url.startsWith('/tagihan')} />
                         <span className={`text-sm ${url.startsWith('/tagihan') ? 'text-blue-600' : 'text-gray-500'}`}>Tagihan</span>
                     </Link>

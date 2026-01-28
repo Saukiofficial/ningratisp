@@ -12,7 +12,7 @@ class ComplaintController extends Controller
 {
     public function index()
     {
-        $complaints = Complaint::where('user_id', Auth::id())
+        $complaints = Complaint::where('customer_id', Auth::id())
             ->latest()
             ->get()
             ->map(function ($c) {

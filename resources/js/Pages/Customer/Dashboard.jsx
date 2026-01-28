@@ -79,7 +79,7 @@ export default function Dashboard({ pelanggan, statusLangganan, unpaid_invoices,
                         <div className="mb-8 bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4" role="alert">
                             <p className="font-bold">Anda memiliki pembayaran yang belum selesai</p>
                             <p>Selesaikan pembayaran untuk invoice #{pending_va.invoice.invoice_number} sebelum waktu habis.</p>
-                            <Link href={route('pending-payment.show', pending_va.id)} className="font-bold text-blue-800 hover:text-blue-900">
+                            <Link href={route('customer.pending-payment.show', pending_va.id)} className="font-bold text-blue-800 hover:text-blue-900">
                                 Lihat Detail Pembayaran
                             </Link>
                         </div>
@@ -130,7 +130,7 @@ export default function Dashboard({ pelanggan, statusLangganan, unpaid_invoices,
                                         <p className="text-sm font-medium text-gray-500">Jatuh Tempo: {formatDate(unpaid_invoices[0].due_date)}</p>
                                         <p className="text-xl font-bold text-gray-800 mt-1">{formatRupiah(unpaid_invoices[0].balance_due)}</p>
                                     </div>
-                                    <Link href={route('invoices.show', unpaid_invoices[0].id)} className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700 transition duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                    <Link href={route('customer.invoices.show', unpaid_invoices[0].id)} className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700 transition duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                                         Bayar Sekarang
                                     </Link>
                                 </div>
@@ -138,7 +138,7 @@ export default function Dashboard({ pelanggan, statusLangganan, unpaid_invoices,
                                 {unpaid_invoices.length > 1 && (
                                     <div className="text-center pt-2">
                                         <Link
-                                            href={route('invoices.index', { status: 'unpaid' })}
+                                            href={route('customer.invoices.index', { status: 'unpaid' })}
                                             className="text-sm font-medium text-blue-600 hover:text-blue-800 transition duration-150"
                                         >
                                             Lihat {unpaid_invoices.length - 1} tagihan lainnya &rarr;

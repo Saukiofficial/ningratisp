@@ -82,11 +82,10 @@ export default function AdminLayout({ children, title }) {
                             <Link
                                 key={item.routeName}
                                 href={route(item.routeName)}
-                                className={`flex items-center gap-4 px-4 py-3.5 rounded-xl text-sm font-medium transition-all duration-200 group relative overflow-hidden ${
-                                    active
-                                    ? 'bg-gradient-to-r from-gray-700 to-gray-600 text-white shadow-lg shadow-gray-900/30'
-                                    : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800/50'
-                                }`}
+                                className={`flex items-center gap-4 px-4 py-3.5 rounded-xl text-sm font-medium transition-all duration-200 group relative overflow-hidden ${active
+                                        ? 'bg-gradient-to-r from-gray-700 to-gray-600 text-white shadow-lg shadow-gray-900/30'
+                                        : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800/50'
+                                    }`}
                             >
                                 {active && (
                                     <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-gray-400 to-gray-500 rounded-r"></div>
@@ -116,7 +115,7 @@ export default function AdminLayout({ children, title }) {
                     </div>
 
                     <Link
-                        href={route('logout')}
+                        href={route('customer.logout')}
                         method="post"
                         as="button"
                         className="flex items-center justify-center gap-3 px-4 py-3 w-full text-sm font-medium text-gray-300 hover:text-white bg-gray-800/50 hover:bg-red-900/40 border border-gray-700/50 hover:border-red-800/50 rounded-xl transition-all duration-200 group"

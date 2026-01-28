@@ -18,6 +18,7 @@ class AssetForm
         return $schema
             ->schema([
                 Section::make('Informasi Perangkat')
+                    ->columnSpanFull()
                     ->description('Detail spesifikasi aset.')
                     ->schema([
                         TextInput::make('name')
@@ -56,6 +57,7 @@ class AssetForm
                     ])->columns(2),
 
                 Section::make('Keuangan & Lainnya')
+                    ->columnSpanFull()
                     ->schema([
                         Grid::make(3)
                             ->schema([

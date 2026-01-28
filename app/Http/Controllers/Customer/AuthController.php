@@ -24,7 +24,7 @@ class AuthController extends Controller
     public function index(): RedirectResponse|Response
     {
         if (Auth::guard(self::GUARD)->check()) {
-            return to_route('dashboard');
+            return to_route('customer.dashboard');
         }
 
         return Inertia::render('Customer/Login');
@@ -52,7 +52,7 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->route('dashboard');
+        return redirect()->route('customer.dashboard');
     }
 
     /**
@@ -66,6 +66,6 @@ class AuthController extends Controller
 
         $request->session()->regenerateToken();
 
-        return redirect()->route('login');
+        return redirect()->route('customer.login');
     }
 }
