@@ -18,16 +18,16 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::prefix('customer')->as('customer.')->group(function () {
+Route::prefix('customer')->group(function () {
 
-    Route::get('/', fn() => to_route('customer.login'));
+    Route::get('/', fn() => to_route('login'));
 
     Route::get('/login', [AuthController::class, 'index'])->name('login');
     Route::post('/login', [AuthController::class, 'authProcess'])->name('login.auth');
 
 
     // test view
-    Route::group(['middleware' => 'auth:customers'], function () {
+    Route::group(['middleware' => 'auth:customers', 'as' => 'customer.'], function () {
         Route::get('/dashboard', DashboardController::class)->name('dashboard');
         Route::get('/invoices/{invoice}/checkout', [InvoiceController::class, 'checkout'])->name('invoices.checkout');
         Route::post('invoices/{invoice}/pay', [InvoiceController::class, 'pay'])->name('invoices.pay');

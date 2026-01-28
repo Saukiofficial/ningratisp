@@ -32,7 +32,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion, packages }) 
                                 ) : (
                                     <>
                                         <Link
-                                            href={route('customer.login')}
+                                            href={route('login')}
                                             className="font-semibold text-gray-600 hover:text-gray-900 focus:outline focus:outline-2 focus:rounded-sm focus:outline-indigo-500"
                                         >
                                             Log in
