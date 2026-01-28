@@ -118,6 +118,11 @@ class Customer extends User
         return $this->hasMany(Complient::class);
     }
 
+    public function customerConnection(): HasOne
+    {
+        return $this->hasOne(CustomerConnection::class);
+    }
+
     /**
      * Automatically hash password when setting
      */
