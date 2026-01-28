@@ -72,7 +72,7 @@ class SyncRemoteAddressCustomer extends Command
             }
 
             // customer connection
-            if (isset($customerMikrotik[$customer->username]) && $customer->customerConnection?->remote_address != $customerMikrotik[$customer->username]['remote-address']) {
+            if (isset($customerMikrotik[$customer->username]) && $customer->customerConnection?->ip_address != $customerMikrotik[$customer->username]['remote-address']) {
                 $customer->customerConnection()->update([
                     'ip_address' => $customerMikrotik[$customer->username]['remote-address']
                 ]);
