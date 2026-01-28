@@ -165,11 +165,11 @@ export default function Show({ invoice }) {
                             )}
 
                             <div className="flex justify-between items-center mt-8 pt-6 border-t">
-                                <Link href={route('invoices.index')} className="text-blue-600 hover:text-blue-800 transition duration-150 ease-in-out">
+                                <Link href={route('customer.invoices.index')} className="text-blue-600 hover:text-blue-800 transition duration-150 ease-in-out">
                                     &larr; Kembali ke Daftar Tagihan
                                 </Link>
                                 {invoice.status === 'unpaid' && (
-                                    <Link href={route('invoices.checkout', { invoice: invoice.id })} className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out">
+                                    <Link href={route('customer.invoices.checkout', { invoice: invoice.id })} className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out">
                                         Pilih Metode Pembayaran
                                     </Link>
                                 )}

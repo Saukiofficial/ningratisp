@@ -38,6 +38,11 @@ class HandleInertiaRequests extends Middleware
     {
         return [
             ...parent::share($request),
+            // TAMBAHKAN BAGIAN INI AGAR FLASH MESSAGE TERKIRIM
+            'flash' => [
+                'success' => fn() => $request->session()->get('success'),
+                'error' => fn() => $request->session()->get('error'),
+            ],
             'appEnv' => app()->environment(),
             'auth.user' => Auth::user()?->only('id', 'username', 'email'),
         ];

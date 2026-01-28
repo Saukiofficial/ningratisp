@@ -59,15 +59,15 @@ const OrderSummary = ({ invoice, claimedDiscounts = [], selectedMethod, handleOp
 
     const handleClaimVoucher = (e) => {
         e.preventDefault();
-        post(route('discounts.claim'), { onSuccess: () => setData('code', '') });
+        post(route('customer.discounts.claim'), { onSuccess: () => setData('code', '') });
     };
 
     const handleApplyDiscount = (discountId) => {
-        router.post(route('invoices.apply-discount', { invoice: invoice.id }), { discount_id: discountId });
+        router.post(route('customer.invoices.apply-discount', { invoice: invoice.id }), { discount_id: discountId });
     };
 
     const handleRemoveDiscount = () => {
-        router.post(route('invoices.remove-discount', { invoice: invoice.id }));
+        router.post(route('customer.invoices.remove-discount', { invoice: invoice.id }));
     };
 
     const formatRupiah = (number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number);
@@ -219,7 +219,7 @@ export default function Checkout({ invoice, paymentMethods = [], claimedDiscount
     const handlePayment = () => {
         if (!confirmationData) return;
         setIsProcessing(true);
-        router.post(route('invoices.pay', { invoice: invoice.id }), { payment_method: confirmationData.method.id }, {
+        router.post(route('customer.invoices.pay', { invoice: invoice.id }), { payment_method: confirmationData.method.id }, {
             onSuccess: () => setIsConfirmationModalOpen(false),
             onError: (errors) => toast.error(Object.values(errors)[0] || 'Payment processing failed.'),
             onFinish: () => setIsProcessing(false),
@@ -294,7 +294,7 @@ export default function Checkout({ invoice, paymentMethods = [], claimedDiscount
                                 summary={summary}
                             />
                             <div className="mt-6 text-center">
-                                <Link href={route('invoices.show', { invoice: invoice.id })} className="text-sm text-gray-600 hover:text-gray-900">
+                                <Link href={route('customer.invoices.show', { invoice: invoice.id })} className="text-sm text-gray-600 hover:text-gray-900">
                                     &larr; Kembali ke Invoice
                                 </Link>
                             </div>

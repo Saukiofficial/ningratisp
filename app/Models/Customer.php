@@ -113,6 +113,11 @@ class Customer extends User
         return $this->hasMany(AccountReceivable::class);
     }
 
+    public function complients(): HasMany
+    {
+        return $this->hasMany(Complient::class);
+    }
+
     /**
      * Automatically hash password when setting
      */

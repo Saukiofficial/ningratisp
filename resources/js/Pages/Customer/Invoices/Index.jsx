@@ -23,7 +23,7 @@ export default function Tagihan({ tagihans, filters, invoice_statuses }) {
     };
 
     const applyFilters = () => {
-        router.get(route('invoices.index'), filterState, {
+        router.get(route('customer.invoices.index'), filterState, {
             preserveState: true,
             replace: true,
         });
@@ -149,7 +149,7 @@ export default function Tagihan({ tagihans, filters, invoice_statuses }) {
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
                                     {tagihans.data.map((tagihan) => (
-                                        <tr key={tagihan.id} className="hover:bg-gray-100 transition duration-150 cursor-pointer" onClick={() => router.visit(route('invoices.show', tagihan.id))}>
+                                        <tr key={tagihan.id} className="hover:bg-gray-100 transition duration-150 cursor-pointer" onClick={() => router.visit(route('customer.invoices.show', tagihan.id))}>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{formatDate(tagihan.invoice_date)}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                                                 <span>{formatRupiah(tagihan.balance_due)}</span>
@@ -175,7 +175,7 @@ export default function Tagihan({ tagihans, filters, invoice_statuses }) {
                                                     </Link>
                                                 )} */}
 
-                                                <Link href={route('invoices.show', tagihan.id)} className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 transition duration-150" >
+                                                <Link href={route('customer.invoices.show', tagihan.id)} className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 transition duration-150" >
                                                     Lihat
                                                 </Link>
                                             </td>
@@ -189,7 +189,7 @@ export default function Tagihan({ tagihans, filters, invoice_statuses }) {
                     {/* mobile view */}
                     <div className="sm:hidden space-y-4 px-4">
                         {tagihans.data.map((tagihan) => (
-                            <div key={tagihan.id} className="bg-white shadow-lg rounded-lg p-4 cursor-pointer" onClick={() => router.visit(route('invoices.show', tagihan.id))}>
+                            <div key={tagihan.id} className="bg-white shadow-lg rounded-lg p-4 cursor-pointer" onClick={() => router.visit(route('customer.invoices.show', tagihan.id))}>
                                 <div className="flex justify-between items-start">
                                     <div>
                                         <p className="font-bold text-gray-800">{formatDate(tagihan.invoice_date)}</p>

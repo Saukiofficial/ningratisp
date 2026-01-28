@@ -1,0 +1,100 @@
+# Base directory
+$BASE_DIR = "resources\js"
+
+# Function to create component with boilerplate
+function Create-Component {
+    param (
+        [string]$Path,
+        [string]$Name
+    )
+
+    $fullPath = Join-Path $Path $Name
+    $dir = Split-Path $fullPath -Parent
+
+    # Create directory if not exists
+    if (-not (Test-Path $dir)) {
+        New-Item -ItemType Directory -Force -Path $dir | Out-Null
+    }
+
+    $componentName = [System.IO.Path]::GetFileNameWithoutExtension($Name)
+
+    # Content
+    $content = @"
+import React from 'react';
+import { Head } from '@inertiajs/react';
+
+export default function $componentName() {
+    return (
+        <div className="p-6">
+            <Head title="$componentName" />
+            <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                    <div className="p-6 text-gray-900">
+                        <h1 className="text-2xl font-bold">Page: $componentName</h1>
+                        <p className="mt-2 text-gray-600">Component location: $fullPath</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+"@
+
+    $content | Set-Content -Path $fullPath -Encoding UTF8
+    Write-Host "✅ Created: $fullPath"
+}
+
+# Function for UI Components (slightly different boilerplate)
+function Create-UIComponent {
+    param (
+        [string]$Path,
+        [string]$Name
+    )
+
+    $fullPath = Join-Path $Path $Name
+    $dir = Split-Path $fullPath -Parent
+
+    if (-not (Test-Path $dir)) {
+        New-Item -ItemType Directory -Force -Path $dir | Out-Null
+    }
+
+    $componentName = [System.IO.Path]::GetFileNameWithoutExtension($Name)
+
+    $content = @"
+export default function $componentName({ children }) {
+    return (
+        <div className="border p-4 rounded bg-gray-50">
+            <h2 className="font-bold text-lg mb-2">$componentName</h2>
+            <div>{children}</div>
+        </div>
+    );
+}
+"@
+
+    $content | Set-Content -Path $fullPath -Encoding UTF8
+    Write-Host "✅ Created Component: $fullPath"
+}
+
+Write-Host "🚀 Starting Scaffold for Ningrat Net (Windows)..."
+
+# 1. Pages - Landing
+Create-Component -Path "$BASE_DIR\Pages\Landing" -Name "Home.jsx"
+Create-Component -Path "$BASE_DIR\Pages\Landing" -Name "Packages.jsx"
+Create-Component -Path "$BASE_DIR\Pages\Landing" -Name "Register.jsx"
+
+# 2. Pages - Admin
+Create-Component -Path "$BASE_DIR\Pages\Admin" -Name "Dashboard.jsx"
+Create-Component -Path "$BASE_DIR\Pages\Admin" -Name "Packages.jsx"
+Create-Component -Path "$BASE_DIR\Pages\Admin" -Name "Customers.jsx"
+Create-Component -Path "$BASE_DIR\Pages\Admin" -Name "Complaints.jsx"
+
+# 3. Pages - Customer
+Create-Component -Path "$BASE_DIR\Pages\Customer" -Name "Dashboard.jsx"
+Create-Component -Path "$BASE_DIR\Pages\Customer" -Name "Complaints.jsx"
+
+# 4. Components
+Create-UIComponent -Path "$BASE_DIR\Components" -Name "Navbar.jsx"
+Create-UIComponent -Path "$BASE_DIR\Components" -Name "Footer.jsx"
+Create-UIComponent -Path "$BASE_DIR\Components" -Name "PackageCard.jsx"
+
+Write-Host "✨ Scaffold Complete! Run 'npm run dev' to see changes."
