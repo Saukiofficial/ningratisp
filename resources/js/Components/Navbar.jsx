@@ -169,21 +169,15 @@ export default function Navbar() {
 
                     {/* AUTH BUTTONS */}
                     <div className="hidden lg:flex items-center gap-3 pl-6 ml-6 border-l border-white/10">
-                        {auth.user ? (
-                            <Link href="/dashboard" className="px-5 py-2.5 rounded-full font-bold text-sm transition-all shadow-lg hover:shadow-orange-500/30 bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:from-orange-600 hover:to-amber-600">Dashboard</Link>
-                        ) : (
-                            <>
-                                <Link href={route('login')} className="font-semibold text-sm text-white/90 hover:text-white transition-colors">Login</Link>
-                                <a
-                                    href={waLink}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="px-6 py-2.5 rounded-full font-bold text-sm transition-all shadow-lg hover:shadow-cyan-400/50 bg-gradient-to-r from-cyan-400 to-cyan-500 text-slate-900 hover:from-cyan-500 hover:to-cyan-600 flex items-center gap-2"
-                                >
-                                    Daftar Sekarang
-                                </a>
-                            </>
-                        )}
+                        <Link href={route('login')} className="font-semibold text-sm text-white/90 hover:text-white transition-colors">Login Customer</Link>
+                        <a
+                            href={waLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-6 py-2.5 rounded-full font-bold text-sm transition-all shadow-lg hover:shadow-cyan-400/50 bg-gradient-to-r from-cyan-400 to-cyan-500 text-slate-900 hover:from-cyan-500 hover:to-cyan-600 flex items-center gap-2"
+                        >
+                            Daftar Sekarang
+                        </a>
                     </div>
 
                     {/* MOBILE TOGGLE */}
@@ -224,21 +218,15 @@ export default function Navbar() {
                     <Link href="/coverage-area" className="block text-lg font-semibold text-white">Coverage Area</Link>
 
                     <div className="pt-6 border-t border-orange-500/20 flex flex-col gap-3">
-                        {auth.user ? (
-                            <Link href="/dashboard" className="w-full py-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl font-bold text-center">Dashboard</Link>
-                        ) : (
-                            <>
-                                <Link href={route('login')} className="w-full py-3 border border-orange-500/30 text-white rounded-xl font-bold text-center">Login</Link>
-                                <a
-                                    href={waLink}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="w-full py-3 bg-gradient-to-r from-cyan-400 to-cyan-500 text-slate-900 rounded-xl font-bold text-center flex items-center justify-center gap-2"
-                                >
-                                    Daftar Sekarang
-                                </a>
-                            </>
-                        )}
+                        <Link href={route('login')} className="font-semibold text-sm text-white/90 hover:text-white transition-colors">Login Customer</Link>
+                        <a
+                            href={waLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-6 py-2.5 rounded-full font-bold text-sm transition-all shadow-lg hover:shadow-cyan-400/50 bg-gradient-to-r from-cyan-400 to-cyan-500 text-slate-900 hover:from-cyan-500 hover:to-cyan-600 flex items-center gap-2"
+                        >
+                            Daftar Sekarang
+                        </a>
                     </div>
                 </div>
             </div>
