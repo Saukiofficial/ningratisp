@@ -152,6 +152,7 @@ class OfflineUsersWidget extends BaseWidget
                     ->icon('heroicon-o-arrow-path')
                     ->action(function () {
                         // Force refresh by clearing any cache if needed
+                        (new MikrotikAPINative)->getPppSecrets(false);
                         $this->dispatch('$refresh');
                     }),
             ])
