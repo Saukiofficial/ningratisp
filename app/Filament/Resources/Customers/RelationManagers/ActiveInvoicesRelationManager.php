@@ -83,7 +83,7 @@ class ActiveInvoicesRelationManager extends RelationManager
                             ])->columns(3),
                             FileUpload::make('file_path')
                                 ->label('Payment Struct')
-                                ->required()
+                                // ->required()
                                 ->acceptedFileTypes([
                                     'image/jpeg',
                                     'image/jpg',
@@ -171,7 +171,7 @@ class ActiveInvoicesRelationManager extends RelationManager
                         ])->columns(3),
                         FileUpload::make('file_path')
                             ->label('Payment Struct')
-                            ->required()
+                            // ->required()
                             ->acceptedFileTypes([
                                 'image/jpeg',
                                 'image/jpg',

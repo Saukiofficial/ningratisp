@@ -16,13 +16,12 @@ class FinancialStatsOverview extends BaseWidget
     protected function getStats(): array
     {
         return Cache::remember(self::class, now()->addHour(), function () {
-            $currentMonthInvoices = Invoices::where('status', Invoices::STATUS_PAID)
-                ->whereMonth('invoice_date', now()->month)
+            $currentMonthInvoices = Invoices::query()->whereMonth('invoice_date', now()->month)
                 ->whereYear('invoice_date', now()->year);
 
             $grossRevenue = (clone $currentMonthInvoices)->sum('subtotal');
             $totalDiscounts = (clone $currentMonthInvoices)->sum('discount_amount');
-            $netRevenue = $grossRevenue - $totalDiscounts;
+            $netRevenue = (clone $currentMonthInvoices)->where('status', Invoices::STATUS_PAID)->sum('total_amount');
 
             return [
                 Stat::make('Gross Revenue (This Month)', NumberFormatter::humanReadable($grossRevenue, 'Rp'))

@@ -22,8 +22,9 @@ class RevenueOverviewChart extends ApexChartWidget
         return Cache::remember(self::class, now()->addHour(), function () {
             // Gross Revenue
             $grossData = Trend::query(
-                Invoices::query()->where('status', Invoices::STATUS_PAID)
+                Invoices::query()
             )
+                ->dateColumn('invoice_date')
                 ->between(start: now()->subYear(), end: now())
                 ->perMonth()
                 ->sum('subtotal');
@@ -33,6 +34,7 @@ class RevenueOverviewChart extends ApexChartWidget
                 Invoices::query()->where('status', Invoices::STATUS_PAID)
 
             )
+                ->dateColumn('invoice_date')
                 ->between(start: now()->subYear(), end: now())
                 ->perMonth()
                 ->sum('discount_amount');
@@ -42,6 +44,7 @@ class RevenueOverviewChart extends ApexChartWidget
                 Invoices::query()->where('status', Invoices::STATUS_PAID)
 
             )
+                ->dateColumn('invoice_date')
                 ->between(start: now()->subYear(), end: now())
                 ->perMonth()
                 ->sum('total_amount');

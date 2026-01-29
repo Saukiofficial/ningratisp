@@ -25,6 +25,7 @@ class NetRevenueChart extends ApexChartWidget
                 Invoices::query()->where('status', Invoices::STATUS_PAID)
 
             )
+                ->dateColumn('invoice_date')
                 ->between(
                     start: now()->subYear(),
                     end: now(),
