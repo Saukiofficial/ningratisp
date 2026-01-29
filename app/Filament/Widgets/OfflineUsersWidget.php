@@ -37,15 +37,7 @@ class OfflineUsersWidget extends BaseWidget
 
                     // Test connection by trying to get secrets
                     $secrets = $mikrotik->getPppSecrets();
-
-                    if (empty(cache('ppp_active'))) {
-                        $response = $mikrotik->getPppActive();
-                        if (is_array($response) && !isset($response['error'])) {
-                            Cache::remember('ppp_active', now()->addMinutes(5), fn() => $response);
-                        }
-                    }
-                    $activePpp = cache('ppp_active');
-
+                    $activePpp = $mikrotik->getPppActive();
                     $activeUsers = collect($activePpp)->pluck('name')->all();
 
                     $this->connectionError = 'Router not connected';

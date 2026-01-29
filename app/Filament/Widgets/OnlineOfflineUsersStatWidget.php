@@ -13,6 +13,7 @@ class OnlineOfflineUsersStatWidget extends BaseWidget
 {
     protected static ?int $sort = 2;
     protected static bool $isDiscovered = false;
+    protected ?string $pollingInterval = '300s';
 
     protected function getStats(): array
     {
@@ -24,14 +25,7 @@ class OnlineOfflineUsersStatWidget extends BaseWidget
 
             $mikrotik = new MikrotikAPINative();
             $cacheUsers = $mikrotik->getPppSecrets();
-
-            if (empty(cache('ppp_active'))) {
-                $response = $mikrotik->getPppActive();
-                if (is_array($response) && !isset($response['error'])) {
-                    Cache::remember('ppp_active', now()->addMinutes(5), fn() => $response);
-                }
-            }
-            $activePpp = cache('ppp_active');
+            $activePpp = $mikrotik->getPppActive();
 
             $activeUsers = collect($activePpp)->pluck('name')->all();
             $onlineUsers = $offlineUsers = $expiredUsers = 0;
