@@ -226,7 +226,7 @@ class InvoiceService
             ->orderByDesc('invoice_number')
             ->first('invoice_number');
 
-        if ($latestInvoice && preg_match('/INV-\d{6}-(\d{4})/', $latestInvoice->invoice_number, $matches)) {
+        if ($latestInvoice && preg_match('/INV-MAN-\d{6}-(\d{4})/', $latestInvoice->invoice_number, $matches)) {
             $nextSeq = (int) $matches[1] + 1;
         } else {
             $nextSeq = 1;
