@@ -52,7 +52,9 @@ class OfflineUsersWidget extends BaseWidget
                         // Convert array to object for easier column access
                         $lastLoggedOut = Carbon::parse($secret['last-logged-out']);
                         $secret['last-logged-out'] = $lastLoggedOut;
-                        $secret['status'] = $lastLoggedOut->diffInMonths() >= 1 ? 'expired' : 'offline';
+                        $secret['status'] = ($lastLoggedOut->diffInMonths() >= 1 ||
+                            isset($secret['comment']) && str_contains(strtolower($secret['comment']), 'expired')) ?
+                            'expired' : 'offline';
                         return  $secret;
                     })
                         ->sortBy(

@@ -50,7 +50,8 @@ class OnlineOfflineUsersStatWidget extends BaseWidget
             // separete expired and offline user in inactive users
             array_map(
                 function ($user) use (&$expiredUsers, &$offlineUsers) {
-                    return Carbon::parse($user['last-logged-out'])->diffInMonths() > 1
+                    return (Carbon::parse($user['last-logged-out'])->diffInMonths() > 1 ||
+                        isset($user['comment']) && str_contains(strtolower($user['comment']), 'expired'))
                         ? $expiredUsers++ : $offlineUsers++;
                 },
                 $inactiveUsers
