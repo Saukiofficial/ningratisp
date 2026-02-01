@@ -4,27 +4,31 @@ namespace App\Exports;
 
 use App\Models\Customer;
 use App\Models\Invoices;
+use App\Models\Payment;
 use Carbon\CarbonPeriod;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Date;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithColumnFormatting;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping; // Add this concern
 use Maatwebsite\Excel\Concerns\WithStartRow;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
-use PhpOffice\PhpSpreadsheet\Shared\Date;
 use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
+use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Events\AfterSheet;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use Illuminate\Support\Facades\DB;
 
 class InvoicesExport implements
     FromCollection,
     WithColumnFormatting,
     WithHeadings,
+    WithEvents,
     WithStartRow
 {
     protected $startDate;
-
     protected $endDate;
-
     protected $type;
 
     public function __construct($startDate, $endDate, $type)
@@ -34,42 +38,70 @@ class InvoicesExport implements
         $this->type = $type;
     }
 
+    protected $customerCategories = [];
+
+    protected function getCustomerCategories()
+    {
+        return $this->customerCategories;
+    }
+
     public function collection(): Collection
     {
-        // Fetch all invoices within the date range
-        $invoices = Invoices::query()
-            ->with('customerPackage')
-            ->whereBetween('invoice_date', [$this->startDate, $this->endDate])
-            ->get();
-
-        // Get all unique customers who have invoices in this period
-        $customerIds = $invoices->pluck('customerPackage.customer_id')->unique();
-        $customers = Customer::whereIn('id', $customerIds)->get();
+        // Single query to get all invoice and payment data
+        $results = DB::table('invoices as i')
+            ->join('customer_packages as cp', 'i.customer_package_id', '=', 'cp.id')
+            ->join('customers as c', 'cp.customer_id', '=', 'c.id')
+            ->leftJoin('payment_allocations as pa', 'pa.invoice_id', '=', 'i.id')
+            ->leftJoin('payments as p', function ($join) {
+                $join->on('pa.payment_id', '=', 'p.id')
+                    ->whereBetween('p.payment_datetime', [$this->startDate, $this->endDate]);
+            })
+            ->whereBetween('i.invoice_date', [$this->startDate, $this->endDate])
+            ->select(
+                'c.id as customer_id',
+                'c.full_name',
+                'c.username',
+                'i.invoice_date',
+                'i.total_amount',
+                'p.payment_datetime',
+                'pa.amount as payment_amount',
+                'c.customer_category'
+            )
+            ->get()
+            ->groupBy('customer_id');
 
         $data = new Collection;
-
-        // Generate date periods based on type
         $period = $this->generateDatePeriod();
 
-        foreach ($customers as $customer) {
-            $rowData = ['Customer' => $customer->full_name ?? $customer->user_name]; // First column is customer name
-            foreach ($period as $date) {
-                $totalAmount = $invoices->filter(function ($invoice) use ($customer, $date) {
-                    // Filter by customer and date
-                    if ($this->type === Invoices::REPORT_MONTHLY) {
-                        return $invoice->customerPackage->customer_id === $customer->id &&
-                            $invoice->invoice_date->format('Y-m') === $date->format('Y-m');
-                    } elseif ($this->type === Invoices::REPORT_ANNUALY) {
-                        return $invoice->customerPackage->customer_id === $customer->id &&
-                            $invoice->invoice_date->format('Y') === $date->format('Y');
-                    } else { // REPORT_DATE_RANGE
-                        return $invoice->customerPackage->customer_id === $customer->id &&
-                            $invoice->invoice_date->format('Y-m-d') === $date->format('Y-m-d');
-                    }
-                })->sum('total_amount'); // Sum the total_amount for filtered invoices
+        foreach ($results as $customerId => $records) {
+            $firstRecord = $records->first();
+            $this->customerCategories[] = $firstRecord->customer_category; // Store category
 
-                $rowData[$this->formatDateForHeading($date)] = $totalAmount;
+            $rowData = [$firstRecord->full_name ?? $firstRecord->user_name];
+
+            foreach ($period as $date) {
+                // Calculate invoice total (avoid duplicates by using unique invoice dates)
+                $invoiceTotal = $records
+                    ->unique(function ($record) {
+                        return $record->invoice_date . '-' . $record->total_amount;
+                    })
+                    ->filter(function ($record) use ($date) {
+                        return $this->matchesDate(Date::parse($record->invoice_date), $date);
+                    })
+                    ->sum('total_amount');
+
+                // Calculate payment total
+                $paymentTotal = $records
+                    ->filter(function ($record) use ($date) {
+                        return $record->payment_datetime &&
+                            $this->matchesDate(Date::parse($record->payment_datetime), $date);
+                    })
+                    ->sum('payment_amount');
+
+                $rowData[] = $invoiceTotal;
+                $rowData[] = $paymentTotal;
             }
+
             $data->push($rowData);
         }
 
@@ -78,13 +110,92 @@ class InvoicesExport implements
 
     public function headings(): array
     {
-        $headings = ['Customer'];
         $period = $this->generateDatePeriod();
+
+        // First row: Month-Year headers (will be merged)
+        $firstRow = ['Customer'];
         foreach ($period as $date) {
-            $headings[] = $this->formatDateForHeading($date);
+            $firstRow[] = $this->formatDateForHeading($date);
+            $firstRow[] = ''; // Empty cell for merge
         }
 
-        return $headings;
+        // Second row: Invoice and Payment sub-headers
+        $secondRow = [''];
+        foreach ($period as $date) {
+            $secondRow[] = 'Invoice';
+            $secondRow[] = 'Payment';
+        }
+
+        return [$firstRow, $secondRow];
+    }
+
+    public function registerEvents(): array
+    {
+        return [
+            AfterSheet::class => function (AfterSheet $event) {
+                $sheet = $event->sheet->getDelegate();
+                $period = $this->generateDatePeriod();
+
+                // Merge cells for month-year headers
+                $columnIndex = 2;
+                foreach ($period as $date) {
+                    $startColumn = Coordinate::stringFromColumnIndex($columnIndex);
+                    $endColumn = Coordinate::stringFromColumnIndex($columnIndex + 1);
+
+                    $sheet->mergeCells("{$startColumn}1:{$endColumn}1");
+
+                    $sheet->getStyle("{$startColumn}1:{$endColumn}1")
+                        ->getAlignment()
+                        ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+                    $columnIndex += 2;
+                }
+
+                $sheet->mergeCells('A1:A2');
+                $sheet->getStyle('A1:A2')
+                    ->getAlignment()
+                    ->setVertical(Alignment::VERTICAL_CENTER)
+                    ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+                // Color rows for "free_forever" customers
+                $rowNumber = 3; // Data starts from row 3
+                foreach ($this->getCustomerCategories() as $category) {
+                    if ($category === 'free_forever') {
+                        $sheet->getStyle("A{$rowNumber}:" . $sheet->getHighestColumn() . $rowNumber)
+                            ->getFill()
+                            ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+                            ->getStartColor()
+                            ->setRGB('90EE90'); // Light green color
+                    }
+
+
+                    $rowNumber++;
+                }
+
+                // Set column widths (only need to set once per column)
+                $sheet->getColumnDimension('A')->setWidth(25); // Customer column
+                $columnIndex = 2;
+                foreach ($period as $date) {
+                    $sheet->getColumnDimension(Coordinate::stringFromColumnIndex($columnIndex))->setWidth(12); // Invoice
+                    $sheet->getColumnDimension(Coordinate::stringFromColumnIndex($columnIndex + 1))->setWidth(12); // Payment
+                    $columnIndex += 2;
+                }
+
+                // Set border for entire data range in one call
+                $highestRow = $sheet->getHighestRow();
+                $highestColumn = $sheet->getHighestColumn();
+
+                $sheet->getStyle("A1:{$highestColumn}{$highestRow}")
+                    ->applyFromArray([
+                        'borders' => [
+                            'allBorders' => [
+                                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                                'color' => ['rgb' => '000000'],
+                            ],
+                        ],
+                    ]);
+            },
+        ];
     }
 
     public function map($row): array
@@ -96,11 +207,12 @@ class InvoicesExport implements
     {
         $formats = [];
         $period = $this->generateDatePeriod();
-        $columnIndex = 1; // Start from the second column (index 1) for dates
+        $columnIndex = 1;
 
         foreach ($period as $date) {
             $formats[Coordinate::stringFromColumnIndex($columnIndex)] = NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1;
-            $columnIndex++;
+            $formats[Coordinate::stringFromColumnIndex($columnIndex + 1)] = NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1;
+            $columnIndex += 2;
         }
 
         return $formats;
@@ -108,7 +220,18 @@ class InvoicesExport implements
 
     public function startRow(): int
     {
-        return 2; // Apply formatting from the second row onwards
+        return 3; // Data starts from row 3 (after 2 header rows)
+    }
+
+    protected function matchesDate($datetime, $periodDate): bool
+    {
+        if ($this->type === Invoices::REPORT_MONTHLY) {
+            return $datetime->format('Y-m') === $periodDate->format('Y-m');
+        } elseif ($this->type === Invoices::REPORT_ANNUALY) {
+            return $datetime->format('Y') === $periodDate->format('Y');
+        } else { // REPORT_DATE_RANGE
+            return $datetime->format('Y-m-d') === $periodDate->format('Y-m-d');
+        }
     }
 
     protected function generateDatePeriod(): CarbonPeriod
