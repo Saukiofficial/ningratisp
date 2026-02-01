@@ -61,6 +61,7 @@ class InvoicesExport implements
                 'c.id as customer_id',
                 'c.full_name',
                 'c.username',
+                DB::raw("CASE WHEN isolir_at is not null THEN 'yes' ELSE null END AS isolir"),
                 'i.invoice_date',
                 'i.total_amount',
                 'p.payment_datetime',
@@ -77,7 +78,7 @@ class InvoicesExport implements
             $firstRecord = $records->first();
             $this->customerCategories[] = $firstRecord->customer_category; // Store category
 
-            $rowData = [$firstRecord->full_name ?? $firstRecord->user_name];
+            $rowData = [$firstRecord->full_name ?? $firstRecord->user_name, $firstRecord->isolir];
 
             foreach ($period as $date) {
                 // Calculate invoice total (avoid duplicates by using unique invoice dates)
@@ -113,14 +114,14 @@ class InvoicesExport implements
         $period = $this->generateDatePeriod();
 
         // First row: Month-Year headers (will be merged)
-        $firstRow = ['Customer'];
+        $firstRow = ['Customer', 'Isolir'];
         foreach ($period as $date) {
             $firstRow[] = $this->formatDateForHeading($date);
             $firstRow[] = ''; // Empty cell for merge
         }
 
         // Second row: Invoice and Payment sub-headers
-        $secondRow = [''];
+        $secondRow = ['', ''];
         foreach ($period as $date) {
             $secondRow[] = 'Invoice';
             $secondRow[] = 'Payment';
@@ -137,7 +138,7 @@ class InvoicesExport implements
                 $period = $this->generateDatePeriod();
 
                 // Merge cells for month-year headers
-                $columnIndex = 2;
+                $columnIndex = 3;
                 foreach ($period as $date) {
                     $startColumn = Coordinate::stringFromColumnIndex($columnIndex);
                     $endColumn = Coordinate::stringFromColumnIndex($columnIndex + 1);
@@ -151,11 +152,17 @@ class InvoicesExport implements
                     $columnIndex += 2;
                 }
 
-                $sheet->mergeCells('A1:A2');
-                $sheet->getStyle('A1:A2')
-                    ->getAlignment()
-                    ->setVertical(Alignment::VERTICAL_CENTER)
-                    ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                $mergedCells = [
+                    'A1:A2',
+                    'B1:B2'
+                ];
+                foreach ($mergedCells as $cell) {
+                    $sheet->mergeCells($cell);
+                    $sheet->getStyle($cell)
+                        ->getAlignment()
+                        ->setVertical(Alignment::VERTICAL_CENTER)
+                        ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                }
 
                 // Color rows for "free_forever" customers
                 $rowNumber = 3; // Data starts from row 3
@@ -174,7 +181,7 @@ class InvoicesExport implements
 
                 // Set column widths (only need to set once per column)
                 $sheet->getColumnDimension('A')->setWidth(25); // Customer column
-                $columnIndex = 2;
+                $columnIndex = 3;
                 foreach ($period as $date) {
                     $sheet->getColumnDimension(Coordinate::stringFromColumnIndex($columnIndex))->setWidth(12); // Invoice
                     $sheet->getColumnDimension(Coordinate::stringFromColumnIndex($columnIndex + 1))->setWidth(12); // Payment
@@ -207,7 +214,7 @@ class InvoicesExport implements
     {
         $formats = [];
         $period = $this->generateDatePeriod();
-        $columnIndex = 1;
+        $columnIndex = 2;
 
         foreach ($period as $date) {
             $formats[Coordinate::stringFromColumnIndex($columnIndex)] = NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1;
