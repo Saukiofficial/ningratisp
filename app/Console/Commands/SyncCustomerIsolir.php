@@ -8,6 +8,8 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Date;
 
+use function Symfony\Component\Clock\now;
+
 class SyncCustomerIsolir extends Command
 {
     /**
@@ -68,7 +70,8 @@ class SyncCustomerIsolir extends Command
                 $customer = $customers->get($username);
 
                 $customer->update([
-                    'isolir_at' => Date::parse($expiredUser['last-logged-out']),
+                    'isolir_at' => !empty($expiredUser['last-logged-out']) ?
+                        Date::parse($expiredUser['last-logged-out']) : now(),
                     'comment' => $expiredUser['comment']
                 ]);
                 $customer->save();

@@ -35,6 +35,15 @@ class CustomersTable
                 TextColumn::make('username')
                     ->searchable()
                     ->sortable(),
+                TextColumn::make('local_address')
+                    ->searchable()
+                    ->sortable(true, fn(Builder $query) => $query->orderByRaw('INET_ATON(local_address)')),
+                TextColumn::make('remote_address')
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->sortable(query: fn(Builder $query) => $query->orderByRaw('INET_ATON(remote_address)')),
+                TextColumn::make('phone')
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('full_name')
                     ->searchable(),
                 // TextColumn::make('pppProfile.profile_name')
