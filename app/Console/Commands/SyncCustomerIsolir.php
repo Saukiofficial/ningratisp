@@ -38,12 +38,13 @@ class SyncCustomerIsolir extends Command
         );
 
         $filteredUsers = $filteredUsername = $expiredUsers = $expiredUsername = [];
+        $previousExpired = Customer::query()->whereNotNull('isolir_at')->get()?->keyBy('username')?->toArray();
         foreach ($mikrotikUsers as $user) {
             $filteredUsers[$user['name']] = $user;
             $filteredUsername[] = $user['name'];
 
-            // expired users
-            if (str_contains(strtolower($user['comment']), 'expired')) {
+            // new expired users
+            if (str_contains(strtolower($user['comment']), 'expired') && !isset($previousExpired[$user['name']])) {
                 $expiredUsers[$user['name']] = $user;
                 $expiredUsername[] = $user['name'];
             }
@@ -65,12 +66,13 @@ class SyncCustomerIsolir extends Command
             ])->keyBy('username');
 
         $expiredUserCount = 0;
+        $expiredUsername = !empty($previousExpired) ? array_merge(array_keys($previousExpired), $expiredUsername) : $expiredUsername;
         foreach ($expiredUsers as $username => $expiredUser) {
             if (!empty($customers->has($username)) && empty($customers->get($username)->isolir_at)) {
                 $customer = $customers->get($username);
 
                 $customer->update([
-                    'isolir_at' => !empty($expiredUser['last-logged-out']) ?
+                    'isolir_at' => (!empty($expiredUser['last-logged-out']) && !str_contains($expiredUser['last-logged-out'], '1970-01-01')) ?
                         Date::parse($expiredUser['last-logged-out']) : now(),
                     'comment' => $expiredUser['comment']
                 ]);
