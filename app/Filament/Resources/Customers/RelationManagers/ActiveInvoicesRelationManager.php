@@ -54,6 +54,30 @@ class ActiveInvoicesRelationManager extends RelationManager
                         )
                         ->schema([
                             Section::make([
+                                TextInput::make('customer')
+                                    ->disabled()
+                                    ->default(
+                                        fn(Invoices $record) => $record->customerPackage->customer->username
+                                    ),
+                                TextInput::make('package')
+                                    ->disabled()
+                                    ->default(
+                                        fn(Invoices $record) => "{$record->customerPackage->package->name} ({$record->customerPackage->package->pppProfile->profile_name})"
+                                    ),
+                                TextInput::make('invoice')
+                                    ->disabled()
+                                    ->default(
+                                        fn(Invoices $record) => $record->invoice_number
+                                    ),
+                                TextInput::make('date')
+                                    ->disabled()
+                                    ->default(
+                                        fn(Invoices $record) => $record->invoice_date->format('d F Y')
+                                    ),
+                            ])
+                                ->label('Detail Information')
+                                ->columns(),
+                            Section::make([
                                 TextInput::make('amount')
                                     ->label('Amount')
                                     ->numeric()
@@ -80,7 +104,8 @@ class ActiveInvoicesRelationManager extends RelationManager
                                     ->disabled()
                                     ->dehydrated()
                                     ->default('MAN-' . now()->unix()),
-                            ])->columns(3),
+                            ])->columns(3)
+                                ->label('Record Payment'),
                             FileUpload::make('file_path')
                                 ->label('Payment Struct')
                                 // ->required()

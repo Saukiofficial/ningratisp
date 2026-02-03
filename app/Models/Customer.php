@@ -13,6 +13,11 @@ use Illuminate\Support\Facades\Hash;
 
 class Customer extends User
 {
+    const ACTIVE = 'active';
+    const SUSPENDED = 'suspended';
+    const TERMINATED = 'terminated';
+    const PENDING = 'pending';
+
     use HasFactory;
 
     protected $guarded = ['id'];
@@ -26,10 +31,6 @@ class Customer extends User
         'monthly_fee' => 'decimal:2',
         'installation_date' => 'date',
         'expiry_date' => 'date',
-        'last_login' => 'datetime',
-        'last_logout' => 'datetime',
-        'only_one_override' => 'boolean',
-        'profile_override' => 'boolean',
         'is_active' => 'boolean',
     ];
 
@@ -280,6 +281,16 @@ class Customer extends User
         }
 
         return $script;
+    }
+
+    public static function getStatusLabel(): array
+    {
+        return [
+            self::PENDING => 'Pending (Belum Aktif)',
+            self::ACTIVE => 'Active',
+            self::TERMINATED => 'Terminated (Permanen)',
+            self::SUSPENDED => 'Suspended (Sementar)'
+        ];
     }
 
     protected static function booted()
