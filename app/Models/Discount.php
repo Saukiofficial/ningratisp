@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -59,6 +60,13 @@ class Discount extends Model
     public function customerDiscounts(): HasMany
     {
         return $this->hasMany(CustomerDiscount::class);
+    }
+
+    public function canClaimed(): Attribute
+    {
+        return new Attribute(
+            get: fn() => !empty($this->claimable)
+        );
     }
 
     // Scopes

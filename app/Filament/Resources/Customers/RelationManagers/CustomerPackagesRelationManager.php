@@ -144,7 +144,9 @@ class CustomerPackagesRelationManager extends RelationManager
                 Action::make('activate')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
-                    ->visible(fn(CustomerPackages $record) => $record->status !== CustomerPackages::STATUS_ACTIVE)
+                    ->visible(
+                        fn(CustomerPackages $record) => $record->status !== CustomerPackages::STATUS_ACTIVE
+                    )
                     ->requiresConfirmation()
                     ->action(function (CustomerPackages $record) {
                         $record->customer->customerPackages()
@@ -164,19 +166,24 @@ class CustomerPackagesRelationManager extends RelationManager
                             ->success()
                             ->send();
                     }),
-                // Action::make('deactivate')
-                //     ->icon('heroicon-o-x-circle')
-                //     ->color('danger')
-                //     ->visible(fn(CustomerPackages $record) => $record->status === CustomerPackages::STATUS_ACTIVE)
-                //     ->requiresConfirmation()
-                //     ->action(function (CustomerPackages $record) {
-                //         $record->update(['status' => CustomerPackages::STATUS_SUSPENDED]);
+                Action::make('deactivate')
+                    ->icon('heroicon-o-x-circle')
+                    ->color('danger')
+                    ->visible(
+                        fn(CustomerPackages $record) => $record->status === CustomerPackages::STATUS_ACTIVE
+                    )
+                    ->requiresConfirmation()
+                    ->action(function (CustomerPackages $record) {
+                        $record->update([
+                            'status' => CustomerPackages::STATUS_SUSPENDED,
+                            'end_date' => now()
+                        ]);
 
-                //         Notification::make()
-                //             ->title('Package deactivated')
-                //             ->success()
-                //             ->send();
-                //     }),
+                        Notification::make()
+                            ->title('Package deactivated')
+                            ->success()
+                            ->send();
+                    }),
 
             ])
             ->defaultSort('status');

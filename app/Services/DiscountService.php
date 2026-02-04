@@ -75,6 +75,10 @@ class DiscountService
     public function validateDiscountForCustomer(Discount $discount, Customer $customer): bool
     {
 
+        if (!$discount->canClaimed) {
+            return false;
+        }
+
         if (! $discount->is_active || ! $discount->isWithinDateRange()) {
             return false;
         }

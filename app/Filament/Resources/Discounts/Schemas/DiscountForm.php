@@ -139,6 +139,14 @@ class DiscountForm
                             ->default(1)
                             ->numeric()
                             ->required(),
+                        Toggle::make('claimable')
+                            ->label('Customer Claim')
+                            ->hint(
+                                fn($get) => $get('claimable') ? 'Dapat di klaim oleh customer' : 'Apply admin'
+                            )
+                            ->reactive()
+                            ->helperText('Voucher dapat diklaim manual oleh customer atau apply oleh admin')
+                            ->default(true)
                     ])
             ]);
     }
