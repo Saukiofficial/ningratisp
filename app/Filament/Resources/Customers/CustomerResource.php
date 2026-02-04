@@ -73,20 +73,11 @@ class CustomerResource extends Resource
 
                                 $customer->local_address = $secret['local-address'] ?? null;
                                 $customer->remote_address = $secret['remote-address'] ?? null;
-                                $customer->rate_limit = $secret['rate-limit'] ?? null;
-                                $customer->caller_id = $secret['caller-id'] ?? null;
                                 $customer->is_active = ($secret['disabled'] ?? 'false') === 'false';
 
                                 // Set default values for required fields if not present in MikroTik
                                 $customer->full_name = $customer->full_name ?? $secret['name'];
-                                $customer->package_name = $customer->package_name ?? 'Default Package';
-                                $customer->monthly_fee = $customer->monthly_fee ?? 0;
                                 $customer->status = $customer->status ?? 'active';
-                                $customer->payment_status = $customer->payment_status ?? 'unpaid';
-                                $customer->total_uptime = $customer->total_uptime ?? 0;
-                                $customer->session_count = $customer->session_count ?? 0;
-                                $customer->bytes_in = $customer->bytes_in ?? 0;
-                                $customer->bytes_out = $customer->bytes_out ?? 0;
 
                                 $customer->save();
                                 $syncedCount++;
