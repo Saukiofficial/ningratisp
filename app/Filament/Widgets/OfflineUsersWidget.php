@@ -32,6 +32,8 @@ class OfflineUsersWidget extends BaseWidget
         $this->isConnected = $mikrotik->isConnected();
 
         return $table
+            ->deferLoading()
+            ->poll(null)
             ->records(function (int $page, int $recordsPerPage, array $filters, ?string $search, ?string $sortColumn, ?string $sortDirection) use ($mikrotik): LengthAwarePaginator {
                 try {
 
