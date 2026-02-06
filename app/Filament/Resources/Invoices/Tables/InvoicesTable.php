@@ -8,12 +8,14 @@ use App\Models\PaymentMethod;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Section;
 use Filament\Support\RawJs;
 use Filament\Tables\Columns\BadgeColumn;
@@ -267,6 +269,41 @@ class InvoicesTable
                         })
                         ->visible(false),
                     // ->visible(fn(Invoices $record) => $record->status !== Invoices::STATUS_CANCELLED && (float) ($record->balance_due ?? 0) > 0),
+                    DeleteAction::make()
+                        ->visible(
+                            fn(Invoices $record) => $record->status == Invoices::STATUS_UNPAID
+                        )
+                        ->action(function (Invoices $record): void {
+                            $no = $record->invoice_number;
+                            DB::beginTransaction();
+                            $ok = true;
+
+                            if ($record->payments()->exists()) {
+                                $ok = $record->payments()->delete();
+                            }
+
+                            if ($ok) {
+                                $ok = $record->delete();
+                            }
+
+                            if (! $ok) {
+                                Notification::make('')
+                                    ->title('Action failed')
+                                    ->body("Delete Invoice {$no} Fail")
+                                    ->danger()
+                                    ->send();
+
+                                return;
+                            }
+
+                            $ok ? DB::commit() : DB::rollBack();
+
+                            Notification::make('')
+                                ->title('Action success')
+                                ->body("Invoice {$no} deleted")
+                                ->success()
+                                ->send();
+                        })
                 ])
             ])
             ->toolbarActions([

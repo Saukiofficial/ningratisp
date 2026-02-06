@@ -10,19 +10,25 @@ use App\Services\ReceivableService;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DetachAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Repeater\TableColumn;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Components\Section;
+use Filament\Support\Enums\Width;
 use Filament\Support\Icons\Heroicon;
 use Filament\Support\RawJs;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 
 class ActiveInvoicesRelationManager extends RelationManager
 {
@@ -153,6 +159,95 @@ class ActiveInvoicesRelationManager extends RelationManager
                                 ->success()
                                 ->send();
                         }),
+                    Action::make('delete')
+                        ->modalHeading(
+                            fn(): string => __('filament-actions::delete.single.modal.heading', ['label' => $this->getRelationshipTitle()])
+                        )
+                        ->modalSubmitActionLabel(__('filament-actions::delete.single.modal.actions.delete.label'))
+                        ->successNotificationTitle(__('filament-actions::delete.single.notifications.deleted.title'))
+                        ->defaultColor('danger')
+                        ->tableIcon(Heroicon::Trash)
+                        ->groupedIcon(Heroicon::Trash)
+                        ->requiresConfirmation()
+                        ->modalIcon(Heroicon::OutlinedTrash)
+                        ->modalWidth(Width::ScreenLarge)
+                        ->schema([
+                            Section::make(fn(Invoices $record) => 'Invoice : ' . $record->invoice_number)
+                                ->columns()
+                                ->components([
+                                    TextInput::make('package')
+                                        ->default(
+                                            fn(Invoices $record) => $record->customerPackage->package->name
+                                        )
+                                        ->disabled(),
+                                    TextInput::make('date')
+                                        ->default(fn(Invoices $record) => $record->invoice_date->format('d F Y'))
+                                        ->disabled(),
+                                    TextInput::make('total_amount')
+                                        ->default(
+                                            fn(Invoices $record) => 'Rp. ' . number_format($record->total_amount, 2, ',', '.')
+                                        )
+                                        ->disabled(),
+                                    TextInput::make('paid_amount')
+                                        ->default(
+                                            fn(Invoices $record) => 'Rp. ' . number_format($record->paid_amount, 2, ',', '.')
+                                        )
+                                        ->disabled(),
+                                ]),
+                            // Repeater::make('allocations')
+                            //     ->relationship()
+                            //     ->compact()
+                            //     ->table([
+                            //         TableColumn::make('total_amount'),
+                            //         TableColumn::make('allocated_at'),
+                            //     ])
+                            //     ->schema([
+                            //         TextInput::make('total_amount')->disabled(),
+                            //         TextInput::make('allocated_at')->disabled(),
+                            //     ])
+                            //     ->deletable(false)
+                            //     ->addable(false)
+                        ])
+                        ->keyBindings(['mod+d'])
+                        ->hidden(static function (Invoices $record): bool {
+                            if (! method_exists($record, 'trashed')) {
+                                return false;
+                            }
+
+                            return $record->trashed();
+                        })
+
+                        ->action(function (Invoices $record): void {
+                            $no = $record->invoice_number;
+                            DB::beginTransaction();
+                            $ok = true;
+
+                            if ($record->payments()->exists()) {
+                                $ok = $record->payments()->delete();
+                            }
+
+                            if ($ok) {
+                                $ok = $record->delete();
+                            }
+
+                            if (! $ok) {
+                                Notification::make('')
+                                    ->title('Action failed')
+                                    ->body("Delete Invoice {$no} Fail")
+                                    ->danger()
+                                    ->send();
+
+                                return;
+                            }
+
+                            $ok ? DB::commit() : DB::rollBack();
+
+                            Notification::make('')
+                                ->title('Action success')
+                                ->body("Invoice {$no} deleted")
+                                ->success()
+                                ->send();
+                        })
                 ]),
             ])
             ->toolbarActions([
