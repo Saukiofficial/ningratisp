@@ -94,6 +94,8 @@ class ActiveInvoicesRelationManager extends RelationManager
                                     ->maxValue(fn(Invoices $record) => (float) ($record->balance_due ?? 0))
                                     ->required()
                                     ->default(fn(Invoices $record) => (float) ($record->balance_due ?? 0)),
+                                DateTimePicker::make('payment_datetime')
+                                    ->default(now()),
                                 Select::make('payment_method_id')
                                     ->label('Payment Method')
                                     ->options(
@@ -110,7 +112,7 @@ class ActiveInvoicesRelationManager extends RelationManager
                                     ->disabled()
                                     ->dehydrated()
                                     ->default('MAN-' . now()->unix()),
-                            ])->columns(3)
+                            ])->columns()
                                 ->label('Record Payment'),
                             FileUpload::make('file_path')
                                 ->label('Payment Struct')
@@ -148,7 +150,8 @@ class ActiveInvoicesRelationManager extends RelationManager
                                 $data['reference_id'] ?? null,
                                 $record,
                                 $data['file_path'],
-                                $data['file_name']
+                                $data['file_name'],
+                                datetime: $data['payment_datetime']
                             );
 
                             $record->refresh();
@@ -162,6 +165,9 @@ class ActiveInvoicesRelationManager extends RelationManager
                     Action::make('delete')
                         ->modalHeading(
                             fn(): string => __('filament-actions::delete.single.modal.heading', ['label' => $this->getRelationshipTitle()])
+                        )
+                        ->visible(
+                            fn(Invoices $record) => $record->status == Invoices::STATUS_UNPAID
                         )
                         ->modalSubmitActionLabel(__('filament-actions::delete.single.modal.actions.delete.label'))
                         ->successNotificationTitle(__('filament-actions::delete.single.notifications.deleted.title'))

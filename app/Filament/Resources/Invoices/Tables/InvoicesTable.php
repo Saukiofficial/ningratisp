@@ -12,6 +12,7 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -149,6 +150,8 @@ class InvoicesTable
                                     ->maxValue(fn(Invoices $record) => (float) ($record->balance_due ?? 0))
                                     ->required()
                                     ->default(fn(Invoices $record) => (float) ($record->balance_due ?? 0)),
+                                DateTimePicker::make('payment_datetime')
+                                    ->default(now()),
                                 Select::make('payment_method_id')
                                     ->label('Payment Method')
                                     ->options(\App\Models\PaymentMethod::query()->whereHas('fee')->orderBy('name')->pluck('name', 'id')->toArray())
@@ -165,7 +168,7 @@ class InvoicesTable
                                     ->disabled()
                                     ->dehydrated()
                                     ->default('MAN-' . now()->unix()),
-                            ])->columns(3)
+                            ])->columns()
                                 ->label('Record Payment'),
                             FileUpload::make('file_path')
                                 ->label('Payment Struct')
@@ -203,7 +206,8 @@ class InvoicesTable
                                 $data['reference_id'] ?? null,
                                 $record,
                                 $data['file_path'],
-                                $data['file_name']
+                                $data['file_name'],
+                                datetime: $data['payment_datetime']
                             );
 
                             $record->refresh();

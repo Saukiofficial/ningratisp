@@ -9,6 +9,7 @@ use App\Models\PaymentAllocation;
 use App\Models\PaymentMethod;
 use App\Models\Voucher;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 
 class PaymentService
@@ -79,7 +80,8 @@ class PaymentService
         ?Invoices $invoice = null,
         ?string $filePath = null,
         ?string $fileName = null,
-        array $invoiceIds = []
+        array $invoiceIds = [],
+        ?string $datetime = null
     ): Payment {
 
         // check fee
@@ -95,14 +97,15 @@ class PaymentService
             $invoice,
             $filePath,
             $fileName,
-            $invoiceIds
+            $invoiceIds,
+            $datetime
         ) {
             $payment = new Payment;
             $payment->fill([
                 'total_amount' => $amount,
                 'price' => $amount,
                 'reference_id' => $referenceId ?? ('PAY-' . now()->format('YmdHis')),
-                'payment_datetime' => Carbon::now(),
+                'payment_datetime' => !empty($datetime) ? Date::parse($datetime) : Carbon::now(),
                 'is_cancel' => false,
                 'description' => 'Incoming payment',
                 'voucher_id' => null,
