@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 
 class Invoices extends BaseModel
 {
@@ -174,5 +175,52 @@ class Invoices extends BaseModel
 
         $this->status = $this->paid_amount >= $this->total_amount ?
             self::STATUS_PAID : self::STATUS_UNPAID;
+    }
+
+    public function cancelPayment(?int $paymentId = null): bool
+    {
+        $allocations = $paymentId ?
+            $this->payments()->where('payment_id', $paymentId)->get() :
+            $this->payments()->get();
+
+        if ($allocations->isEmpty()) {
+            return false;
+        }
+
+        DB::beginTransaction();
+
+        try {
+            // Process each payment allocation
+            foreach ($allocations as $payment) {
+                $allocatedAmount = $payment->pivot->amount;
+                $invoiceTotal = $this->total_amount;
+
+                // If allocated amount is larger than invoice total, recalculate
+                if ($allocatedAmount >= $invoiceTotal) {
+                    // Only return the actual invoice amount to the payment
+                    $payment->delete();
+                } else {
+                    // Normal case: return full allocated amount to payment
+                    $payment->decrement('total_amount', $allocatedAmount);
+                }
+            }
+
+            // Delete payment allocation(s) from pivot table
+            // if ($paymentId) {
+            //     $this->payments()->detach($paymentId);
+            // } else {
+            //     $this->payments()->detach();
+            // }
+
+            // Use existing recalculate function to update all totals and status
+            $this->recalculateTotals();
+            $this->save();
+
+            DB::commit();
+            return true;
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
     }
 }

@@ -17,10 +17,13 @@ class PaymentsTable
     {
         return $table
             ->columns([
+                TextColumn::make('invoices.customerPackage.customer.username')
+                    ->label('Customer')
+                    ->separator(', '),
                 TextColumn::make('payment_type')
-                ->formatStateUsing(
-                    fn(string $state) => ucfirst($state)
-                ),
+                    ->formatStateUsing(
+                        fn(string $state) => ucfirst($state)
+                    ),
                 TextColumn::make('total_amount')
                     ->money('IDR')
                     ->sortable(),
