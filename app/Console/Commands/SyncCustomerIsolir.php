@@ -5,7 +5,6 @@ namespace App\Console\Commands;
 use App\Helpers\MikrotikAPINative;
 use App\Models\Customer;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Date;
 
 use function Symfony\Component\Clock\now;
@@ -34,59 +33,65 @@ class SyncCustomerIsolir extends Command
         $mikrotikUsers = (new MikrotikAPINative)->getPppSecrets();
         $mikrotikUsers = array_filter(
             $mikrotikUsers,
-            fn($user) => !empty($user['comment'] ?? null)
+            fn ($user) => ! empty($user['comment'] ?? null)
         );
 
-        $filteredUsers = $filteredUsername = $expiredUsers = $expiredUsername = [];
-        $previousExpired = Customer::query()->whereNotNull('isolir_at')->get()?->keyBy('username')?->toArray();
-        foreach ($mikrotikUsers as $user) {
-            $filteredUsers[$user['name']] = $user;
-            $filteredUsername[] = $user['name'];
+        $currentlyExpiredUsernames = [];
+        $expiredUsersData = [];
 
-            // new expired users
-            if (str_contains(strtolower($user['comment']), 'expired') && !isset($previousExpired[$user['name']])) {
-                $expiredUsers[$user['name']] = $user;
-                $expiredUsername[] = $user['name'];
+        foreach ($mikrotikUsers as $user) {
+            if (str_contains(strtolower($user['comment']), 'expired')) {
+                $currentlyExpiredUsernames[] = $user['name'];
+                $expiredUsersData[$user['name']] = $user;
             }
         }
 
-        if (empty($expiredUsername)) {
+        if (empty($currentlyExpiredUsernames)) {
             $this->error('Expired username empty');
+
             return;
         }
 
-        $customers = Customer::query()->whereIn('username', $expiredUsername)
+        $customers = Customer::query()->whereIn('username', array_column($mikrotikUsers, 'name'))
             ->get([
 
                 'id',
                 'username',
                 'ppp_profile_id',
                 'isolir_at',
-                'comment'
+                'comment',
             ])->keyBy('username');
 
         $expiredUserCount = 0;
-        $expiredUsername = !empty($previousExpired) ? array_merge(array_keys($previousExpired), $expiredUsername) : $expiredUsername;
-        foreach ($expiredUsers as $username => $expiredUser) {
-            if (!empty($customers->has($username)) && empty($customers->get($username)->isolir_at)) {
-                $customer = $customers->get($username);
+        foreach ($customers as $username => $customer) {
 
-                $customer->update([
-                    'isolir_at' => (!empty($expiredUser['last-logged-out']) && !str_contains($expiredUser['last-logged-out'], '1970-01-01')) ?
-                        Date::parse($expiredUser['last-logged-out']) : now(),
-                    'comment' => $expiredUser['comment']
-                ]);
-                $customer->save();
-                $expiredUserCount++;
+            // CASE 1: User is expired in Mikrotik
+            if (in_array($username, $currentlyExpiredUsernames)) {
+
+                if (empty($customer->isolir_at)) {
+
+                    $expiredUser = $expiredUsersData[$username];
+
+                    $customer->update([
+                        'isolir_at' => (! empty($expiredUser['last-logged-out']) && ! str_contains($expiredUser['last-logged-out'], '1970-01-01'))
+                            ? Date::parse($expiredUser['last-logged-out'])
+                            : now(),
+                        'comment' => $expiredUser['comment'],
+                    ]);
+
+                    $expiredUserCount++;
+                }
+            } else {
+                // CASE 2: Previously expired but now active → clear
+                if (! empty($customer->isolir_at)) {
+                    $customer->update([
+                        'isolir_at' => null,
+                        'comment' => null,
+                    ]);
+                }
             }
         }
 
-        Customer::query()->whereNotIn('username', $expiredUsername)
-            ->update([
-                'isolir_at' => null,
-                'comment' => null
-            ]);
-
-        $this->info('Success updated expired : ' . $expiredUserCount);
+        $this->info('Success updated expired : '.$expiredUserCount);
     }
 }
