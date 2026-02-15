@@ -13,14 +13,14 @@ class InformationMikrotik extends Page
 {
     protected string $view = 'filament.pages.information-mikrotik';
 
-    protected static string | BackedEnum | null $navigationIcon = Heroicon::OutlinedInformationCircle;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedInformationCircle;
 
     protected function getHeaderWidgets(): array
     {
         return [
-            TrafficWidget::class,
+            // TrafficWidget::class,
             OnlineOfflineUsersStatWidget::class,
-            OfflineUsersWidget::class
+            OfflineUsersWidget::class,
         ];
     }
 }
