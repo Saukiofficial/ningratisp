@@ -33,7 +33,6 @@ class OfflineUsersWidget extends BaseWidget
 
         return $table
             ->deferLoading()
-            ->poll(null)
             ->records(function (int $page, int $recordsPerPage, array $filters, ?string $search, ?string $sortColumn, ?string $sortDirection) use ($mikrotik): LengthAwarePaginator {
                 try {
 
@@ -139,7 +138,7 @@ class OfflineUsersWidget extends BaseWidget
             ])
             ->defaultSort('last-logged-out')
             ->paginated([10, 25, 50])
-            ->poll('30s') // Auto-refresh every 30 seconds
+            ->poll('300s')
             ->headerActions([
                 Action::make('connection_status')
                     ->label($this->isConnected ? 'Connected' : 'Disconnected')

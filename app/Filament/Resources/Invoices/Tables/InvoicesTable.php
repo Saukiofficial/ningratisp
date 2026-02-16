@@ -34,6 +34,7 @@ class InvoicesTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->deferLoading()
             ->columns([
                 TextColumn::make('invoice_number')
                     ->searchable()
