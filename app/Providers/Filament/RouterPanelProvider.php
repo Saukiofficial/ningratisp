@@ -67,7 +67,8 @@ class RouterPanelProvider extends PanelProvider
                 FilamentApexChartsPlugin::make(),
             ])
             ->databaseNotifications()
-            ->maxContentWidth(Width::Full);
+            ->maxContentWidth(Width::Full)
+            ->sidebarCollapsibleOnDesktop();
         // ->viteTheme('resources/css/filament/router/theme.css');
     }
 }
