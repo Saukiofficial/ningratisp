@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Helpers\TaxCalculate;
 use App\Http\Requests\MidtransCallbackRequest;
 use App\Http\Requests\VoucherRequest;
+use App\Models\PaymentMethod;
 use App\Models\Voucher;
 use App\Services\HotspotService;
 use App\Services\MidtransService;
@@ -31,7 +32,9 @@ class HotspotController extends Controller
         $price = $prices[$request->validated('pointer')];
 
         $channels = $service->getAll();
-        $data['channels'] = $channels->where('is_active')->groupBy('category');
+        $data['channels'] = $channels->where('is_active')
+            ->where('code', '!=', PaymentMethod::CASH)
+            ->groupBy('category');
         $data['categories'] = $service->getCategory();
         $data['price'] = $price['price'];
         $data['pointer'] = $request->validated('pointer');
