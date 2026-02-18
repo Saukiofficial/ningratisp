@@ -18,6 +18,8 @@ class PaymentMethod extends Model
     const RETAIL = 'r';
     const OTHERS = 'o';
 
+    const CASH = 'cash';
+
     protected $guarded = ['id'];
 
     public function fee()
