@@ -62,6 +62,7 @@ class MikrotikAPINative
                     'detail' => 'MikroTik Error',
                     'error' => 400,
                     'message' => $response['!trap'][0]['message'] ?? 'Unknown error',
+                    'status' => $error
                 ];
             }
         } catch (Exception $e) {
@@ -70,6 +71,7 @@ class MikrotikAPINative
                 'detail' => 'Exception Request',
                 'error' => 500,
                 'message' => $e->getMessage(),
+                'status' => $error
             ];
         }
 
@@ -79,6 +81,7 @@ class MikrotikAPINative
                 'detail' => 'Empty Response',
                 'error' => 400,
                 'message' => 'Empty Response',
+                'status' => $error
             ];
         }
 
@@ -366,7 +369,7 @@ class MikrotikAPINative
 
         $secretId = $secrets[0]['.id'];
 
-        $comment = $enabled ? 'Coba auto comment' : '';
+        $comment = $enabled ? 'isolir' : 'lunas';
         if ($enabled && $additionalNotes) {
             $comment .= ' - ' . $additionalNotes;
         }
@@ -375,6 +378,13 @@ class MikrotikAPINative
             '.id' => $secretId,
             'comment' => $comment
         ]);
+
+        if (empty($response['status'])) {
+            $response = $this->request('/ppp/secret/print', [
+                '?name' => $username
+            ]);
+            $response = $this->parseFirstResponse($response);
+        }
 
         return $response;
     }

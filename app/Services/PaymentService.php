@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Jobs\ActivateCustomerInternetJob;
 use App\Models\Customer;
 use App\Models\Invoices;
 use App\Models\Payment;
@@ -9,6 +10,7 @@ use App\Models\PaymentAllocation;
 use App\Models\PaymentMethod;
 use App\Models\Voucher;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 
@@ -131,6 +133,19 @@ class PaymentService
             } else {
                 // Auto allocate to customer's oldest open invoices
                 $this->autoAllocate($payment, $customer, $invoiceIds);
+            }
+
+            // current payment
+            if ($payment->payment_datetime->format('Y-m') == now()->format('Y-m')) {
+                ActivateCustomerInternetJob::dispatch(
+                    $customer,
+                    Auth::user()
+                );
+
+                if (!empty($customer->isolir_at)) {
+                    $customer->isolir_at = null;
+                    $customer->save();
+                }
             }
 
             return $payment;
