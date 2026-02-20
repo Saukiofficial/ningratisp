@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Customer;
 use Illuminate\Console\Command;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Client\Pool;
 use Illuminate\Support\Facades\Storage;
@@ -18,7 +19,8 @@ class CheckRemoteRouter extends Command
     protected $signature = 'app:check-remote-router 
                             {--timeout=5 : The timeout in seconds per request}
                             {--concurrency=10 : How many requests to send at once}
-                            {--export= : Optional file path to save the JSON output (e.g., router_status.json)}';
+                            {--export= : Optional file path to save the JSON output (e.g., router_status.json)}
+                            {--force : re-assign flag remote}';
 
     /**
      * The console command description.
@@ -36,8 +38,12 @@ class CheckRemoteRouter extends Command
 
         // 1. Fetch Customers
         $customers = Customer::query()
+            ->when(
+                !$this->option('force'),
+                fn(Builder $q) => $q->where('can_remote', false)
+            )
             ->whereNotNull('remote_address')
-            ->get(['id', 'username', 'remote_address']);
+            ->get(['id', 'username', 'remote_address', 'can_remote']);
 
         $total = $customers->count();
 
@@ -95,6 +101,7 @@ class CheckRemoteRouter extends Command
                 // Update Stats
                 if ($isSuccess) {
                     $onlineCount++;
+                    $customer->update(['can_remote' => true]);
                 } else {
                     $offlineCount++;
                 }

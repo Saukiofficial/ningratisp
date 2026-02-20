@@ -58,6 +58,11 @@ class CustomersTable
                     ->formatStateUsing(
                         fn($state) => Discount::getCategoryStatus()[$state]
                     ),
+                IconColumn::make('can_remote')->boolean()
+                    ->label('Remote')
+                    ->trueIcon(Heroicon::OutlinedCheckBadge)
+                    ->falseIcon(Heroicon::OutlinedXMark)
+                    ->toggleable(isToggledHiddenByDefault: true),
                 IconColumn::make('auto_isolir')->boolean()
                     ->trueIcon(Heroicon::OutlinedCheckBadge)
                     ->falseIcon(Heroicon::OutlinedXMark),
@@ -84,6 +89,10 @@ class CustomersTable
                     ->query(fn(Builder $query) => $query->whereNotNull('isolir_at')),
                 TernaryFilter::make('auto_isolir')
                     ->label('Auto Isolir'),
+                Filter::make('can_remote')
+                    ->label('Active Remote')
+                    ->toggle()
+                    ->query(fn(Builder $query) => $query->where('can_remote', true)),
             ])
             ->recordActions([
                 ActionGroup::make([
