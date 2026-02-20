@@ -7,6 +7,7 @@ use App\Models\Customer;
 use App\Models\Customer\Invoices;
 use App\Models\VirtualAccount;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Date;
 use Inertia\Inertia;
 
 class DashboardController extends Controller
@@ -41,6 +42,7 @@ class DashboardController extends Controller
             'statusLangganan' => $unpaidInvoices->isEmpty(),
             'unpaid_invoices' => $unpaidInvoices,
             'pending_va' => $pendingVA,
+            'isolir_at' => $user->isolir_at ? Date::parse($user->isolir_at)->format('d F Y, H:i:s') : null
         ]);
     }
 }

@@ -91,7 +91,7 @@ export default function AuthenticatedLayout({ children }) {
 
             <footer className="bg-white mt-8 hidden sm:block">
                 <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 text-center text-sm text-gray-500">
-                    &copy; {new Date().getFullYear()} Ningrat.Net. All Rights Reserved.
+                    &copy; {new Date().getFullYear()} NingratNet.com. All Rights Reserved.
                 </div>
             </footer>
         </div >

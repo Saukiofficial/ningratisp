@@ -34,7 +34,7 @@ const PackageIcon = () => (
     </svg>
 );
 
-export default function Dashboard({ pelanggan, statusLangganan, unpaid_invoices, pending_va }) {
+export default function Dashboard({ pelanggan, statusLangganan, unpaid_invoices, pending_va, isolir_at }) {
     const formatRupiah = (number) => {
         return new Intl.NumberFormat('id-ID', {
             style: 'currency',
@@ -86,13 +86,13 @@ export default function Dashboard({ pelanggan, statusLangganan, unpaid_invoices,
                     )}
 
                     <div className="mb-8">
-                        <div className={`bg-white rounded-2xl shadow-xl border-l-4 p-6 ${statusLangganan
+                        <div className={`bg-white rounded-2xl shadow-xl border-l-4 p-6 ${!isolir_at
                             ? 'border-emerald-500 bg-gradient-to-r from-emerald-50/50 to-white'
                             : 'border-red-500 bg-gradient-to-r from-red-50/50 to-white'
                             }`}>
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center space-x-4">
-                                    <div className={`p-4 rounded-xl ${statusLangganan
+                                    <div className={`p-4 rounded-xl ${!isolir_at
                                         ? 'bg-emerald-100 text-emerald-600'
                                         : 'bg-red-100 text-red-600'
                                         }`}>
@@ -100,7 +100,8 @@ export default function Dashboard({ pelanggan, statusLangganan, unpaid_invoices,
                                     </div>
                                     <div>
                                         <p className="text-sm font-medium text-gray-600 mb-1">Status Koneksi WiFi</p>
-                                        {statusLangganan ? (
+                                        {/* <p className='text-sm font-medium'> {isolir_at ? 'Isolir : ' + isolir_at : 'Aktif'}</p> */}
+                                        {!isolir_at ? (
                                             <div className="flex items-center space-x-2">
                                                 <span className="px-4 py-2 text-sm font-semibold rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
                                                     ✓ Aktif & Terhubung
@@ -109,7 +110,7 @@ export default function Dashboard({ pelanggan, statusLangganan, unpaid_invoices,
                                         ) : (
                                             <div className="flex items-center space-x-2">
                                                 <span className="px-4 py-2 text-sm font-semibold rounded-full bg-red-100 text-red-800 border border-red-200">
-                                                    ⚠ Ada Tagihan Tertunggak
+                                                    ⚠ Isolir : {isolir_at}
                                                 </span>
                                             </div>
                                         )}

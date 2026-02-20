@@ -197,7 +197,7 @@ export default function Tagihan({ tagihans, filters, invoice_statuses }) {
                                             <span>{formatRupiah(tagihan.balance_due)}</span>
                                             {tagihan.discount && (
                                                 <span className="ml-2 px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full" title={`Discount: ${tagihan.discount.name}`}>
-                                                    Voucher (tagihan.discount.name)
+                                                    Voucher ({tagihan.discount.name})
                                                 </span>
                                             )}
                                         </p>

@@ -69,10 +69,10 @@ export default function Show({ invoice }) {
                                 </div> */}
                                 <div className="text-left md:text-right">
                                     <h3 className="font-semibold text-gray-600 mb-2">Dari:</h3>
-                                    <p className="font-bold text-gray-900">Ningrat ISP</p>
-                                    <p className="text-gray-600">Jalan Lorem Ipsum Dolor No. 123</p>
-                                    <p className="text-gray-600">Kota, 12345</p>
-                                    <p className="text-gray-600">support@ningratisp.com</p>
+                                    <p className="font-bold text-gray-900">NingratNet</p>
+                                    <p className="text-gray-600">Dusun Gutoguh, Poreh Kec. Lenteng</p>
+                                    <p className="text-gray-600">Kab. Sumenep, 69461</p>
+                                    <p className="text-gray-600">ningratisp@gmail.com</p>
                                 </div>
                             </div>
 
