@@ -133,8 +133,9 @@ class MikrotikAPINative
      * @param  string  $uptimeType  Tipe uptime (d=Hari, h=Jam, m=Menit, s=Detik)
      * @param  string  $server  Server hotspot
      * @param  string  $profile  Profile hotspot
+     * @param  string  $password  Profile hotspot
      */
-    public function createVoucher($code, $uptime = 3, $uptimeType = 'h', $server = null, $profile = 'default')
+    public function createVoucher($code, $uptime = 3, $uptimeType = 'h', $server = null, $profile = 'default', $password = null)
     {
         if (!defined("App\Models\Voucher::" . strtoupper($uptimeType) . "_{$uptime}")) {
             return false;
@@ -151,6 +152,10 @@ class MikrotikAPINative
 
         if (!empty($server)) {
             $params['server'] = $server;
+        }
+
+        if (!empty($password)) {
+            $params['password'] = $password;
         }
 
         $response = $this->request('/ip/hotspot/user/add', $params);
