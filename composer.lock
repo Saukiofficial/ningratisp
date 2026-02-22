@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "54e8f29f73a1988ade21782d1af442f9",
+    "content-hash": "a74ac34a21c48287280fca7bb9e586f4",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -7435,6 +7435,65 @@
                 }
             ],
             "time": "2025-07-17T15:46:43+00:00"
+        },
+        {
+            "name": "spatie/ping",
+            "version": "1.2.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/spatie/ping.git",
+                "reference": "c31e9736eb9c64e19b8bcfd045891c22b14526c3"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/spatie/ping/zipball/c31e9736eb9c64e19b8bcfd045891c22b14526c3",
+                "reference": "c31e9736eb9c64e19b8bcfd045891c22b14526c3",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.4",
+                "symfony/process": "^7.0|^8.0"
+            },
+            "require-dev": {
+                "laravel/pint": "^1.0",
+                "pestphp/pest": "^4.3",
+                "spatie/pest-expectations": "^1.13",
+                "spatie/ray": "^1.28"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Spatie\\Ping\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Freek Van der Herten",
+                    "email": "freek@spatie.be",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Run an ICMP ping and get structured results",
+            "homepage": "https://github.com/spatie/ping",
+            "keywords": [
+                "ping",
+                "spatie"
+            ],
+            "support": {
+                "issues": "https://github.com/spatie/ping/issues",
+                "source": "https://github.com/spatie/ping/tree/1.2.1"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/spatie",
+                    "type": "github"
+                }
+            ],
+            "time": "2026-02-09T15:25:37+00:00"
         },
         {
             "name": "spatie/shiki-php",

@@ -21,6 +21,8 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Http;
+use Spatie\Ping\Ping;
 
 class CustomersTable
 {
@@ -109,6 +111,15 @@ class CustomersTable
                             fn(Customer $record) => 'http://' . $record->remote_address
                         )
                         ->openUrlInNewTab(),
+                    Action::make('check_remote')
+                        ->name('Check Remote Router')
+                        ->icon(Heroicon::OutlinedCursorArrowRipple)
+                        ->action(
+                            fn(Customer $record) => self::checkRemoteRouter($record)
+                        )
+                        ->requiresConfirmation()
+                        ->modalSubmitActionLabel('Check')
+                        ->modalDescription('Ini hanya bekerja jika dalam satu jaringan dengan mikrotik langsung dan akan memaktu waktu sedikit lebih lama'),
                     Action::make('open_router_outside')
                         ->hidden()
                         ->action(function (Customer $record, ZeroTierProxyService $proxyService) {
@@ -145,5 +156,36 @@ class CustomersTable
                 ]),
             ])
             ->defaultSort('id', 'desc');
+    }
+
+    private static function checkRemoteRouter(Customer $customer): bool
+    {
+        $ping = (new Ping('10.20.30.1'))->timeoutInSeconds(5)->count(3)->run();
+        if (!$ping->isSuccess()) {
+            Notification::make()
+                ->title('Action can not proceed')
+                ->body("Your're not under router network")
+                ->danger()->send();
+
+            return false;
+        }
+
+        try {
+            $response = Http::timeout(5)->get($customer->remote_address);
+            $status = $response->successful();
+            $message = $status ? $response->status() . ' OK' : 'HTTP ' . $response->status();
+        } catch (\Exception $e) {
+            $status = false;
+            $message = $e->getMessage();
+        }
+
+        $customer->update(['can_remote' => $status]);
+        $notif = Notification::make()
+            ->title('Remote check (' . $customer->username . ') : ' . ($status ? 'Success' : 'Failed'))
+            ->body($message);
+        $status ? $notif->success() : $notif->danger();
+        $notif->send();
+
+        return $status;
     }
 }
