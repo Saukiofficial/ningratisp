@@ -135,18 +135,18 @@ class PaymentService
                 $this->autoAllocate($payment, $customer, $invoiceIds);
             }
 
-            // current payment
-            if ($payment->payment_datetime->format('Y-m') == now()->format('Y-m')) {
-                ActivateCustomerInternetJob::dispatch(
-                    $customer,
-                    Auth::user()
-                );
+            // // current payment
+            // if ($payment->payment_datetime->format('Y-m') == now()->format('Y-m')) {
+            //     ActivateCustomerInternetJob::dispatch(
+            //         $customer,
+            //         Auth::user()
+            //     );
 
-                if (!empty($customer->isolir_at)) {
-                    $customer->isolir_at = null;
-                    $customer->save();
-                }
-            }
+            //     if (!empty($customer->isolir_at)) {
+            //         $customer->isolir_at = null;
+            //         $customer->save();
+            //     }
+            // }
 
             return $payment;
         });
