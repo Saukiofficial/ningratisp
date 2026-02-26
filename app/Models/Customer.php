@@ -32,6 +32,7 @@ class Customer extends User
         'installation_date' => 'date',
         'expiry_date' => 'date',
         'is_active' => 'boolean',
+        'password' => 'hashed',
     ];
 
     /**
