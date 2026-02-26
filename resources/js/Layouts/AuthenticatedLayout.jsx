@@ -16,6 +16,12 @@ const DocumentIcon = ({ isActive }) => (
     </svg>
 );
 
+const AccountIcon = ({ isActive }) => (
+    <svg className={`w-6 h-6 mb-1 ${isActive ? 'text-blue-600' : 'text-gray-500'}`} aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 20">
+        <path d="M8 10a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.42 0-8 2.24-8 5v1a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-1c0-2.76-3.58-5-8-5Z" />
+    </svg>
+);
+
 
 export default function AuthenticatedLayout({ children }) {
     const { url, props } = usePage();
@@ -57,6 +63,13 @@ export default function AuthenticatedLayout({ children }) {
                                 >
                                     Tagihan
                                 </Link>
+                                <Link
+                                    href={route('customer.account.edit')}
+                                    className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition duration-150 ease-in-out ${url.startsWith('/account') ? 'border-blue-500 text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                        }`}
+                                >
+                                    Akun
+                                </Link>
                             </div>
                         </div>
                         <div className="flex items-center">
@@ -76,7 +89,7 @@ export default function AuthenticatedLayout({ children }) {
 
 
             <div className="sm:hidden fixed bottom-0 left-0 z-50 w-full h-16 bg-white border-t border-gray-200">
-                <div className="grid h-full max-w-lg grid-cols-2 mx-auto font-medium">
+                <div className="grid h-full max-w-lg grid-cols-3 mx-auto font-medium">
                     <Link href={route('customer.dashboard')} className="inline-flex flex-col items-center justify-center px-5 hover:bg-gray-50">
                         <HomeIcon isActive={url.startsWith('/dashboard')} />
                         <span className={`text-sm ${url.startsWith('/dashboard') ? 'text-blue-600' : 'text-gray-500'}`}>Dashboard</span>
@@ -84,6 +97,10 @@ export default function AuthenticatedLayout({ children }) {
                     <Link href={route('customer.invoices.index')} className="inline-flex flex-col items-center justify-center px-5 hover:bg-gray-50">
                         <DocumentIcon isActive={url.startsWith('/tagihan')} />
                         <span className={`text-sm ${url.startsWith('/tagihan') ? 'text-blue-600' : 'text-gray-500'}`}>Tagihan</span>
+                    </Link>
+                    <Link href={route('customer.account.edit')} className="inline-flex flex-col items-center justify-center px-5 hover:bg-gray-50">
+                        <AccountIcon isActive={url.startsWith('/account')} />
+                        <span className={`text-sm ${url.startsWith('/account') ? 'text-blue-600' : 'text-gray-500'}`}>Akun</span>
                     </Link>
                 </div>
             </div>

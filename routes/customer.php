@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Customer\AccountController;
 use App\Http\Controllers\Customer\AuthController;
 use App\Http\Controllers\Customer\ComplaintController;
 use App\Http\Controllers\Customer\DashboardController;
@@ -20,11 +21,10 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('customer')->group(function () {
 
-    Route::get('/', fn() => to_route('login'));
+    Route::get('/', fn () => to_route('login'));
 
     Route::get('/login', [AuthController::class, 'index'])->name('login');
     Route::post('/login', [AuthController::class, 'authProcess'])->name('login.auth');
-
 
     // test view
     Route::group(['middleware' => 'auth:customers', 'as' => 'customer.'], function () {
@@ -42,6 +42,10 @@ Route::prefix('customer')->group(function () {
         Route::post('/virtual-accounts/{virtualAccount}/cancel', [VirtualAccountController::class, 'cancel'])->name('virtual-accounts.cancel');
         Route::post('/virtual-accounts/{virtualAccount}/check-status', [VirtualAccountController::class, 'checkStatus'])->name('virtual-accounts.check-status');
         Route::resource('/invoices', InvoiceController::class);
+
+        Route::get('/account', [AccountController::class, 'edit'])->name('account.edit');
+        Route::put('/account', [AccountController::class, 'update'])->name('account.update');
+        Route::put('/account/password', [AccountController::class, 'updatePassword'])->name('account.password.update');
 
         Route::post('/logout', [AuthController::class, 'logOut'])->name('logout');
     });
