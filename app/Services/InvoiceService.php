@@ -90,7 +90,7 @@ class InvoiceService
             'invoice_type' => Invoices::TYPE_MONTHLY,
             'amount' => $cp->package->price,
         ]);
-        $invoice->amount = $this->generateRemainingAmount($invoice);
+        // $invoice->amount = $this->generateRemainingAmount($invoice);
         $invoice->save();
 
         // Add main charge line from package price
