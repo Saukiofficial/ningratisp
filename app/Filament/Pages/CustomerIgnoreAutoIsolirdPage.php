@@ -6,7 +6,6 @@ use App\Models\Customer;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Pages\Page;
-use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
@@ -15,12 +14,13 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
-class CustomerIgnoreAutoIsolirdPage extends Page implements HasTable, HasForms
+class CustomerIgnoreAutoIsolirdPage extends Page implements HasForms, HasTable
 {
-    use InteractsWithTable, InteractsWithForms;
+    use InteractsWithForms, InteractsWithTable;
 
     protected string $view = 'filament.pages.customer-ignore-auto-isolird-page';
 
+    protected static bool $isDiscovered = false;
 
     public function table(Table $table): Table
     {
@@ -33,15 +33,15 @@ class CustomerIgnoreAutoIsolirdPage extends Page implements HasTable, HasForms
                         '192.168.20' => '.20',
                     ])
                     ->query(
-                        fn($data, Builder $query) => $query->where('remote_address', 'LIKE', $data['value'] . '%')
+                        fn ($data, Builder $query) => $query->where('remote_address', 'LIKE', $data['value'].'%')
                     )
-                    ->default('192.168.10')
+                    ->default('192.168.10'),
             ])
             ->columns([
                 TextColumn::make('username')
-                    ->description(fn(Customer $record) => $record->remote_address . " (" . $record->pppProfile->profile_name . ")")
+                    ->description(fn (Customer $record) => $record->remote_address.' ('.$record->pppProfile->profile_name.')')
                     ->searchable(),
-                ToggleColumn::make('auto_isolir')
+                ToggleColumn::make('auto_isolir'),
             ]);
     }
 }
