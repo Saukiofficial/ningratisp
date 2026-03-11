@@ -394,6 +394,15 @@ class MikrotikAPINative
         return $response;
     }
 
+    public function getPppUser($username)
+    {
+        $response = $this->request('/ppp/secret/print', [
+            '?name' => $username
+        ]);
+
+        return $this->parseFirstResponse($response);
+    }
+
     public function __destruct()
     {
         if ($this->api && $this->api->connected) {

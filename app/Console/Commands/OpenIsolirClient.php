@@ -30,10 +30,14 @@ class OpenIsolirClient extends Command
     {
         $date = now();
         $month = strtolower($date->format('M'));
-        $mikrotikUsers = (new MikrotikAPINative())->getPppSecrets();
+        $mikrotikUsers = (new MikrotikAPINative())->getPppSecrets(false);
         $mikrotikUsers = array_filter(
             $mikrotikUsers,
-            fn($user) => !empty($user['comment'] ?? null) && str_contains($user['comment'], $month)
+            fn($user) => !empty($user['comment'] ?? null) &&
+                (
+                    str_contains($user['comment'], $month)
+                    || str_contains(strtolower($user['comment']), 'expired')
+                )
         );
 
         $usernames = $usernamesKey = [];
@@ -56,14 +60,30 @@ class OpenIsolirClient extends Command
 
         $api = (new MikrotikAPINative);
         $nextMonth = strtolower($date->addMonth()->format('M/11/Y 06:00:00'));
+
+        // cek customer sudah bayar, baik status expired atau belum
+        $processUsers = [];
         foreach ($paidCustomers as $customer) {
             if (isset($usernamesKey[$customer->username])) {
-                $user = $usernamesKey[$customer->username];
-                $api->request('/ppp/secret/set', [
-                    '.id' => $user['.id'],
-                    'comment' => $nextMonth . ' |'
-                ]);
+
+                $response = $api->getPppUser($customer->username);
+                if (
+                    str_contains($response['comment'], $month)
+                    || str_contains(strtolower($response['comment']), 'expired')
+                ) {
+                    $processUsers[] = $usernamesKey[$customer->username];
+                }
             }
+        }
+
+        // flag lunas
+        foreach ($processUsers as $user) {
+            $this->info('Username : ' . $user['name']);
+            $response = $api->request('/ppp/secret/set', [
+                '.id' => $user['.id'],
+                'comment' => 'lunas'
+            ]);
+            $this->info(json_encode($response));
         }
     }
 }
