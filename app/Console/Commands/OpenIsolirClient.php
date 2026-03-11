@@ -30,6 +30,8 @@ class OpenIsolirClient extends Command
     {
         $date = now();
         $month = strtolower($date->format('M'));
+
+        // get user with comments expired or date moenth
         $mikrotikUsers = (new MikrotikAPINative())->getPppSecrets(false);
         $mikrotikUsers = array_filter(
             $mikrotikUsers,
@@ -84,6 +86,7 @@ class OpenIsolirClient extends Command
                 'comment' => 'lunas'
             ]);
             $this->info(json_encode($response));
+            $this->newLine();
         }
     }
 }
