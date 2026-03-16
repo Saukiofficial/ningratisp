@@ -2,44 +2,478 @@ import React, { useState } from 'react';
 import { Head, useForm, usePage } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 
-// Modern WiFi Icon Component
-const WifiIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M8.288 15.038a5.25 5.25 0 017.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12.53 18.22l-.53.53-.53-.53a.75.75 0 011.06 0z" />
+// ── Icons ──────────────────────────────────────────────────────────────────
+
+const LockIcon = ({ size = 20 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
     </svg>
 );
 
-// Lock Icon for Security
-const LockIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+const UserIcon = ({ size = 20 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+        <circle cx="12" cy="7" r="4" />
     </svg>
 );
 
-// User Icon
-const UserIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+const EyeIcon = ({ size = 20 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+        <circle cx="12" cy="12" r="3" />
     </svg>
 );
 
-const EyeIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-        <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+const EyeSlashIcon = ({ size = 20 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+        <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+        <line x1="1" y1="1" x2="23" y2="23" />
     </svg>
 );
 
-const EyeSlashIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.243 4.243l-4.243-4.243" />
+const WifiIcon = ({ size = 36 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+        <path d="M5 12.55a11 11 0 0 1 14.08 0" />
+        <path d="M1.42 9a16 16 0 0 1 21.16 0" />
+        <path d="M8.53 16.11a6 6 0 0 1 6.95 0" />
+        <circle cx="12" cy="20" r="1" fill="currentColor" />
     </svg>
 );
+
+const ShieldIcon = ({ size = 13 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+    </svg>
+);
+
+const ZapIcon = ({ size = 11 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+    </svg>
+);
+
+// ── CSS ────────────────────────────────────────────────────────────────────
+
+const css = `
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
+
+  *, *::before, *::after {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body { margin: 0; padding: 0; }
+
+  /* ── Page & Background ── */
+  .nn-page {
+    min-height: 100dvh;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif;
+    padding: 20px 16px;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* Mobile first — background mobile */
+  .nn-bg {
+    position: fixed;
+    inset: 0;
+    background-image: url('/assets/img/background-mobile.webp');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: 0;
+  }
+
+  /* Desktop (≥768px) — background desktop */
+  @media (min-width: 768px) {
+    .nn-bg {
+      background-image: url('/assets/img/background-desktop.webp');
+      background-position: center top;
+    }
+  }
+
+  /* Very subtle overlay — background stays visible */
+  .nn-overlay {
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(
+      160deg,
+      rgba(160, 50, 0, 0.38) 0%,
+      rgba(80, 20, 0, 0.32) 50%,
+      rgba(0, 0, 0, 0.42) 100%
+    );
+    z-index: 1;
+  }
+
+  .nn-glow-tr {
+    position: fixed;
+    top: -100px; right: -80px;
+    width: 300px; height: 300px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,110,10,0.28) 0%, transparent 65%);
+    z-index: 2;
+    animation: floatA 9s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  .nn-glow-bl {
+    position: fixed;
+    bottom: -100px; left: -80px;
+    width: 280px; height: 280px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,70,0,0.20) 0%, transparent 65%);
+    z-index: 2;
+    animation: floatB 12s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  .nn-container {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* ── Header ── */
+  .nn-header {
+    text-align: center;
+    margin-bottom: 22px;
+    animation: fadeSlideDown 0.6s ease-out both;
+  }
+
+  .nn-wifi-ring {
+    width: 70px; height: 70px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1.5px solid rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 15px;
+    color: #FFB347;
+    box-shadow: 0 0 0 10px rgba(255,140,0,0.08), 0 4px 20px rgba(0,0,0,0.20);
+    animation: ringPulse 3.5s ease-in-out infinite;
+  }
+
+  .nn-brand {
+    font-size: 34px;
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: -0.5px;
+    margin: 0 0 5px;
+    text-shadow: 0 2px 14px rgba(0,0,0,0.40);
+    line-height: 1;
+  }
+  .nn-brand span { color: #FFB347; }
+
+  .nn-tagline {
+    font-size: 11px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.55);
+    letter-spacing: 3.5px;
+    text-transform: uppercase;
+    margin: 0 0 16px;
+  }
+
+  .nn-pills {
+    display: flex; gap: 8px;
+    justify-content: center; flex-wrap: wrap;
+  }
+
+  .nn-pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 5px 12px;
+    border-radius: 99px;
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.18);
+    color: rgba(255,255,255,0.82);
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  /* ── Glass Card ── */
+  .nn-card {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 26px;
+    padding: 32px 26px 26px;
+    position: relative;
+    box-shadow:
+      0 8px 40px rgba(0,0,0,0.28),
+      inset 0 1.5px 0 rgba(255,255,255,0.15),
+      inset 0 -1px 0 rgba(0,0,0,0.06);
+    animation: fadeSlideUp 0.65s ease-out 0.1s both;
+  }
+
+  /* Shimmer top bar */
+  .nn-card-bar {
+    position: absolute;
+    top: 0; left: 20px; right: 20px;
+    height: 2.5px;
+    border-radius: 0 0 4px 4px;
+    background: linear-gradient(90deg, transparent, #FF8C00 30%, #FFD580 55%, #FF8C00 80%, transparent);
+    background-size: 300% 100%;
+    animation: shimmer 3.5s linear infinite;
+  }
+
+  /* Security badge */
+  .nn-badge {
+    position: absolute;
+    top: -14px; left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #22c55e, #15803d);
+    color: #fff;
+    padding: 5px 14px;
+    border-radius: 99px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    display: inline-flex; align-items: center; gap: 5px;
+    white-space: nowrap;
+    box-shadow: 0 3px 14px rgba(34,197,94,0.40);
+  }
+
+  .nn-card-title {
+    font-size: 19px;
+    font-weight: 800;
+    color: #fff;
+    text-align: center;
+    margin: 14px 0 3px;
+    text-shadow: 0 1px 8px rgba(0,0,0,0.20);
+  }
+
+  .nn-card-sub {
+    font-size: 13px;
+    color: rgba(255,255,255,0.50);
+    text-align: center;
+    margin: 0 0 22px;
+    font-weight: 500;
+  }
+
+  /* ── Form ── */
+  .nn-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.72);
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .nn-input-wrap {
+    position: relative;
+    display: flex; align-items: center;
+    margin-bottom: 16px;
+  }
+
+  .nn-input-icon {
+    position: absolute; left: 14px;
+    color: #FFB347;
+    pointer-events: none;
+    display: flex; align-items: center;
+  }
+
+  .nn-input {
+    width: 100%;
+    padding: 13px 14px 13px 46px;
+    background: rgba(255,255,255,0.09);
+    border: 1.5px solid rgba(255,255,255,0.16);
+    border-radius: 13px;
+    font-size: 14.5px;
+    font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif;
+    font-weight: 500;
+    color: #fff;
+    outline: none;
+    transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+    -webkit-appearance: none; appearance: none;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+  .nn-input::placeholder {
+    color: rgba(255,255,255,0.28);
+    font-size: 13px;
+  }
+  .nn-input:focus {
+    border-color: #FF8C00 !important;
+    background: rgba(255,255,255,0.13) !important;
+    box-shadow: 0 0 0 3px rgba(255,140,0,0.18) !important;
+  }
+  .nn-input-pr { padding-right: 46px; }
+  .nn-input-err { border-color: rgba(239,68,68,0.55) !important; }
+
+  .nn-eye-btn {
+    position: absolute; right: 14px;
+    background: none; border: none; cursor: pointer;
+    color: rgba(255,255,255,0.38);
+    padding: 0; display: flex; align-items: center;
+    transition: color 0.2s;
+  }
+  .nn-eye-btn:hover { color: #FFB347; }
+
+  /* Error */
+  .nn-error {
+    display: flex; align-items: flex-start; gap: 7px;
+    margin-top: -10px; margin-bottom: 14px;
+    padding: 9px 12px;
+    background: rgba(239,68,68,0.14);
+    border: 1px solid rgba(239,68,68,0.30);
+    border-radius: 10px;
+    backdrop-filter: blur(6px);
+  }
+  .nn-error span {
+    font-size: 12px; font-weight: 600;
+    color: #fca5a5; line-height: 1.4;
+  }
+
+  /* Submit */
+  .nn-submit {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, #FF6B00 0%, #FF9500 50%, #FF6B00 100%);
+    background-size: 200% 200%;
+    border: none;
+    border-radius: 14px;
+    color: #fff;
+    font-size: 15.5px;
+    font-weight: 800;
+    font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    margin-top: 6px;
+    letter-spacing: 0.3px;
+    box-shadow: 0 6px 22px rgba(255,107,0,0.48), inset 0 1px 0 rgba(255,255,255,0.18);
+    transition: transform 0.15s, box-shadow 0.15s;
+    animation: gradientPan 4s ease infinite;
+    touch-action: manipulation;
+  }
+  .nn-submit:not(:disabled):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(255,107,0,0.58), inset 0 1px 0 rgba(255,255,255,0.18);
+  }
+  .nn-submit:not(:disabled):active { transform: scale(0.98); }
+  .nn-submit:disabled { opacity: 0.58; cursor: not-allowed; }
+
+  /* Divider */
+  .nn-divider {
+    display: flex; align-items: center; gap: 10px;
+    margin: 20px 0;
+  }
+  .nn-divider-line { flex: 1; height: 1px; background: rgba(255,255,255,0.12); }
+  .nn-divider-text {
+    font-size: 10px; font-weight: 700;
+    color: rgba(255,255,255,0.30);
+    letter-spacing: 1.5px; text-transform: uppercase; white-space: nowrap;
+  }
+
+  /* Help */
+  .nn-help {
+    text-align: center;
+    font-size: 12.5px;
+    color: rgba(255,255,255,0.45);
+    line-height: 1.65; font-weight: 500;
+  }
+  .nn-help strong { color: #FFB347; font-weight: 700; }
+  .nn-help small {
+    display: block; margin-top: 5px;
+    font-size: 11px; color: rgba(255,255,255,0.30);
+  }
+
+  /* Footer */
+  .nn-footer {
+    text-align: center;
+    margin-top: 18px;
+    animation: fadeIn 1s ease-out 0.4s both;
+  }
+  .nn-footer-text {
+    font-size: 11px;
+    color: rgba(255,255,255,0.32);
+    font-weight: 500; letter-spacing: 0.3px;
+  }
+
+  /* Test bar */
+  .nn-testbar {
+    position: fixed; top: 0; left: 0; width: 100%;
+    background: linear-gradient(90deg, #dc2626, #b91c1c);
+    color: #fff; text-align: center;
+    padding: 7px 16px;
+    font-size: 10.5px; font-weight: 800;
+    letter-spacing: 2px; text-transform: uppercase;
+    z-index: 9999;
+    box-shadow: 0 2px 10px rgba(220,38,38,0.45);
+  }
+
+  /* Spinner */
+  .nn-spin { width: 18px; height: 18px; animation: spin 0.8s linear infinite; }
+
+  /* ── Keyframes ── */
+  @keyframes fadeSlideDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes floatA {
+    0%,100% { transform: translate(0,0); }
+    45%      { transform: translate(18px,-20px) scale(1.05); }
+  }
+  @keyframes floatB {
+    0%,100% { transform: translate(0,0); }
+    40%      { transform: translate(-15px,-18px) scale(1.04); }
+  }
+  @keyframes shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+  @keyframes gradientPan {
+    0%,100% { background-position: 0% 50%; }
+    50%      { background-position: 100% 50%; }
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes ringPulse {
+    0%,100% { box-shadow: 0 0 0 10px rgba(255,140,0,0.08), 0 4px 20px rgba(0,0,0,0.20); }
+    50%      { box-shadow: 0 0 0 16px rgba(255,140,0,0.04), 0 4px 20px rgba(0,0,0,0.20); }
+  }
+
+  /* Responsive */
+  @media (max-width: 360px) {
+    .nn-card { padding: 28px 18px 22px; }
+    .nn-brand { font-size: 28px; }
+  }
+`;
+
+// ── Component ───────────────────────────────────────────────────────────────
 
 export default function Login() {
     const { data, setData, post, processing, errors } = useForm({
         username: '',
-        password: ''
+        password: '',
     });
     const { props } = usePage();
     const { appEnv } = props;
@@ -52,159 +486,160 @@ export default function Login() {
 
     return (
         <>
-            <Head title="Login Pelanggan" />
+            <Head title="Login – NingratNet" />
+            <style dangerouslySetInnerHTML={{ __html: css }} />
+
             {appEnv !== 'production' && (
-                <div className="bg-red-600 text-white text-center py-1 text-sm font-bold uppercase tracking-wider fixed top-0 left-0 w-full z-50">
-                    TESTING APP
-                </div>
+                <div className="nn-testbar">⚠ &nbsp; TESTING APP &nbsp; ⚠</div>
             )}
-            <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 relative overflow-hidden">
-                <div
-                    className="absolute inset-0"
-                    style={{ backgroundImage: "url('data:image/svg+xml,%3Csvg width=\"60\" height=\"60\" viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cg fill=\"none\" fill-rule=\"evenodd\"%3E%3Cg fill=\"%2393c5fd\" fill-opacity=\"0.1\"%3E%3Ccircle cx=\"30\" cy=\"30\" r=\"2\"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')" }}
-                ></div>
-                <div className="absolute top-0 left-0 w-72 h-72 bg-gradient-to-br from-blue-200/30 to-purple-200/30 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
-                <div className="absolute top-0 right-0 w-72 h-72 bg-gradient-to-br from-purple-200/30 to-pink-200/30 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
-                <div className="absolute -bottom-8 left-20 w-72 h-72 bg-gradient-to-br from-indigo-200/30 to-blue-200/30 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-4000"></div>
-                <div className="relative flex flex-col justify-center items-center min-h-screen p-4">
-                    <div className="w-full max-w-md">
-                        <div className="text-center mb-8">
-                            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl mb-6 shadow-2xl">
-                                <div className="text-white">
-                                    <WifiIcon />
-                                </div>
-                            </div>
-                            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
-                                WiFiKu
-                            </h1>
-                            <p className="text-gray-600 font-medium">Portal Pelanggan Terpercaya</p>
-                            <p className="text-sm text-gray-500 mt-1">Masuk untuk mengakses layanan Anda</p>
+
+            <div className="nn-bg" />
+            <div className="nn-overlay" />
+            <div className="nn-glow-tr" />
+            <div className="nn-glow-bl" />
+
+            <div
+                className="nn-page"
+                style={{ paddingTop: appEnv !== 'production' ? '54px' : '20px' }}
+            >
+                <div className="nn-container">
+
+                    {/* ── Header ── */}
+                    <div className="nn-header">
+                        <div className="nn-wifi-ring">
+                            <WifiIcon size={34} />
                         </div>
-                        <div className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl border border-white/20 p-8 relative">
-                            <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                                <div className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-4 py-2 rounded-full flex items-center space-x-2 shadow-lg">
-                                    <LockIcon />
-                                    <span className="text-sm font-semibold">Aman & Terpercaya</span>
-                                </div>
-                            </div>
-                            <form onSubmit={submit} className="mt-6">
-                                <div>
-                                    <label htmlFor="username" className="block text-sm font-semibold text-gray-700 mb-3">
-                                        Username/ID Pelanggan
-                                    </label>
-                                    <div className="relative">
-                                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                            <div className="text-gray-400">
-                                                <UserIcon />
-                                            </div>
-                                        </div>
-                                        <input
-                                            id="username"
-                                            name="username"
-                                            type="text"
-                                            autoComplete="off"
-                                            required
-                                            value={data.username}
-                                            onChange={(e) => setData('username', e.target.value)}
-                                            className="block w-full pl-12 pr-4 py-4 bg-gray-50/50 border-2 border-gray-200 rounded-2xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 text-lg font-mono"
-                                            placeholder="Contoh: akunku / emailaku@mail.com"
-                                        />
-                                    </div>
-                                    {errors.username && (
-                                        <div className="mt-3 bg-red-50 border border-red-200 rounded-xl p-4">
-                                            <div className="flex items-center">
-                                                <div className="flex-shrink-0">
-                                                    <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                                                    </svg>
-                                                </div>
-                                                <div className="ml-3">
-                                                    <p className="text-sm font-medium text-red-800">
-                                                        {errors.username}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                                <div>
-                                    <label htmlFor="password" className="my-3 block text-sm font-semibold text-gray-700 mb-3">
-                                        Password
-                                    </label>
-                                    <div className="relative">
-                                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                            <div className="text-gray-400">
-                                                <LockIcon />
-                                            </div>
-                                        </div>
-                                        <input
-                                            id="password"
-                                            name="password"
-                                            type={showPassword ? 'text' : 'password'}
-                                            autoComplete="off"
-                                            required
-                                            onChange={(e) => setData('password', e.target.value)}
-                                            value={data.password}
-                                            className="block w-full pl-12 pr-12 py-4 bg-gray-50/50 border-2 border-gray-200 rounded-2xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 text-lg font-mono"
-                                        />
-                                        <div className="absolute inset-y-0 right-0 pr-4 flex items-center">
-                                            <button type="button" onClick={() => setShowPassword(!showPassword)} className="text-gray-400 hover:text-blue-500">
-                                                {showPassword ? <EyeSlashIcon /> : <EyeIcon />}
-                                            </button>
-                                        </div>
-                                    </div>
-                                    {errors.password && (
-                                        <div className="mt-3 bg-red-50 border border-red-200 rounded-xl p-4">
-                                            <div className="flex items-center">
-                                                <div className="flex-shrink-0">
-                                                    <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                                                    </svg>
-                                                </div>
-                                                <div className="ml-3">
-                                                    <p className="text-sm font-medium text-red-800">
-                                                        {errors.password}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                                <div className="mt-8">
-                                    <button
-                                        type="submit"
-                                        disabled={processing}
-                                        className="w-full flex justify-center items-center py-4 px-6 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-bold rounded-2xl shadow-xl hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-blue-500/50 disabled:opacity-50 disabled:cursor-not-allowed transform transition-all duration-300 hover:scale-105 active:scale-95"
-                                    >
-                                        {processing ? (
-                                            <>
-                                                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                                </svg>
-                                                Memproses...
-                                            </>
-                                        ) : (
-                                            <>
-                                                <LockIcon />
-                                                <span className="ml-2">Masuk Sekarang</span>
-                                            </>
-                                        )}
-                                    </button>
-                                </div>
-                            </form>
-                            <div className="mt-6 text-center">
-                                <p className="text-xs text-gray-500">
-                                    Kode unik dapat ditemukan pada invoice atau struk pembayaran Anda
-                                </p>
-                            </div>
-                        </div>
-                        <div className="text-center mt-8">
-                            <p className="text-xs text-gray-500">
-                                © 2025 WiFiKu. Dilindungi dengan enkripsi SSL.
-                            </p>
+                        <h1 className="nn-brand">
+                            Ningrat<span>Net</span>
+                        </h1>
+                        <p className="nn-tagline">Internet Pilihan Masyarakat</p>
+                        <div className="nn-pills">
+                            <span className="nn-pill"><ZapIcon /> Kecepatan Tinggi</span>
+                            <span className="nn-pill"><ShieldIcon size={10} /> Aman &amp; Stabil</span>
                         </div>
                     </div>
+
+                    {/* ── Card ── */}
+                    <div className="nn-card">
+                        <div className="nn-card-bar" />
+
+                        <div className="nn-badge">
+                            <ShieldIcon size={12} />
+                            Koneksi Aman &amp; Terenkripsi
+                        </div>
+
+                        <h2 className="nn-card-title">Masuk ke Akun Anda</h2>
+                        <p className="nn-card-sub">Kelola layanan internet Anda</p>
+
+                        <form onSubmit={submit} autoComplete="off">
+
+                            {/* Username */}
+                            <label htmlFor="username" className="nn-label">
+                                Username / ID Pelanggan
+                            </label>
+                            <div className="nn-input-wrap">
+                                <span className="nn-input-icon"><UserIcon size={18} /></span>
+                                <input
+                                    id="username"
+                                    name="username"
+                                    type="text"
+                                    autoComplete="off"
+                                    autoCorrect="off"
+                                    autoCapitalize="none"
+                                    spellCheck="false"
+                                    required
+                                    value={data.username}
+                                    onChange={(e) => setData('username', e.target.value)}
+                                    className={`nn-input${errors.username ? ' nn-input-err' : ''}`}
+                                    placeholder="Masukkan username atau ID Anda"
+                                />
+                            </div>
+                            {errors.username && (
+                                <div className="nn-error">
+                                    <svg width="14" height="14" viewBox="0 0 20 20" fill="#fca5a5" style={{ flexShrink: 0, marginTop: 1 }}>
+                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                                    </svg>
+                                    <span>{errors.username}</span>
+                                </div>
+                            )}
+
+                            {/* Password */}
+                            <label htmlFor="password" className="nn-label">
+                                Password
+                            </label>
+                            <div className="nn-input-wrap">
+                                <span className="nn-input-icon"><LockIcon size={18} /></span>
+                                <input
+                                    id="password"
+                                    name="password"
+                                    type={showPassword ? 'text' : 'password'}
+                                    autoComplete="new-password"
+                                    required
+                                    value={data.password}
+                                    onChange={(e) => setData('password', e.target.value)}
+                                    className={`nn-input nn-input-pr${errors.password ? ' nn-input-err' : ''}`}
+                                    placeholder="Masukkan password Anda"
+                                />
+                                <button
+                                    type="button"
+                                    className="nn-eye-btn"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    tabIndex={-1}
+                                    aria-label={showPassword ? 'Sembunyikan' : 'Tampilkan'}
+                                >
+                                    {showPassword ? <EyeSlashIcon size={20} /> : <EyeIcon size={20} />}
+                                </button>
+                            </div>
+                            {errors.password && (
+                                <div className="nn-error">
+                                    <svg width="14" height="14" viewBox="0 0 20 20" fill="#fca5a5" style={{ flexShrink: 0, marginTop: 1 }}>
+                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                                    </svg>
+                                    <span>{errors.password}</span>
+                                </div>
+                            )}
+
+                            {/* Submit */}
+                            <button
+                                type="submit"
+                                disabled={processing}
+                                className="nn-submit"
+                            >
+                                {processing ? (
+                                    <>
+                                        <svg className="nn-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle style={{ opacity: 0.25 }} cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                            <path style={{ opacity: 0.75 }} fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                        </svg>
+                                        Memproses Login...
+                                    </>
+                                ) : (
+                                    <>
+                                        <LockIcon size={17} />
+                                        Masuk Sekarang
+                                    </>
+                                )}
+                            </button>
+                        </form>
+
+                        <div className="nn-divider">
+                            <div className="nn-divider-line" />
+                            <span className="nn-divider-text">info akun</span>
+                            <div className="nn-divider-line" />
+                        </div>
+
+                        <p className="nn-help">
+                            <small>Butuh bantuan? Hubungi CS NingratNet</small>
+                        </p>
+                    </div>
+
+                    {/* Footer */}
+                    <div className="nn-footer">
+                        <p className="nn-footer-text">
+                            © {new Date().getFullYear()} NingratNet &nbsp;·&nbsp; Dilindungi enkripsi SSL
+                        </p>
+                    </div>
+
                 </div>
             </div>
         </>
