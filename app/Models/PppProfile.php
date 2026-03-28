@@ -33,7 +33,7 @@ class PppProfile extends Model
 
     public function package(): HasOne
     {
-        return $this->hasOne(Packages::class);
+        return $this->hasOne(Packages::class)->where('is_purchasable', true);
     }
 
     /**
