@@ -26,8 +26,8 @@ class DashboardController extends Controller
 
         $customers = [
             'id' => 1,
-            'nama' => $user->full_name ?? $user->username,
-            'username' => $user->username,
+            'nama' => $user->full_name ?? $user->billing_number,
+            // 'username' => $user->username,
             'kode_unik' => $user->billing_number,
             'package' => $user->activePackage?->package ?? null
         ];

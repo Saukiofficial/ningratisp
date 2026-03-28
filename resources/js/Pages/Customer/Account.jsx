@@ -56,6 +56,7 @@ export default function Account({ customer }) {
 
     const { data, setData, put, errors, processing, recentlySuccessful } = useForm({
         email: customer.email || '',
+        full_name: customer.full_name || '',
         whatsapp_number: customer.whatsapp_number || '',
         address: customer.address || '',
         latitude: customer.latitude ?? '',
@@ -318,9 +319,15 @@ export default function Account({ customer }) {
                             {/* ── View Mode ── */}
                             {!isEditing && (
                                 <>
-                                    <div style={{ marginBottom: 16 }}>
-                                        <div className="ac-info-label">Username</div>
-                                        <span className="ac-info-value mono">{customer.username}</span>
+                                    <div className='ac-info-grid' style={{ marginBottom: 16 }}>
+                                        <div className="ac-info-item">
+                                            <div className="ac-info-label">Name</div>
+                                            <span className="ac-info-value">{customer.full_name}</span>
+                                        </div>
+                                        <div className="ac-info-item">
+                                            <div className="ac-info-label">ID Number</div>
+                                            <span className="ac-info-value mono">{customer.billing_number}</span>
+                                        </div>
                                     </div>
                                     <div className="ac-info-grid">
                                         <div className="ac-info-item">
@@ -355,8 +362,15 @@ export default function Account({ customer }) {
                             {isEditing && (
                                 <form onSubmit={submitAccount} className="ac-form">
                                     <div>
+                                        <label htmlFor="full_name" className="ac-field-label">Name</label>
+                                        <input id="full_name" type="full_name" required value={data.full_name} autoComplete="full_name"
+                                            onChange={e => setData('full_name', e.target.value)} className="ac-input" />
+                                        {errors.full_name && <div className="ac-field-error">{errors.full_name}</div>}
+                                    </div>
+
+                                    <div>
                                         <label htmlFor="email" className="ac-field-label">Email</label>
-                                        <input id="email" type="email" value={data.email} required autoComplete="email"
+                                        <input id="email" type="email" value={data.email} autoComplete="email"
                                             onChange={e => setData('email', e.target.value)} className="ac-input" />
                                         {errors.email && <div className="ac-field-error">{errors.email}</div>}
                                     </div>

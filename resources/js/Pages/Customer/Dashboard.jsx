@@ -757,7 +757,7 @@ export default function Dashboard({ pelanggan, statusLangganan, unpaid_invoices,
                             </div>
 
                             {/* Speed stat */}
-                            <div className="nn-hero-stat">
+                            {/* <div className="nn-hero-stat">
                                 <div className="nn-hero-stat-icon">
                                     <SpeedIcon className="h-5 w-5" />
                                 </div>
@@ -767,10 +767,10 @@ export default function Dashboard({ pelanggan, statusLangganan, unpaid_invoices,
                                         {pelanggan.package ? pelanggan.package.name : 'Tidak Ada Paket'}
                                     </div>
                                 </div>
-                            </div>
+                            </div> */}
 
                             {/* Due date + support stacked */}
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                            {/* <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                                 <div className="nn-hero-stat">
                                     <div className="nn-hero-stat-icon" style={{ background: 'linear-gradient(135deg,#f59e0b,#d97706)', boxShadow: '0 4px 15px rgba(245,158,11,0.35)' }}>
                                         <CalendarIcon className="h-5 w-5" />
@@ -791,7 +791,7 @@ export default function Dashboard({ pelanggan, statusLangganan, unpaid_invoices,
                                         <div className="nn-hero-stat-value" style={{ fontSize: '0.85rem' }}>Siap Membantu Anda</div>
                                     </div>
                                 </div>
-                            </div>
+                            </div> */}
 
                         </div>
                     </div>
@@ -821,78 +821,6 @@ export default function Dashboard({ pelanggan, statusLangganan, unpaid_invoices,
                                 </div>
                             </div>
                         )}
-
-                        {/* ── ROW 1: Status + Account + Package ── */}
-                        <div className="nn-section-header">
-                            <div className="nn-section-title">Informasi Akun</div>
-                            <div className="nn-section-divider" />
-                        </div>
-
-                        <div className="nn-top-row">
-
-                            {/* Connection Status */}
-                            <div className={`nn-status-card ${isActive ? 'active' : 'isolir'}`}>
-                                <div className={`nn-status-icon-wrap ${isActive ? 'active' : 'isolir'}`}>
-                                    <ShieldCheckIcon className="h-6 w-6" />
-                                </div>
-                                <div>
-                                    <div className="nn-status-label">Status Koneksi</div>
-                                    <div className={`nn-status-badge ${isActive ? 'active' : 'isolir'}`}>
-                                        <span className={`nn-pulse-dot ${isActive ? 'active' : 'isolir'}`} />
-                                        {isActive ? 'Aktif & Terhubung' : `Isolir: ${isolir_at}`}
-                                    </div>
-                                    <div style={{ marginTop: 6, fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)' }}>
-                                        {isActive ? 'Koneksi berjalan normal' : 'Hubungi support untuk aktivasi'}
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Account Info */}
-                            <div className="nn-card">
-                                <div className="nn-info-card-header">
-                                    <div className="nn-info-icon orange">
-                                        <UserCircleIcon className="h-5 w-5" />
-                                    </div>
-                                    <div>
-                                        <div className="nn-info-title">Informasi Akun</div>
-                                        <div className="nn-info-value">{pelanggan.username}</div>
-                                    </div>
-                                </div>
-                                <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 12 }}>
-                                    <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>
-                                        ID Pelanggan
-                                    </div>
-                                    <div className="nn-id-chip">{pelanggan.kode_unik}</div>
-                                </div>
-                            </div>
-
-                            {/* Package Info */}
-                            <div className="nn-card">
-                                <div className="nn-info-card-header">
-                                    <div className="nn-info-icon amber">
-                                        <PackageIcon className="h-5 w-5" />
-                                    </div>
-                                    <div>
-                                        <div className="nn-info-title">Paket Aktif</div>
-                                        <div className="nn-info-value">
-                                            {pelanggan.package ? pelanggan.package.name : 'Tidak Ada Paket'}
-                                        </div>
-                                    </div>
-                                </div>
-                                {pelanggan.package && (
-                                    <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 12 }}>
-                                        <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>
-                                            Biaya Bulanan
-                                        </div>
-                                        <div className="nn-price-tag">
-                                            <span className="nn-price-amount">{formatRupiah(pelanggan.package.price)}</span>
-                                            <span className="nn-price-period">/ bulan</span>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-
-                        </div>
 
                         {/* ── ROW 2: Unpaid Invoices ── */}
                         {unpaid_invoices && unpaid_invoices.length > 0 && (
@@ -956,6 +884,78 @@ export default function Dashboard({ pelanggan, statusLangganan, unpaid_invoices,
                                 </div>
                             </>
                         )}
+
+                        {/* ── ROW 1: Status + Account + Package ── */}
+                        <div className="nn-section-header">
+                            <div className="nn-section-title">Informasi Akun</div>
+                            <div className="nn-section-divider" />
+                        </div>
+
+                        <div className="nn-top-row">
+
+                            {/* Connection Status */}
+                            <div className={`nn-status-card ${isActive ? 'active' : 'isolir'}`}>
+                                <div className={`nn-status-icon-wrap ${isActive ? 'active' : 'isolir'}`}>
+                                    <ShieldCheckIcon className="h-6 w-6" />
+                                </div>
+                                <div>
+                                    <div className="nn-status-label">Status Koneksi</div>
+                                    <div className={`nn-status-badge ${isActive ? 'active' : 'isolir'}`}>
+                                        <span className={`nn-pulse-dot ${isActive ? 'active' : 'isolir'}`} />
+                                        {isActive ? 'Aktif & Terhubung' : `Isolir: ${isolir_at}`}
+                                    </div>
+                                    <div style={{ marginTop: 6, fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)' }}>
+                                        {isActive ? 'Koneksi berjalan normal' : 'Hubungi support untuk aktivasi'}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Account Info */}
+                            {/* <div className="nn-card">
+                                <div className="nn-info-card-header">
+                                    <div className="nn-info-icon orange">
+                                        <UserCircleIcon className="h-5 w-5" />
+                                    </div>
+                                    <div>
+                                        <div className="nn-info-title">Informasi Akun</div>
+                                        <div className="nn-info-value">{pelanggan.username}</div>
+                                    </div>
+                                </div>
+                                <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 12 }}>
+                                    <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>
+                                        ID Pelanggan
+                                    </div>
+                                    <div className="nn-id-chip">{pelanggan.kode_unik}</div>
+                                </div>
+                            </div> */}
+
+                            {/* Package Info */}
+                            <div className="nn-card">
+                                <div className="nn-info-card-header">
+                                    <div className="nn-info-icon amber">
+                                        <PackageIcon className="h-5 w-5" />
+                                    </div>
+                                    <div>
+                                        <div className="nn-info-title">Paket Aktif</div>
+                                        <div className="nn-info-value">
+                                            {pelanggan.package ? pelanggan.package.name : 'Tidak Ada Paket'}
+                                        </div>
+                                    </div>
+                                </div>
+                                {pelanggan.package && (
+                                    <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 12 }}>
+                                        <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>
+                                            Biaya Bulanan
+                                        </div>
+                                        <div className="nn-price-tag">
+                                            <span className="nn-price-amount">{formatRupiah(pelanggan.package.price)}</span>
+                                            <span className="nn-price-period">/ bulan</span>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                        </div>
 
                         {/* ── ROW 3: Service Status Strip ── */}
                         <div className="nn-section-header">
