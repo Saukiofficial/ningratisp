@@ -1,0 +1,58 @@
+.pay-root {
+    background: var(--bg-color);
+    min-height: 100vh;
+    transition: background 0.3s;
+}
+
+.pay-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 1.5rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: background 0.3s, border-color 0.3s;
+}
+
+.pay-header {
+    background: var(--nav-active-bg);
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.pay-title {
+    color: var(--text-primary);
+    font-weight: 700;
+}
+
+.pay-sub {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+.pay-label {
+    color: var(--text-primary);
+    font-weight: 600;
+    font-size: 0.875rem;
+    margin-bottom: 0.75rem;
+    display: block;
+}
+
+.pay-input {
+    background: var(--bg-color);
+    border: 2px solid var(--border-color);
+    color: var(--text-primary);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.pay-input:focus {
+    border-color: #3b82f6;
+}
+
+.pay-footer-text {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}

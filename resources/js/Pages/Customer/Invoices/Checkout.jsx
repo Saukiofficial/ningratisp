@@ -3,6 +3,7 @@ import { Head, Link, router, useForm } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { toast } from 'react-toastify';
 import { route } from 'ziggy-js';
+import './Checkout.css';
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 
@@ -65,7 +66,7 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, children, isProc
         >
             <div
                 style={{
-                    background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.1)',
+                    background: 'var(--card-bg)', border: '1px solid var(--border-color)',
                     borderRadius: 22, width: '100%', maxWidth: 440,
                     boxShadow: '0 24px 80px rgba(0,0,0,0.8)', overflow: 'hidden',
                     fontFamily: "'Plus Jakarta Sans', sans-serif",
@@ -75,7 +76,7 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, children, isProc
                 {/* Modal header */}
                 <div style={{
                     padding: '28px 28px 20px', textAlign: 'center',
-                    borderBottom: '1px solid rgba(255,255,255,0.06)',
+                    borderBottom: '1px solid var(--border-color)',
                 }}>
                     <div style={{
                         width: 60, height: 60, borderRadius: 18,
@@ -88,7 +89,7 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, children, isProc
                     </div>
                     <h3 style={{
                         fontFamily: "'Sora', sans-serif", fontSize: '1.25rem',
-                        fontWeight: 800, color: '#ffffff', letterSpacing: -0.5,
+                        fontWeight: 800, color: 'var(--text-primary)', letterSpacing: -0.5,
                     }}>{title}</h3>
                 </div>
 
@@ -105,8 +106,8 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, children, isProc
                         disabled={isProcessing}
                         style={{
                             padding: '9px 20px', borderRadius: 10,
-                            background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-                            color: 'rgba(255,255,255,0.6)', fontSize: '0.85rem', fontWeight: 600,
+                            background: 'var(--nav-hover-bg)', border: '1px solid var(--border-color)',
+                            color: 'var(--text-secondary)', fontSize: '0.85rem', fontWeight: 600,
                             cursor: isProcessing ? 'not-allowed' : 'pointer', opacity: isProcessing ? 0.5 : 1,
                             fontFamily: "'Plus Jakarta Sans', sans-serif",
                         }}
@@ -247,7 +248,7 @@ const OrderSummary = ({ invoice, claimedDiscounts = [], selectedMethod, handleOp
                                                 <TagIcon />
                                                 <span style={{ fontWeight: 700, fontSize: '0.83rem' }}>{pd.discount.name}</span>
                                             </div>
-                                            <p style={{ fontSize: '0.75rem', marginTop: 2, color: 'rgba(255,255,255,0.4)' }}>{pd.discount.description}</p>
+                                            <p style={{ fontSize: '0.75rem', marginTop: 2, color: 'var(--text-secondary)', opacity: 0.7 }}>{pd.discount.description}</p>
                                             {!pd.isApplicable && (
                                                 <p style={{ fontSize: '0.7rem', color: '#f87171', fontWeight: 600, marginTop: 4 }}>Tidak berlaku untuk invoice ini</p>
                                             )}
@@ -311,7 +312,9 @@ export default function Checkout({ invoice, paymentMethods = [], claimedDiscount
         setIsProcessing(true);
         router.post(route('customer.invoices.pay', { invoice: invoice.id }), { payment_method: confirmationData.method.id }, {
             onSuccess: () => setIsConfirmationModalOpen(false),
-            onError: (errors) => toast.error(Object.values(errors)[0] || 'Payment processing failed.'),
+            onError: (errors) => toast.error(Object.values(errors)[0] || 'Payment processing failed.', {
+                theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light'
+            }),
             onFinish: () => setIsProcessing(false),
         });
     };
@@ -321,232 +324,6 @@ export default function Checkout({ invoice, paymentMethods = [], claimedDiscount
     return (
         <AuthenticatedLayout>
             <Head title={`Checkout Invoice #${invoice.invoice_number}`} />
-
-            <style>{`
-                @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@400;600;700;800&display=swap');
-
-                .ck-root {
-                    font-family: 'Plus Jakarta Sans', sans-serif;
-                    background: #0f0f0f;
-                    min-height: 100vh;
-                    padding: 28px 0 60px;
-                }
-                .ck-container {
-                    max-width: 1200px;
-                    margin: 0 auto;
-                    padding: 0 16px;
-                }
-                @media (min-width: 640px)  { .ck-container { padding: 0 24px; } }
-                @media (min-width: 1024px) { .ck-container { padding: 0 32px; } }
-
-                /* ── Back ── */
-                .ck-back {
-                    display: inline-flex; align-items: center; gap: 7px;
-                    font-size: 0.8rem; font-weight: 600; color: rgba(255,255,255,0.4);
-                    text-decoration: none; margin-bottom: 20px; transition: color 0.2s;
-                }
-                .ck-back:hover { color: #ff8c00; }
-
-                /* ── Page heading ── */
-                .ck-title {
-                    font-family: 'Sora', sans-serif;
-                    font-size: clamp(1.3rem, 3vw, 1.8rem);
-                    font-weight: 800; color: #ffffff; letter-spacing: -0.5px;
-                    margin-bottom: 4px;
-                }
-                .ck-subtitle {
-                    font-size: 0.8rem; color: rgba(255,255,255,0.35); margin-bottom: 24px;
-                }
-
-                /* ── Layout grid ── */
-                .ck-grid {
-                    display: grid;
-                    grid-template-columns: 1fr;
-                    gap: 20px;
-                    align-items: start;
-                }
-                @media (min-width: 1024px) {
-                    .ck-grid { grid-template-columns: 1fr 380px; }
-                }
-
-                /* ── Section header ── */
-                .ck-section-header { display: flex; align-items: center; margin-bottom: 16px; }
-                .ck-section-title {
-                    font-family: 'Sora', sans-serif; font-size: 0.78rem; font-weight: 700;
-                    letter-spacing: 0.12em; text-transform: uppercase; color: #ff8c00; white-space: nowrap;
-                }
-                .ck-section-line {
-                    flex: 1; height: 1px; margin-left: 12px;
-                    background: linear-gradient(to right, rgba(255,140,0,0.4), transparent);
-                }
-
-                /* ── Payment methods card ── */
-                .ck-methods-card {
-                    background: #1a1a1a; border: 1px solid rgba(255,255,255,0.07);
-                    border-radius: 20px; padding: 22px; position: relative; overflow: hidden;
-                }
-                .ck-methods-card::before {
-                    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
-                    background: linear-gradient(90deg, transparent, rgba(255,140,0,0.3), transparent);
-                }
-
-                /* ── Method item ── */
-                .ck-method-item {
-                    display: flex; align-items: center; justify-content: space-between;
-                    padding: 16px 18px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.07);
-                    cursor: pointer; margin-bottom: 10px; transition: all 0.2s;
-                    background: rgba(255,255,255,0.02);
-                }
-                .ck-method-item:last-child { margin-bottom: 0; }
-                .ck-method-item:hover { border-color: rgba(255,140,0,0.25); background: rgba(255,140,0,0.03); }
-                .ck-method-item.selected {
-                    border-color: rgba(255,140,0,0.5);
-                    background: rgba(255,140,0,0.07);
-                    box-shadow: 0 0 0 1px rgba(255,140,0,0.25), inset 0 0 20px rgba(255,140,0,0.04);
-                }
-                .ck-method-left { flex: 1; }
-                .ck-method-name {
-                    font-size: 0.92rem; font-weight: 700; color: rgba(255,255,255,0.85);
-                    margin-bottom: 3px;
-                }
-                .ck-method-item.selected .ck-method-name { color: #ffffff; }
-                .ck-method-fee {
-                    font-size: 0.75rem; font-weight: 500; color: rgba(255,255,255,0.35);
-                }
-                .ck-method-item.selected .ck-method-fee { color: rgba(255,180,80,0.6); }
-                .ck-radio {
-                    width: 22px; height: 22px; border-radius: 50%;
-                    border: 2px solid rgba(255,255,255,0.15);
-                    display: flex; align-items: center; justify-content: center;
-                    flex-shrink: 0; transition: all 0.2s;
-                }
-                .ck-method-item.selected .ck-radio {
-                    border-color: #ff8c00; background: rgba(255,140,0,0.15); color: #ff8c00;
-                }
-
-                /* ── Summary card ── */
-                .ck-summary-card {
-                    background: #1a1a1a; border: 1px solid rgba(255,255,255,0.07);
-                    border-radius: 20px; overflow: hidden; position: relative;
-                    position: sticky; top: 80px;
-                }
-                .ck-summary-card::before {
-                    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
-                    background: linear-gradient(90deg, transparent, rgba(255,140,0,0.35), transparent);
-                }
-                .ck-summary-header {
-                    padding: 18px 20px 14px;
-                    border-bottom: 1px solid rgba(255,255,255,0.05);
-                }
-                .ck-summary-title {
-                    font-family: 'Sora', sans-serif; font-size: 0.78rem; font-weight: 700;
-                    letter-spacing: 0.12em; text-transform: uppercase; color: #ff8c00;
-                }
-                .ck-summary-lines { padding: 16px 20px; display: flex; flex-direction: column; gap: 10px; }
-                .ck-summary-row { display: flex; justify-content: space-between; align-items: center; }
-                .ck-summary-label { font-size: 0.83rem; color: rgba(255,255,255,0.45); font-weight: 500; }
-                .ck-summary-val { font-size: 0.83rem; color: rgba(255,255,255,0.75); font-weight: 600; }
-                .ck-summary-row.discount .ck-summary-label { color: rgba(52,211,153,0.7); }
-                .ck-summary-row.discount .ck-summary-val { color: #34d399; }
-                .ck-grand-total {
-                    display: flex; justify-content: space-between; align-items: center;
-                    padding: 14px 20px; border-top: 1px solid rgba(255,255,255,0.06);
-                    border-bottom: 1px solid rgba(255,255,255,0.06);
-                }
-                .ck-grand-label { font-size: 0.9rem; font-weight: 700; color: rgba(255,255,255,0.7); }
-                .ck-grand-val {
-                    font-family: 'Sora', sans-serif; font-size: 1.25rem;
-                    font-weight: 800; color: #ff8c00; letter-spacing: -0.5px;
-                }
-
-                /* ── Voucher ── */
-                .ck-voucher-section { padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-                .ck-voucher-label {
-                    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em;
-                    text-transform: uppercase; color: rgba(255,255,255,0.4); margin-bottom: 8px;
-                }
-                .ck-voucher-row { display: flex; gap: 8px; }
-                .ck-voucher-input {
-                    flex: 1; background: #111; border: 1px solid rgba(255,255,255,0.1);
-                    border-radius: 9px; padding: 8px 12px; font-size: 0.83rem; font-weight: 600;
-                    color: rgba(255,255,255,0.85); font-family: 'Courier New', monospace;
-                    letter-spacing: 0.06em; outline: none; transition: border-color 0.2s;
-                }
-                .ck-voucher-input:focus { border-color: rgba(255,140,0,0.5); }
-                .ck-voucher-input::placeholder { color: rgba(255,255,255,0.2); font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: 0; }
-                .ck-voucher-btn {
-                    padding: 8px 16px; border-radius: 9px; font-size: 0.8rem; font-weight: 700;
-                    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12);
-                    color: rgba(255,255,255,0.7); cursor: pointer; transition: all 0.2s;
-                    font-family: 'Plus Jakarta Sans', sans-serif; display: flex; align-items: center;
-                }
-                .ck-voucher-btn:hover { background: rgba(255,255,255,0.14); color: #fff; }
-                .ck-voucher-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-                .ck-field-error { font-size: 0.75rem; color: #f87171; font-weight: 600; margin-top: 6px; }
-                .ck-discount-applied {
-                    display: flex; align-items: center; justify-content: space-between;
-                    padding: 10px 14px; border-radius: 10px;
-                    background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.2);
-                }
-                .ck-remove-discount {
-                    display: inline-flex; align-items: center; gap: 4px;
-                    font-size: 0.72rem; font-weight: 600; color: rgba(239,68,68,0.7);
-                    background: none; border: none; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif;
-                    transition: color 0.2s;
-                }
-                .ck-remove-discount:hover { color: #f87171; }
-                .ck-voucher-item {
-                    padding: 10px 12px; border-radius: 10px; border: 1px dashed;
-                    transition: all 0.2s;
-                }
-                .ck-voucher-item.applicable {
-                    border-color: rgba(255,140,0,0.25); background: rgba(255,140,0,0.04);
-                    cursor: pointer; color: #ff8c00;
-                }
-                .ck-voucher-item.applicable:hover { border-color: rgba(255,140,0,0.5); background: rgba(255,140,0,0.09); }
-                .ck-voucher-item.disabled {
-                    border-color: rgba(255,255,255,0.07); background: rgba(255,255,255,0.02);
-                    cursor: not-allowed; color: rgba(255,255,255,0.3); opacity: 0.6;
-                }
-
-                /* ── Pay button ── */
-                .ck-pay-wrap { padding: 16px 20px 20px; }
-                .ck-pay-btn {
-                    width: 100%; padding: 12px; border-radius: 12px;
-                    background: linear-gradient(135deg, #ff8c00, #ff6a00);
-                    color: white; font-size: 0.9rem; font-weight: 700;
-                    border: none; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif;
-                    box-shadow: 0 4px 18px rgba(255,110,0,0.4); transition: all 0.2s;
-                    display: flex; align-items: center; justify-content: center; gap: 8px;
-                }
-                .ck-pay-btn:hover:not(:disabled) { box-shadow: 0 6px 24px rgba(255,110,0,0.55); transform: translateY(-1px); }
-                .ck-pay-btn:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: none; transform: none; }
-                .ck-pay-hint { font-size: 0.72rem; color: rgba(255,255,255,0.3); text-align: center; margin-top: 8px; font-weight: 500; }
-
-                /* ── Modal internals ── */
-                .ck-modal-lines {
-                    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07);
-                    border-radius: 12px; padding: 14px 16px; margin-bottom: 12px;
-                    display: flex; flex-direction: column; gap: 10px;
-                }
-                .ck-modal-row { display: flex; justify-content: space-between; align-items: center; }
-                .ck-modal-key { font-size: 0.8rem; color: rgba(255,255,255,0.4); font-weight: 500; }
-                .ck-modal-val { font-size: 0.83rem; color: rgba(255,255,255,0.8); font-weight: 700; }
-                .ck-modal-total-box {
-                    background: rgba(255,140,0,0.08); border: 1px solid rgba(255,140,0,0.2);
-                    border-radius: 12px; padding: 14px 16px;
-                    display: flex; justify-content: space-between; align-items: center;
-                }
-                .ck-modal-total-label { font-size: 0.85rem; font-weight: 700; color: rgba(255,255,255,0.7); }
-                .ck-modal-total-val {
-                    font-family: 'Sora', sans-serif; font-size: 1.2rem;
-                    font-weight: 800; color: #ff8c00; letter-spacing: -0.5px;
-                }
-                .ck-modal-hint {
-                    font-size: 0.78rem; color: rgba(255,255,255,0.35); text-align: center;
-                    margin-bottom: 14px;
-                }
-            `}</style>
 
             {/* ── Confirmation Modal ── */}
             <ConfirmationModal
@@ -603,7 +380,7 @@ export default function Checkout({ invoice, paymentMethods = [], claimedDiscount
                             </div>
                             <div className="ck-methods-card">
                                 {paymentMethods.length === 0 ? (
-                                    <div style={{ textAlign: 'center', padding: '40px 20px', color: 'rgba(255,255,255,0.25)' }}>
+                                    <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-secondary)', opacity: 0.5 }}>
                                         <p style={{ fontWeight: 600 }}>Tidak ada metode pembayaran tersedia</p>
                                     </div>
                                 ) : (

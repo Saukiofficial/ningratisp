@@ -30,6 +30,7 @@ class AccountController extends Controller
 
     public function update(Request $request): RedirectResponse
     {
+        /** @var \App\Models\Customer */
         $customer = $request->user();
 
         $validated = $request->validate([
@@ -40,6 +41,9 @@ class AccountController extends Controller
             'latitude' => ['nullable', 'numeric', 'between:-90,90'],
             'longitude' => ['nullable', 'numeric', 'between:-180,180'],
         ]);
+
+        $customer->offsetUnset('is_customer');
+        $customer->offsetUnset('whatsapp_number');
 
         $customer->update([
             'full_name' => $validated['full_name'],

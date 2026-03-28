@@ -3,6 +3,7 @@ import { Head, useForm } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import { useGeolocated } from 'react-geolocated';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import './Account.css';
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 
@@ -106,193 +107,6 @@ export default function Account({ customer }) {
         <AuthenticatedLayout>
             <Head title="Informasi Akun" />
 
-            <style>{`
-                @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@400;600;700;800&display=swap');
-
-                .ac-root {
-                    font-family: 'Plus Jakarta Sans', sans-serif;
-                    background: #0f0f0f;
-                    min-height: 100vh;
-                    padding: 28px 0 60px;
-                }
-                .ac-container {
-                    max-width: 760px;
-                    margin: 0 auto;
-                    padding: 0 16px;
-                    display: flex;
-                    flex-direction: column;
-                    gap: 20px;
-                }
-                @media (min-width: 640px)  { .ac-container { padding: 0 24px; } }
-                @media (min-width: 1024px) { .ac-container { padding: 0 32px; } }
-
-                /* ── Page heading ── */
-                .ac-page-title {
-                    font-family: 'Sora', sans-serif;
-                    font-size: clamp(1.3rem, 3vw, 1.8rem);
-                    font-weight: 800; color: #ffffff; letter-spacing: -0.5px;
-                }
-                .ac-page-sub { font-size: 0.8rem; color: rgba(255,255,255,0.35); margin-top: 4px; margin-bottom: 4px; }
-
-                /* ── Card ── */
-                .ac-card {
-                    background: #1a1a1a;
-                    border: 1px solid rgba(255,255,255,0.07);
-                    border-radius: 20px;
-                    overflow: hidden;
-                    position: relative;
-                }
-                .ac-card::before {
-                    content: '';
-                    position: absolute; top: 0; left: 0; right: 0; height: 1px;
-                    background: linear-gradient(90deg, transparent, rgba(255,140,0,0.3), transparent);
-                }
-
-                /* ── Card header ── */
-                .ac-card-header {
-                    display: flex; align-items: flex-start; justify-content: space-between;
-                    gap: 16px; padding: 20px 22px 16px;
-                    border-bottom: 1px solid rgba(255,255,255,0.05);
-                }
-                .ac-card-header-left { display: flex; align-items: flex-start; gap: 12px; }
-                .ac-card-icon {
-                    width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
-                    display: flex; align-items: center; justify-content: center;
-                    background: rgba(255,140,0,0.1); color: #ff8c00; margin-top: 2px;
-                }
-                .ac-card-title {
-                    font-family: 'Sora', sans-serif; font-size: 0.95rem;
-                    font-weight: 700; color: #ffffff; margin-bottom: 2px;
-                }
-                .ac-card-desc { font-size: 0.78rem; color: rgba(255,255,255,0.4); line-height: 1.5; }
-
-                /* ── Header action buttons ── */
-                .ac-header-btns { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-                .ac-cancel-btn {
-                    padding: 7px 14px; border-radius: 9px; font-size: 0.78rem; font-weight: 600;
-                    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
-                    color: rgba(255,255,255,0.55); cursor: pointer; transition: all 0.2s;
-                    font-family: 'Plus Jakarta Sans', sans-serif;
-                }
-                .ac-cancel-btn:hover { background: rgba(255,255,255,0.09); color: rgba(255,255,255,0.8); }
-                .ac-edit-btn {
-                    display: inline-flex; align-items: center; gap: 6px;
-                    padding: 7px 16px; border-radius: 9px; font-size: 0.78rem; font-weight: 700;
-                    background: rgba(255,140,0,0.1); border: 1px solid rgba(255,140,0,0.25);
-                    color: #ff8c00; cursor: pointer; transition: all 0.2s;
-                    font-family: 'Plus Jakarta Sans', sans-serif;
-                }
-                .ac-edit-btn:hover { background: rgba(255,140,0,0.18); border-color: rgba(255,140,0,0.4); }
-
-                /* ── Card body ── */
-                .ac-card-body { padding: 20px 22px; }
-
-                /* ── Info display grid ── */
-                .ac-info-grid {
-                    display: grid; grid-template-columns: 1fr; gap: 16px;
-                }
-                @media (min-width: 480px) { .ac-info-grid { grid-template-columns: 1fr 1fr; } }
-
-                .ac-info-item {}
-                .ac-info-label {
-                    font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em;
-                    text-transform: uppercase; color: rgba(255,255,255,0.3); margin-bottom: 5px;
-                }
-                .ac-info-value {
-                    font-size: 0.88rem; font-weight: 600; color: rgba(255,255,255,0.85);
-                    line-height: 1.5;
-                }
-                .ac-info-value.mono {
-                    font-family: 'Courier New', monospace;
-                    display: inline-flex; align-items: center;
-                    background: rgba(255,140,0,0.08); border: 1px solid rgba(255,140,0,0.2);
-                    color: #ff8c00; padding: 3px 10px; border-radius: 7px;
-                    font-size: 0.82rem; letter-spacing: 0.06em;
-                }
-                .ac-info-hint {
-                    font-size: 0.72rem; color: rgba(255,255,255,0.25); margin-top: 14px;
-                }
-
-                /* ── Password masked ── */
-                .ac-password-masked {
-                    display: flex; align-items: center; gap: 8px;
-                    padding: 10px 14px; border-radius: 10px;
-                    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
-                    font-size: 0.9rem; color: rgba(255,255,255,0.4); letter-spacing: 0.15em;
-                }
-
-                /* ── Form fields ── */
-                .ac-form { display: flex; flex-direction: column; gap: 18px; }
-                .ac-field-label {
-                    display: block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.07em;
-                    text-transform: uppercase; color: rgba(255,255,255,0.4); margin-bottom: 7px;
-                }
-                .ac-field-hint {
-                    font-size: 0.72rem; color: rgba(255,255,255,0.25); margin-top: 5px;
-                }
-                .ac-input {
-                    width: 100%; background: #111; border: 1px solid rgba(255,255,255,0.1);
-                    border-radius: 10px; padding: 10px 13px; font-size: 0.85rem; font-weight: 500;
-                    color: rgba(255,255,255,0.85); font-family: 'Plus Jakarta Sans', sans-serif;
-                    transition: border-color 0.2s, box-shadow 0.2s; outline: none; box-sizing: border-box;
-                }
-                .ac-input:focus { border-color: rgba(255,140,0,0.5); box-shadow: 0 0 0 3px rgba(255,140,0,0.07); }
-                .ac-input::placeholder { color: rgba(255,255,255,0.2); }
-                .ac-input.highlight-required { border-color: rgba(255,140,0,0.4); background: rgba(255,140,0,0.03); }
-                .ac-textarea {
-                    width: 100%; background: #111; border: 1px solid rgba(255,255,255,0.1);
-                    border-radius: 10px; padding: 10px 13px; font-size: 0.85rem; font-weight: 500;
-                    color: rgba(255,255,255,0.85); font-family: 'Plus Jakarta Sans', sans-serif;
-                    transition: border-color 0.2s; outline: none; resize: vertical;
-                    box-sizing: border-box; min-height: 80px;
-                }
-                .ac-textarea:focus { border-color: rgba(255,140,0,0.5); box-shadow: 0 0 0 3px rgba(255,140,0,0.07); }
-                .ac-field-error { font-size: 0.75rem; color: #f87171; font-weight: 600; margin-top: 5px; }
-
-                /* ── Grid 2-col for fields ── */
-                .ac-field-grid { display: grid; grid-template-columns: 1fr; gap: 18px; }
-                @media (min-width: 480px) { .ac-field-grid { grid-template-columns: 1fr 1fr; } }
-
-                /* ── Location row ── */
-                .ac-location-label-row {
-                    display: flex; align-items: center; justify-content: space-between; margin-bottom: 7px;
-                }
-                .ac-location-btn {
-                    display: inline-flex; align-items: center; gap: 5px;
-                    font-size: 0.72rem; font-weight: 700; color: #ff8c00;
-                    background: none; border: none; cursor: pointer; transition: color 0.2s;
-                    font-family: 'Plus Jakarta Sans', sans-serif; padding: 0;
-                }
-                .ac-location-btn:hover { color: #ffaa33; }
-                .ac-location-btn:disabled { opacity: 0.35; cursor: not-allowed; }
-                .ac-geo-hint {
-                    font-size: 0.72rem; color: rgba(255,255,255,0.25); margin-top: 6px;
-                }
-                .ac-geo-hint.error { color: #f87171; }
-                .ac-geo-hint.success { color: rgba(52,211,153,0.7); }
-
-                /* ── Save button ── */
-                .ac-save-btn {
-                    display: inline-flex; align-items: center; gap: 7px;
-                    padding: 10px 22px; border-radius: 10px;
-                    background: linear-gradient(135deg, #ff8c00, #ff6a00);
-                    color: white; font-size: 0.85rem; font-weight: 700;
-                    border: none; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif;
-                    box-shadow: 0 4px 14px rgba(255,110,0,0.35); transition: all 0.2s;
-                }
-                .ac-save-btn:hover:not(:disabled) { box-shadow: 0 6px 20px rgba(255,110,0,0.5); transform: translateY(-1px); }
-                .ac-save-btn:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; transform: none; }
-                .ac-save-success {
-                    display: inline-flex; align-items: center; gap: 5px;
-                    font-size: 0.78rem; font-weight: 600; color: #34d399;
-                }
-
-                /* ── Section divider ── */
-                .ac-divider {
-                    height: 1px; background: rgba(255,255,255,0.05); margin: 4px 0;
-                }
-            `}</style>
-
             <div className="ac-root">
                 <div className="ac-container">
 
@@ -362,7 +176,7 @@ export default function Account({ customer }) {
                                             <div className="ac-info-value">{customer.longitude ?? '-'}</div>
                                         </div>
                                     </div>
-                                    <p className="ac-info-hint">Untuk mengubah data di atas, klik tombol <strong style={{ color: 'rgba(255,255,255,0.5)' }}>Edit</strong>.</p>
+                                    <p className="ac-info-hint">Untuk mengubah data di atas, klik tombol <strong style={{ color: 'var(--text-secondary)' }}>Edit</strong>.</p>
                                 </>
                             )}
 

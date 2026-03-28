@@ -40,7 +40,8 @@ class HandleInertiaRequests extends Middleware
         $user = auth('customers')->user();
         if ($user) {
             $user->setAttribute('is_customer', true);
-            $user = $user?->only('id', 'username', 'email', 'phone', 'full_name', 'latitude', 'longitude', 'address', 'is_customer');
+            $user->setAttribute('whatsapp_number', $user->phone);
+            $user = $user?->only('id', 'username', 'email', 'phone', 'full_name', 'latitude', 'longitude', 'address', 'is_customer', 'whatsapp_number');
         }
 
         return [

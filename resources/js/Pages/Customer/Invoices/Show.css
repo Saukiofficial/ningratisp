@@ -1,0 +1,509 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@400;600;700;800&display=swap');
+
+.sh-root {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: var(--bg-color);
+    color: var(--text-primary);
+    min-height: 100vh;
+    padding: 28px 0 60px;
+    transition: background 0.3s, color 0.3s;
+}
+
+.sh-container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 16px;
+}
+
+@media (min-width: 640px) {
+    .sh-container {
+        padding: 0 24px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .sh-container {
+        padding: 0 32px;
+    }
+}
+
+/* ── Back nav ── */
+.sh-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-decoration: none;
+    margin-bottom: 20px;
+    transition: color 0.2s;
+}
+
+.sh-back:hover {
+    color: #ff8c00;
+}
+
+/* ── Invoice header card ── */
+.sh-header-card {
+    background: var(--sh-header-card);
+    border: 1px solid var(--border-color);
+    border-radius: 22px;
+    padding: 24px 24px 20px;
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.3s, border-color 0.3s;
+}
+
+.sh-header-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 140, 0, 0.5), transparent);
+}
+
+.sh-header-glow {
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 140, 0, 0.12) 0%, transparent 70%);
+    top: -100px;
+    right: -80px;
+    pointer-events: none;
+}
+
+.sh-header-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.sh-invoice-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.sh-invoice-number {
+    font-family: 'Sora', sans-serif;
+    font-size: clamp(1.3rem, 3vw, 1.8rem);
+    font-weight: 800;
+    color: var(--text-primary);
+    letter-spacing: -0.5px;
+}
+
+.sh-dates {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 14px;
+}
+
+.sh-date-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 8px;
+    background: var(--nav-hover-bg);
+    border: 1px solid var(--border-color);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.sh-date-chip span {
+    color: var(--text-primary);
+}
+
+/* ── Status badge ── */
+.sh-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.sh-status-badge.paid {
+    background: rgba(16, 185, 129, 0.15);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.sh-status-badge.unpaid {
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.sh-status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+}
+
+.sh-status-badge.paid .sh-status-dot {
+    background: #10b981;
+}
+
+.sh-status-badge.unpaid .sh-status-dot {
+    background: #ef4444;
+}
+
+.sh-paid-on {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: rgba(52, 211, 153, 0.7);
+    margin-top: 6px;
+    text-align: right;
+}
+
+/* ── Cards ── */
+.sh-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.3s, border-color 0.3s;
+}
+
+.sh-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 140, 0, 0.25), transparent);
+}
+
+.sh-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.sh-card-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 140, 0, 0.1);
+    color: #ff8c00;
+    flex-shrink: 0;
+}
+
+.sh-card-title {
+    font-family: 'Sora', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #ff8c00;
+}
+
+/* ── From info ── */
+.sh-from-body {
+    padding: 18px 20px;
+}
+
+.sh-from-name {
+    font-family: 'Sora', sans-serif;
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+}
+
+.sh-from-line {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+}
+
+/* ── Items table ── */
+.sh-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.sh-table th {
+    padding: 12px 20px;
+    text-align: left;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    opacity: 0.6;
+}
+
+.sh-table th:last-child {
+    text-align: right;
+}
+
+.sh-table tbody tr {
+    border-top: 1px solid var(--border-color);
+}
+
+.sh-table td {
+    padding: 14px 20px;
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    opacity: 0.9;
+}
+
+.sh-table td:last-child {
+    text-align: right;
+    font-family: 'Sora', sans-serif;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* ── Totals ── */
+.sh-totals {
+    padding: 18px 20px;
+}
+
+.sh-total-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.85rem;
+}
+
+.sh-total-row:last-child {
+    border-bottom: none;
+}
+
+.sh-total-label {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.sh-total-value {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.sh-total-row.discount .sh-total-value {
+    color: #34d399;
+}
+
+.sh-total-row.paid-row .sh-total-value {
+    color: #34d399;
+}
+
+.sh-balance-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    margin-top: 10px;
+    background: rgba(255, 140, 0, 0.08);
+    border: 1px solid rgba(255, 140, 0, 0.2);
+    border-radius: 12px;
+}
+
+.sh-balance-label {
+    font-family: 'Sora', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    opacity: 0.9;
+}
+
+.sh-balance-value {
+    font-family: 'Sora', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #ff8c00;
+    letter-spacing: -0.5px;
+}
+
+.sh-balance-row.settled .sh-balance-value {
+    color: #34d399;
+}
+
+.sh-balance-row.settled {
+    background: rgba(16, 185, 129, 0.06);
+    border-color: rgba(16, 185, 129, 0.2);
+}
+
+/* ── Payment history table ── */
+.sh-pay-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.sh-pay-table th {
+    padding: 12px 20px;
+    text-align: left;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    opacity: 0.6;
+}
+
+.sh-pay-table th:last-child {
+    text-align: right;
+}
+
+.sh-pay-table tbody tr {
+    border-top: 1px solid var(--border-color);
+}
+
+.sh-pay-table td {
+    padding: 13px 20px;
+    font-size: 0.83rem;
+    color: var(--text-primary);
+    opacity: 0.8;
+}
+
+.sh-pay-table td:last-child {
+    text-align: right;
+    font-weight: 600;
+    color: #34d399;
+}
+
+.sh-method-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 9px;
+    border-radius: 6px;
+    background: var(--nav-hover-bg);
+    border: 1px solid var(--border-color);
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* ── VA / Payment instruction card ── */
+.sh-va-card {
+    background: rgba(59, 130, 246, 0.07);
+    border: 1px solid rgba(59, 130, 246, 0.25);
+    border-left: 4px solid #3b82f6;
+    border-radius: 16px;
+    padding: 18px 20px;
+    margin-bottom: 16px;
+}
+
+.sh-va-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: rgba(150, 190, 255, 0.9);
+    margin-bottom: 12px;
+}
+
+.sh-va-row {
+    display: flex;
+    gap: 8px;
+    font-size: 0.82rem;
+    margin-bottom: 8px;
+}
+
+.sh-va-key {
+    color: var(--text-secondary);
+    font-weight: 600;
+    min-width: 170px;
+    flex-shrink: 0;
+}
+
+.sh-va-val {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.sh-va-number {
+    font-family: 'Courier New', monospace;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #93c5fd;
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    padding: 6px 14px;
+    border-radius: 8px;
+    letter-spacing: 0.1em;
+}
+
+/* ── Footer actions ── */
+.sh-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+}
+
+.sh-back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 18px;
+    border-radius: 10px;
+    background: var(--nav-hover-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.sh-back-btn:hover {
+    color: var(--text-primary);
+    background: var(--nav-active-bg);
+}
+
+.sh-pay-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 24px;
+    border-radius: 11px;
+    background: linear-gradient(135deg, #ff8c00, #ff6a00);
+    color: white;
+    font-size: 0.88rem;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: 0 4px 16px rgba(255, 110, 0, 0.4);
+    transition: all 0.2s;
+}
+
+.sh-pay-btn:hover {
+    box-shadow: 0 6px 22px rgba(255, 110, 0, 0.55);
+    transform: translateY(-1px);
+}

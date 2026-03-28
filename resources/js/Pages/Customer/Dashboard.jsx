@@ -115,8 +115,10 @@ export default function Dashboard({ pelanggan, statusLangganan, unpaid_invoices,
 
                 .nn-root {
                     font-family: 'Plus Jakarta Sans', sans-serif;
-                    background: #0f0f0f;
+                    background: var(--bg-color);
+                    color: var(--text-primary);
                     min-height: 100vh;
+                    transition: background 0.3s, color 0.3s;
                 }
 
                 /* ─ Hero Header ─ */
@@ -140,7 +142,7 @@ export default function Dashboard({ pelanggan, statusLangganan, unpaid_invoices,
                     left: 0;
                     right: 0;
                     height: 60px;
-                    background: linear-gradient(to bottom right, transparent 49%, #0f0f0f 50%);
+                    background: linear-gradient(to bottom right, transparent 49%, var(--bg-color) 50%);
                     pointer-events: none;
                 }
                 .nn-hero-glow {
@@ -264,7 +266,7 @@ export default function Dashboard({ pelanggan, statusLangganan, unpaid_invoices,
 
                 /* ─ Main content area ─ */
                 .nn-main {
-                    background: #0f0f0f;
+                    background: var(--bg-color);
                     padding: 24px 0 48px;
                 }
                 .nn-container {
@@ -367,13 +369,13 @@ export default function Dashboard({ pelanggan, statusLangganan, unpaid_invoices,
 
                 /* ─ Cards ─ */
                 .nn-card {
-                    background: #1a1a1a;
-                    border: 1px solid rgba(255,255,255,0.07);
+                    background: var(--card-bg);
+                    border: 1px solid var(--border-color);
                     border-radius: 20px;
                     padding: 20px;
                     position: relative;
                     overflow: hidden;
-                    transition: border-color 0.3s, transform 0.2s;
+                    transition: border-color 0.3s, transform 0.2s, background 0.3s;
                 }
                 .nn-card:hover {
                     border-color: rgba(255,140,0,0.25);
@@ -391,8 +393,8 @@ export default function Dashboard({ pelanggan, statusLangganan, unpaid_invoices,
 
                 /* Status card */
                 .nn-status-card {
-                    background: #1a1a1a;
-                    border: 1px solid rgba(255,255,255,0.07);
+                    background: var(--card-bg);
+                    border: 1px solid var(--border-color);
                     border-radius: 20px;
                     padding: 20px;
                     display: flex;
@@ -400,15 +402,15 @@ export default function Dashboard({ pelanggan, statusLangganan, unpaid_invoices,
                     gap: 16px;
                     position: relative;
                     overflow: hidden;
-                    transition: border-color 0.3s;
+                    transition: border-color 0.3s, background 0.3s;
                 }
                 .nn-status-card.active {
                     border-color: rgba(16,185,129,0.3);
-                    background: linear-gradient(135deg, #1a1a1a 60%, rgba(16,185,129,0.05));
+                    background: linear-gradient(135deg, var(--card-bg) 60%, rgba(16,185,129,0.05));
                 }
                 .nn-status-card.isolir {
                     border-color: rgba(239,68,68,0.3);
-                    background: linear-gradient(135deg, #1a1a1a 60%, rgba(239,68,68,0.05));
+                    background: linear-gradient(135deg, var(--card-bg) 60%, rgba(239,68,68,0.05));
                 }
                 .nn-status-icon-wrap {
                     width: 52px;
@@ -434,7 +436,7 @@ export default function Dashboard({ pelanggan, statusLangganan, unpaid_invoices,
                     font-weight: 600;
                     letter-spacing: 0.08em;
                     text-transform: uppercase;
-                    color: rgba(255,255,255,0.45);
+                    color: var(--text-secondary);
                     margin-bottom: 5px;
                 }
                 .nn-status-badge {
@@ -500,20 +502,20 @@ export default function Dashboard({ pelanggan, statusLangganan, unpaid_invoices,
                     font-weight: 600;
                     letter-spacing: 0.08em;
                     text-transform: uppercase;
-                    color: rgba(255,255,255,0.4);
+                    color: var(--text-secondary);
                     margin-bottom: 3px;
                 }
                 .nn-info-value {
                     font-family: 'Sora', sans-serif;
                     font-size: 1.05rem;
                     font-weight: 700;
-                    color: #ffffff;
+                    color: var(--text-primary);
                     letter-spacing: -0.3px;
                 }
                 .nn-info-sub {
                     font-size: 0.78rem;
                     font-weight: 500;
-                    color: rgba(255,255,255,0.45);
+                    color: var(--text-secondary);
                     margin-top: 2px;
                 }
                 .nn-id-chip {
@@ -545,13 +547,13 @@ export default function Dashboard({ pelanggan, statusLangganan, unpaid_invoices,
                 .nn-price-period {
                     font-size: 0.72rem;
                     font-weight: 500;
-                    color: rgba(255,255,255,0.4);
+                    color: var(--text-secondary);
                 }
 
                 /* ─ Invoice section ─ */
                 .nn-invoice-card {
-                    background: #1a1a1a;
-                    border: 1px solid rgba(255,255,255,0.07);
+                    background: var(--card-bg);
+                    border: 1px solid var(--border-color);
                     border-radius: 20px;
                     overflow: hidden;
                     margin-bottom: 24px;
@@ -561,7 +563,7 @@ export default function Dashboard({ pelanggan, statusLangganan, unpaid_invoices,
                     align-items: center;
                     justify-content: space-between;
                     padding: 18px 20px 14px;
-                    border-bottom: 1px solid rgba(255,255,255,0.06);
+                    border-bottom: 1px solid var(--border-color);
                 }
                 .nn-invoice-row {
                     display: flex;
@@ -569,7 +571,7 @@ export default function Dashboard({ pelanggan, statusLangganan, unpaid_invoices,
                     justify-content: space-between;
                     padding: 16px 20px;
                     gap: 16px;
-                    border-bottom: 1px solid rgba(255,255,255,0.04);
+                    border-bottom: 1px solid var(--border-color);
                     transition: background 0.2s;
                 }
                 .nn-invoice-row:last-child { border-bottom: none; }
@@ -591,7 +593,7 @@ export default function Dashboard({ pelanggan, statusLangganan, unpaid_invoices,
                     font-family: 'Sora', sans-serif;
                     font-size: 1.2rem;
                     font-weight: 800;
-                    color: #ffffff;
+                    color: var(--text-primary);
                     letter-spacing: -0.5px;
                 }
                 .nn-pay-btn {
@@ -620,7 +622,7 @@ export default function Dashboard({ pelanggan, statusLangganan, unpaid_invoices,
                     align-items: center;
                     justify-content: center;
                     padding: 14px;
-                    border-top: 1px solid rgba(255,255,255,0.05);
+                    border-top: 1px solid var(--border-color);
                 }
                 .nn-more-link {
                     display: inline-flex;
@@ -652,8 +654,8 @@ export default function Dashboard({ pelanggan, statusLangganan, unpaid_invoices,
                     }
                 }
                 .nn-service-item {
-                    background: #1a1a1a;
-                    border: 1px solid rgba(255,255,255,0.07);
+                    background: var(--card-bg);
+                    border: 1px solid var(--border-color);
                     border-radius: 16px;
                     padding: 16px;
                     display: flex;
@@ -677,22 +679,22 @@ export default function Dashboard({ pelanggan, statusLangganan, unpaid_invoices,
                 .nn-service-name {
                     font-size: 0.82rem;
                     font-weight: 700;
-                    color: rgba(255,255,255,0.85);
+                    color: var(--text-primary);
                     margin-bottom: 1px;
                 }
                 .nn-service-desc {
                     font-size: 0.7rem;
-                    color: rgba(255,255,255,0.4);
+                    color: var(--text-secondary);
                 }
 
                 /* ─ Footer strip ─ */
                 .nn-footer-strip {
-                    background: #141414;
-                    border-top: 1px solid rgba(255,255,255,0.05);
+                    background: var(--footer-bg);
+                    border-top: 1px solid var(--border-color);
                     padding: 16px 0;
                     text-align: center;
                     font-size: 0.72rem;
-                    color: rgba(255,255,255,0.25);
+                    color: var(--text-secondary);
                     font-weight: 500;
                 }
                 .nn-footer-brand {
@@ -836,7 +838,7 @@ export default function Dashboard({ pelanggan, statusLangganan, unpaid_invoices,
                                             <div style={{ width: 32, height: 32, borderRadius: 10, background: 'rgba(255,180,0,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#f59e0b' }}>
                                                 <BillIcon className="h-4 w-4" />
                                             </div>
-                                            <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'rgba(255,255,255,0.7)' }}>
+                                            <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-secondary)' }}>
                                                 {unpaid_invoices.length} Tagihan Tertunggak
                                             </span>
                                         </div>
@@ -904,7 +906,7 @@ export default function Dashboard({ pelanggan, statusLangganan, unpaid_invoices,
                                         <span className={`nn-pulse-dot ${isActive ? 'active' : 'isolir'}`} />
                                         {isActive ? 'Aktif & Terhubung' : `Isolir: ${isolir_at}`}
                                     </div>
-                                    <div style={{ marginTop: 6, fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)' }}>
+                                    <div style={{ marginTop: 6, fontSize: '0.72rem', color: 'var(--text-secondary)' }}>
                                         {isActive ? 'Koneksi berjalan normal' : 'Hubungi support untuk aktivasi'}
                                     </div>
                                 </div>
@@ -943,8 +945,8 @@ export default function Dashboard({ pelanggan, statusLangganan, unpaid_invoices,
                                     </div>
                                 </div>
                                 {pelanggan.package && (
-                                    <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 12 }}>
-                                        <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>
+                                    <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: 12 }}>
+                                        <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>
                                             Biaya Bulanan
                                         </div>
                                         <div className="nn-price-tag">

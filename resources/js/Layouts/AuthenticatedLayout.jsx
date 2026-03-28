@@ -2,6 +2,8 @@ import React from 'react';
 import { Link, usePage, router } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import { useFlash } from '@/Hooks/useFlash';
+import { Sun, Moon, Laptop, ChevronDown } from 'lucide-react';
+import './AuthenticatedLayout.css';
 
 const HomeIcon = ({ isActive }) => (
     <svg className="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
@@ -28,7 +30,7 @@ const LogoutIcon = () => (
 );
 
 const WifiLogoIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} style={{ width: 22, height: 22, color: 'white' }}>
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} style={{ width: 22, height: 22, color: 'var(--logo-icon-color, white)' }}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M8.288 15.038a5.25 5.25 0 017.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12.53 18.22l-.53.53-.53-.53a.75.75 0 011.06 0z" />
     </svg>
 );
@@ -39,11 +41,39 @@ export default function AuthenticatedLayout({ children }) {
     const user = auth.user;
     useFlash();
 
+    const [theme, setTheme] = React.useState(() => {
+        return localStorage.getItem('theme') || 'system';
+    });
+    const [isThemeMenuOpen, setIsThemeMenuOpen] = React.useState(false);
+
     const [showOnboarding, setShowOnboarding] = React.useState(false);
     const [onboardingStep, setOnboardingStep] = React.useState(0);
 
-    const isProfileIncomplete = user?.is_customer && (!user?.full_name || !user?.phone || !user?.latitude || !user?.longitude);
+    const isProfileIncomplete = user?.is_customer && (!user?.full_name || !user?.whatsapp_number || !user?.latitude || !user?.longitude);
     const isAccountPage = url.startsWith('/account') || url.startsWith('/customer/account');
+
+    React.useEffect(() => {
+        const root = window.document.documentElement;
+
+        const applyTheme = (targetTheme) => {
+            const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            const activeTheme = targetTheme === 'system' ? systemTheme : targetTheme;
+
+            root.classList.remove('light', 'dark');
+            root.classList.add(activeTheme);
+            root.style.colorScheme = activeTheme;
+        };
+
+        applyTheme(theme);
+        localStorage.setItem('theme', theme);
+
+        if (theme === 'system') {
+            const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+            const handleChange = () => applyTheme('system');
+            mediaQuery.addEventListener('change', handleChange);
+            return () => mediaQuery.removeEventListener('change', handleChange);
+        }
+    }, [theme]);
 
     React.useEffect(() => {
         if (isProfileIncomplete && !isAccountPage) {
@@ -66,6 +96,10 @@ export default function AuthenticatedLayout({ children }) {
     const handleLogout = (e) => {
         e.preventDefault();
         router.post((route('customer.logout')));
+    };
+
+    const toggleTheme = (newTheme) => {
+        setTheme(newTheme);
     };
 
     const onboardingSteps = [
@@ -101,361 +135,11 @@ export default function AuthenticatedLayout({ children }) {
 
     return (
         <>
-            <style>{`
-                @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@400;600;700;800&display=swap');
-
-                .nnl-root {
-                    font-family: 'Plus Jakarta Sans', sans-serif;
-                    background: #0f0f0f;
-                    min-height: 100vh;
-                    display: flex;
-                    flex-direction: column;
-                    padding-bottom: 68px;
-                }
-                @media (min-width: 640px) {
-                    .nnl-root { padding-bottom: 0; }
-                }
-
-                /* ── Profile Incomplete Alert ── */
-                .nnl-profile-alert {
-                    background: linear-gradient(90deg, #ff8c00, #ff6a00);
-                    color: white;
-                    text-align: center;
-                    padding: 10px 16px;
-                    font-size: 0.85rem;
-                    font-weight: 700;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    gap: 10px;
-                    box-shadow: 0 4px 12px rgba(255,110,0,0.3);
-                    z-index: 100;
-                    position: relative;
-                }
-                .nnl-profile-alert svg { width: 18px; height: 18px; }
-
-                /* ── Onboarding Overlay ── */
-                .nnl-onboard-overlay {
-                    position: fixed;
-                    inset: 0;
-                    background: rgba(0,0,0,0.85);
-                    z-index: 200;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    padding: 20px;
-                    backdrop-filter: blur(4px);
-                }
-                .nnl-onboard-card {
-                    background: #1a1a1a;
-                    border: 1px solid rgba(255,140,0,0.3);
-                    border-radius: 24px;
-                    width: 100%;
-                    max-width: 400px;
-                    padding: 32px;
-                    text-align: center;
-                    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-                    position: relative;
-                    overflow: hidden;
-                }
-                .nnl-onboard-card::before {
-                    content: '';
-                    position: absolute;
-                    top: 0; left: 0; right: 0; height: 1px;
-                    background: linear-gradient(90deg, transparent, #ff8c00, transparent);
-                }
-                .nnl-onboard-icon {
-                    width: 64px; height: 64px;
-                    background: rgba(255,140,0,0.1);
-                    color: #ff8c00;
-                    border-radius: 20px;
-                    display: flex; align-items: center; justify-content: center;
-                    margin: 0 auto 20px;
-                }
-                .nnl-onboard-title {
-                    font-family: 'Sora', sans-serif;
-                    font-size: 1.25rem;
-                    font-weight: 800;
-                    color: white;
-                    margin-bottom: 12px;
-                }
-                .nnl-onboard-content {
-                    font-size: 0.95rem;
-                    color: rgba(255,255,255,0.6);
-                    line-height: 1.6;
-                    margin-bottom: 24px;
-                }
-                .nnl-onboard-btn {
-                    background: linear-gradient(135deg, #ff8c00, #ff6a00);
-                    color: white;
-                    border: none;
-                    border-radius: 12px;
-                    padding: 12px 24px;
-                    font-weight: 700;
-                    font-size: 0.9rem;
-                    cursor: pointer;
-                    width: 100%;
-                    transition: transform 0.2s, box-shadow 0.2s;
-                }
-                .nnl-onboard-btn:hover {
-                    transform: translateY(-2px);
-                    box-shadow: 0 8px 20px rgba(255,110,0,0.4);
-                }
-                .nnl-onboard-steps {
-                    display: flex; justify-content: center; gap: 6px; margin-top: 20px;
-                }
-                .nnl-onboard-dot {
-                    width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.1);
-                }
-                .nnl-onboard-dot.active {
-                    background: #ff8c00; width: 16px; border-radius: 3px;
-                }
-
-                /* Highlight animation */
-                @keyframes highlight-pulse {
-                    0% { box-shadow: 0 0 0 0 rgba(255,140,0,0.7); }
-                    70% { box-shadow: 0 0 0 10px rgba(255,140,0,0); }
-                    100% { box-shadow: 0 0 0 0 rgba(255,140,0,0); }
-                }
-                .nnl-highlight {
-                    animation: highlight-pulse 2s infinite;
-                    border-color: #ff8c00 !important;
-                    background: rgba(255,140,0,0.1) !important;
-                }
-
-                /* ── Header ── */
-                .nnl-header {
-                    background: #0f0f0f;
-                    border-bottom: 1px solid rgba(255,255,255,0.08);
-                    position: sticky;
-                    top: 0;
-                    z-index: 50;
-                    backdrop-filter: blur(12px);
-                }
-                .nnl-header-inner {
-                    max-width: 1200px;
-                    margin: 0 auto;
-                    padding: 0 16px;
-                    height: 60px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: space-between;
-                    gap: 16px;
-                }
-                @media (min-width: 640px) {
-                    .nnl-header-inner { padding: 0 24px; }
-                }
-                @media (min-width: 1024px) {
-                    .nnl-header-inner { padding: 0 32px; }
-                }
-
-                /* Brand */
-                .nnl-brand {
-                    display: flex;
-                    align-items: center;
-                    gap: 10px;
-                    text-decoration: none;
-                    flex-shrink: 0;
-                }
-                .nnl-logo-wrap {
-                    width: 36px;
-                    height: 36px;
-                    background: linear-gradient(135deg, #ff8c00, #ff6a00);
-                    border-radius: 10px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    box-shadow: 0 4px 12px rgba(255,110,0,0.4);
-                    flex-shrink: 0;
-                    overflow: hidden;
-                }
-                .nnl-logo-wrap img {
-                    width: 100%;
-                    height: 100%;
-                    object-fit: contain;
-                    padding: 4px;
-                }
-                .nnl-brand-text {
-                    font-family: 'Sora', sans-serif;
-                    font-size: 1.05rem;
-                    font-weight: 800;
-                    color: #ffffff;
-                    letter-spacing: -0.5px;
-                    line-height: 1;
-                }
-                .nnl-brand-sub {
-                    font-size: 0.6rem;
-                    font-weight: 500;
-                    color: rgba(255,180,80,0.8);
-                    letter-spacing: 0.08em;
-                    text-transform: uppercase;
-                    margin-top: 1px;
-                }
-
-                /* Desktop nav */
-                .nnl-nav {
-                    display: none;
-                    align-items: center;
-                    gap: 4px;
-                }
-                @media (min-width: 640px) {
-                    .nnl-nav { display: flex; }
-                }
-                .nnl-nav-link {
-                    display: inline-flex;
-                    align-items: center;
-                    gap: 7px;
-                    padding: 7px 14px;
-                    border-radius: 10px;
-                    font-size: 0.82rem;
-                    font-weight: 600;
-                    color: rgba(255,255,255,0.5);
-                    text-decoration: none;
-                    transition: all 0.2s;
-                    border: 1px solid transparent;
-                    position: relative;
-                }
-                .nnl-nav-link:hover {
-                    color: rgba(255,255,255,0.85);
-                    background: rgba(255,255,255,0.05);
-                }
-                .nnl-nav-link.active {
-                    color: #ff8c00;
-                    background: rgba(255,140,0,0.1);
-                    border-color: rgba(255,140,0,0.2);
-                }
-                .nnl-nav-link.active svg { color: #ff8c00; }
-
-                /* Logout button */
-                .nnl-logout-btn {
-                    display: inline-flex;
-                    align-items: center;
-                    gap: 7px;
-                    padding: 7px 16px;
-                    border-radius: 10px;
-                    font-size: 0.82rem;
-                    font-weight: 700;
-                    color: rgba(255,255,255,0.7);
-                    background: rgba(239,68,68,0.1);
-                    border: 1px solid rgba(239,68,68,0.2);
-                    cursor: pointer;
-                    transition: all 0.2s;
-                    font-family: 'Plus Jakarta Sans', sans-serif;
-                    white-space: nowrap;
-                }
-                .nnl-logout-btn:hover {
-                    color: #fff;
-                    background: rgba(239,68,68,0.2);
-                    border-color: rgba(239,68,68,0.4);
-                    box-shadow: 0 0 16px rgba(239,68,68,0.2);
-                }
-
-                /* ── Testing Banner ── */
-                .nnl-test-banner {
-                    background: linear-gradient(90deg, #7f1d1d, #991b1b, #7f1d1d);
-                    color: rgba(255,255,255,0.9);
-                    text-align: center;
-                    padding: 6px 0;
-                    font-size: 0.72rem;
-                    font-weight: 700;
-                    letter-spacing: 0.15em;
-                    text-transform: uppercase;
-                    border-bottom: 1px solid rgba(239,68,68,0.3);
-                }
-
-                /* ── Main content ── */
-                .nnl-main {
-                    flex-grow: 1;
-                }
-
-                /* ── Bottom nav (mobile) ── */
-                .nnl-bottom-nav {
-                    position: fixed;
-                    bottom: 0;
-                    left: 0;
-                    right: 0;
-                    z-index: 50;
-                    height: 68px;
-                    background: #161616;
-                    border-top: 1px solid rgba(255,255,255,0.08);
-                    display: grid;
-                    grid-template-columns: repeat(3, 1fr);
-                }
-                @media (min-width: 640px) {
-                    .nnl-bottom-nav { display: none; }
-                }
-                .nnl-bottom-link {
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    justify-content: center;
-                    gap: 3px;
-                    text-decoration: none;
-                    position: relative;
-                    transition: background 0.2s;
-                    color: rgba(255,255,255,0.35);
-                }
-                .nnl-bottom-link:active { background: rgba(255,255,255,0.03); }
-                .nnl-bottom-link.active {
-                    color: #ff8c00;
-                }
-                .nnl-bottom-link.active::before {
-                    content: '';
-                    position: absolute;
-                    top: 0;
-                    left: 50%;
-                    transform: translateX(-50%);
-                    width: 36px;
-                    height: 2px;
-                    background: linear-gradient(90deg, #ff8c00, #ff6a00);
-                    border-radius: 0 0 4px 4px;
-                }
-                .nnl-bottom-icon-wrap {
-                    width: 36px;
-                    height: 28px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    border-radius: 8px;
-                    transition: all 0.2s;
-                }
-                .nnl-bottom-link.active .nnl-bottom-icon-wrap {
-                    background: rgba(255,140,0,0.12);
-                }
-                .nnl-bottom-label {
-                    font-size: 0.65rem;
-                    font-weight: 600;
-                    letter-spacing: 0.02em;
-                }
-
-                /* ── Footer ── */
-                .nnl-footer {
-                    display: none;
-                    background: #0a0a0a;
-                    border-top: 1px solid rgba(255,255,255,0.05);
-                    padding: 14px 0;
-                    text-align: center;
-                    font-size: 0.7rem;
-                    color: rgba(255,255,255,0.2);
-                    font-weight: 500;
-                }
-                @media (min-width: 640px) {
-                    .nnl-footer { display: block; }
-                }
-                .nnl-footer-brand {
-                    color: rgba(255,140,0,0.5);
-                    font-weight: 700;
-                }
-            `}</style>
-
             <div className="nnl-root">
 
                 {/* ── Profile Incomplete Alert ── */}
                 {isProfileIncomplete && (
                     <div className="nnl-profile-alert">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0zm-9 3.75h.008v.008H12v-.008z" />
-                        </svg>
                         Mohon lengkapi Nama, WhatsApp, Latitude, dan Longitude Anda untuk melanjutkan.
                     </div>
                 )}
@@ -536,11 +220,55 @@ export default function AuthenticatedLayout({ children }) {
                             </Link>
                         </nav>
 
-                        {/* Logout */}
-                        <button onClick={handleLogout} type="button" className="nnl-logout-btn">
-                            <LogoutIcon />
-                            <span>Logout</span>
-                        </button>
+                        {/* Theme + Logout */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <div className="nnl-theme-wrap">
+                                <button
+                                    onClick={() => setIsThemeMenuOpen(!isThemeMenuOpen)}
+                                    className="nnl-theme-btn"
+                                    aria-label="Switch Theme"
+                                >
+                                    {theme === 'light' && <Sun size={16} />}
+                                    {theme === 'dark' && <Moon size={16} />}
+                                    {theme === 'system' && <Laptop size={16} />}
+                                    <ChevronDown size={12} style={{ opacity: 0.5 }} />
+                                </button>
+
+                                {isThemeMenuOpen && (
+                                    <>
+                                        <div
+                                            style={{ position: 'fixed', inset: 0, zIndex: 55 }}
+                                            onClick={() => setIsThemeMenuOpen(false)}
+                                        />
+                                        <div className="nnl-theme-menu">
+                                            <button
+                                                onClick={() => { toggleTheme('light'); setIsThemeMenuOpen(false); }}
+                                                className={`nnl-theme-item ${theme === 'light' ? 'active' : ''}`}
+                                            >
+                                                <Sun size={14} /> Terang (Light)
+                                            </button>
+                                            <button
+                                                onClick={() => { toggleTheme('dark'); setIsThemeMenuOpen(false); }}
+                                                className={`nnl-theme-item ${theme === 'dark' ? 'active' : ''}`}
+                                            >
+                                                <Moon size={14} /> Gelap (Dark)
+                                            </button>
+                                            <button
+                                                onClick={() => { toggleTheme('system'); setIsThemeMenuOpen(false); }}
+                                                className={`nnl-theme-item ${theme === 'system' ? 'active' : ''}`}
+                                            >
+                                                <Laptop size={14} /> Sistem (Auto)
+                                            </button>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+
+                            <button onClick={handleLogout} type="button" className="nnl-logout-btn">
+                                <LogoutIcon />
+                                <span className="nnl-logout-text">Logout</span>
+                            </button>
+                        </div>
 
                     </div>
                 </header>

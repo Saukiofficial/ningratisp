@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Head, useForm, Link } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-
+import './Payments.css';
 
 const CreditCardIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -64,7 +64,6 @@ export default function Pembayaran({ tagihan }) {
         <AuthenticatedLayout>
             <Head title={`Bayar Tagihan ${tagihan.bulan}`} />
 
-
             <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 py-8">
                 <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center text-white">
@@ -77,31 +76,31 @@ export default function Pembayaran({ tagihan }) {
                 </div>
             </div>
 
-            <div className="py-8 bg-gray-50 min-h-screen">
+            <div className="py-8 pay-root">
                 <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 -mt-4 relative z-10">
 
 
-                    <div className="bg-white rounded-2xl shadow-xl border border-gray-100 mb-6 overflow-hidden">
-                        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-gray-100">
+                    <div className="pay-card mb-6">
+                        <div className="pay-header">
                             <div className="flex items-center space-x-3">
                                 <div className="bg-blue-100 text-blue-600 p-2 rounded-xl">
                                     <CalendarIcon />
                                 </div>
                                 <div>
-                                    <h3 className="text-lg font-semibold text-gray-900">Detail Tagihan</h3>
-                                    <p className="text-sm text-gray-600">Bulan <strong>{tagihan.bulan}</strong></p>
+                                    <h3 className="pay-title text-lg">Detail Tagihan</h3>
+                                    <p className="pay-sub">Bulan <strong>{tagihan.bulan}</strong></p>
                                 </div>
                             </div>
                         </div>
 
                         <div className="p-6">
-                            <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-6">
+                            <div className="bg-green-500/10 border border-green-500/20 rounded-2xl p-6">
                                 <div className="text-center">
-                                    <p className="text-sm font-medium text-green-700 mb-2">Total yang harus dibayar</p>
-                                    <div className="text-3xl font-bold text-green-800 mb-1">
+                                    <p className="text-sm font-medium text-green-600 mb-2">Total yang harus dibayar</p>
+                                    <div className="text-3xl font-bold text-green-600 mb-1">
                                         {formatRupiah(tagihan.jumlah + tagihan.denda)}
                                     </div>
-                                    <div className="flex items-center justify-center space-x-2 text-xs text-green-600">
+                                    <div className="flex items-center justify-center space-x-2 text-xs text-green-600 opacity-70">
                                         <ShieldCheckIcon />
                                         <span>Pembayaran aman dan terenkripsi</span>
                                     </div>
@@ -111,15 +110,15 @@ export default function Pembayaran({ tagihan }) {
                     </div>
 
 
-                    <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-                        <div className="bg-gradient-to-r from-gray-50 to-blue-50 px-6 py-4 border-b border-gray-100">
+                    <div className="pay-card">
+                        <div className="pay-header">
                             <div className="flex items-center space-x-3">
                                 <div className="bg-purple-100 text-purple-600 p-2 rounded-xl">
                                     <BanknotesIcon />
                                 </div>
                                 <div>
-                                    <h3 className="text-lg font-semibold text-gray-900">Pilih Metode Pembayaran</h3>
-                                    <p className="text-sm text-gray-600">Pilih cara pembayaran yang Anda inginkan</p>
+                                    <h3 className="pay-title text-lg">Pilih Metode Pembayaran</h3>
+                                    <p className="pay-sub">Pilih cara pembayaran yang Anda inginkan</p>
                                 </div>
                             </div>
                         </div>
@@ -128,7 +127,7 @@ export default function Pembayaran({ tagihan }) {
                             <div className="space-y-6">
 
                                 <div>
-                                    <label htmlFor="payment_type" className="block text-sm font-semibold text-gray-700 mb-3">
+                                    <label htmlFor="payment_type" className="pay-label">
                                         Jenis Pembayaran
                                     </label>
                                     <div className="relative">
@@ -136,7 +135,7 @@ export default function Pembayaran({ tagihan }) {
                                             id="payment_type"
                                             value={paymentType}
                                             onChange={(e) => setPaymentType(e.target.value)}
-                                            className="block w-full pl-4 pr-10 py-4 bg-gray-50 border-2 border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 text-base font-medium"
+                                            className="pay-input pr-10"
                                         >
                                             <option>Bank Transfer</option>
                                             <option>E-Wallet</option>
@@ -151,7 +150,7 @@ export default function Pembayaran({ tagihan }) {
 
 
                                 <div>
-                                    <label htmlFor="metode_pembayaran" className="block text-sm font-semibold text-gray-700 mb-3">
+                                    <label htmlFor="metode_pembayaran" className="pay-label">
                                         Pilih {paymentType === 'Bank Transfer' ? 'Bank' : 'E-Wallet'}
                                     </label>
                                     <div className="relative">
@@ -160,7 +159,7 @@ export default function Pembayaran({ tagihan }) {
                                             name="metode_pembayaran"
                                             value={data.metode_pembayaran}
                                             onChange={(e) => setData('metode_pembayaran', e.target.value)}
-                                            className="block w-full pl-4 pr-10 py-4 bg-gray-50 border-2 border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 text-base font-medium"
+                                            className="pay-input pr-10"
                                         >
                                             {paymentType === 'Bank Transfer' ? (
                                                 bankOptions.map(bank => <option key={bank} value={bank}>{bank}</option>)
@@ -177,15 +176,15 @@ export default function Pembayaran({ tagihan }) {
                                 </div>
 
                                 {errors.metode_pembayaran && (
-                                    <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+                                    <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4">
                                         <div className="flex items-center">
                                             <div className="flex-shrink-0">
-                                                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                                                <svg className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
                                                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                                                 </svg>
                                             </div>
                                             <div className="ml-3">
-                                                <p className="text-sm font-medium text-red-800">
+                                                <p className="text-sm font-medium text-red-500">
                                                     {errors.metode_pembayaran}
                                                 </p>
                                             </div>
@@ -228,7 +227,7 @@ export default function Pembayaran({ tagihan }) {
 
 
                     <div className="mt-6 text-center">
-                        <div className="inline-flex items-center space-x-2 text-sm text-gray-500">
+                        <div className="inline-flex items-center space-x-2 pay-footer-text opacity-70">
                             <ShieldCheckIcon />
                             <span>Pembayaran Anda dilindungi dengan enkripsi SSL 256-bit</span>
                         </div>
