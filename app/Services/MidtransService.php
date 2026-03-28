@@ -55,27 +55,28 @@ class MidtransService
         $token = base64_encode($this->credentials['server_key'] . ':');
         $driver = Http::withToken($token, 'Basic');
 
-        switch (strtolower($method)) {
-            case 'delete':
-                $driver = $driver->delete($url, $data);
-                break;
-            case 'put':
-                $driver = $driver->put($url, $data);
-                break;
-            case 'patch':
-                $driver = $driver->patch($url, $data);
-                break;
-            case 'get':
-                $driver = $driver->get($url, $data);
-                break;
-
-            default:
-                $dataToSend = empty($data) ? new \stdClass() : $data;
-                $driver = $driver->post($url, $dataToSend);
-                break;
-        }
-
         try {
+
+            switch (strtolower($method)) {
+                case 'delete':
+                    $driver = $driver->delete($url, $data);
+                    break;
+                case 'put':
+                    $driver = $driver->put($url, $data);
+                    break;
+                case 'patch':
+                    $driver = $driver->patch($url, $data);
+                    break;
+                case 'get':
+                    $driver = $driver->get($url, $data);
+                    break;
+
+                default:
+                    $dataToSend = empty($data) ? new \stdClass() : $data;
+                    $driver = $driver->post($url, $dataToSend);
+                    break;
+            }
+
             $response = $driver->json();
         } catch (Exception $e) {
             $response = [
