@@ -83,8 +83,8 @@ export default function Home({ packages }) {
             {/* --- FLASH MESSAGE ALERT (MODIFIED) --- */}
             {showAlert && (flash?.success || flash?.error) && (
                 <div className={`fixed top-24 left-1/2 transform -translate-x-1/2 z-50 w-11/12 max-w-lg p-4 rounded-xl shadow-2xl flex items-start gap-4 border-l-4 animate-fade-in-down transition-all duration-500 ease-in-out ${flash.success
-                        ? 'bg-green-50 border-green-500 text-green-800'
-                        : 'bg-red-50 border-red-500 text-red-800'
+                    ? 'bg-green-50 border-green-500 text-green-800'
+                    : 'bg-red-50 border-red-500 text-red-800'
                     }`}>
                     <div className={`p-2 rounded-full ${flash.success ? 'bg-green-200' : 'bg-red-200'}`}>
                         {flash.success ? <CheckCircle2 size={20} /> : <MapPin size={20} />}
@@ -158,7 +158,7 @@ export default function Home({ packages }) {
                         <div className="w-1/2 lg:w-1/2 flex items-center justify-center lg:justify-end relative">
                             <div className="absolute inset-0 bg-gradient-to-tr from-yellow-300/20 to-pink-300/20 rounded-full blur-3xl"></div>
                             <div className="relative w-full flex items-center justify-center lg:justify-end">
-                                <img src="/assets/img/wanita.png" alt="Person using fast internet" className="relative z-10 w-full max-w-[180px] sm:max-w-xs md:max-w-md lg:max-w-xl object-contain drop-shadow-2xl" style={{ height: 'auto' }} />
+                                <img src="/assets/img/wanita.webp" alt="Person using fast internet" className="relative z-10 w-full max-w-[180px] sm:max-w-xs md:max-w-md lg:max-w-xl object-contain drop-shadow-2xl" style={{ height: 'auto' }} />
                             </div>
                         </div>
                     </div>
