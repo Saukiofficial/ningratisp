@@ -40,10 +40,18 @@ class InvoiceController extends Controller
             $query->where('invoice_date', '<=', $request->end_date);
         }
 
-        $invoices = $query->with('discount')->latest('invoice_date')->paginate(10)->withQueryString();
+        $paginationLength = 10;
+        $invoicesQuery = $query->with('discount')->latest('invoice_date');
+        $unpaidQuery = (clone $invoicesQuery)->where('invoices.status', Invoices::STATUS_UNPAID);
+        $hasUnpaidInvoices = $unpaidQuery->exists();
+        $totalUnpaidInvoices = $unpaidQuery->count();
+        $invoices = $invoicesQuery->paginate($paginationLength)->withQueryString();
 
         return Inertia::render('Customer/Invoices/Index', [
             'tagihans' => $invoices,
+            'pagination_length' => $paginationLength,
+            'has_active_invoices' => $hasUnpaidInvoices,
+            'total_unpaid_invoices' => $totalUnpaidInvoices,
             'filters' => $request->only(['status', 'start_date', 'end_date']),
             'invoice_statuses' => [
                 'paid' => Invoices::STATUS_PAID,

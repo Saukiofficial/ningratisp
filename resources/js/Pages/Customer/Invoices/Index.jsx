@@ -54,9 +54,8 @@ const WarningIcon = () => (
     </svg>
 );
 
-export default function Tagihan({ tagihans, filters, invoice_statuses }) {
+export default function Tagihan({ tagihans, filters, invoice_statuses, pagination_length, has_active_invoices, total_unpaid_invoices }) {
     const { flash } = usePage().props;
-    const totalBelumLunas = tagihans.total > 0 ? tagihans.data.filter(t => t.status === invoice_statuses.unpaid).length : 0;
 
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [filterState, setFilterState] = useState({
@@ -98,13 +97,14 @@ export default function Tagihan({ tagihans, filters, invoice_statuses }) {
                             <div className="inv-alert-text">{flash.success}</div>
                         </div>
                     )}
-                    {totalBelumLunas > 0 && (
+
+                    {has_active_invoices && (
                         <div className="inv-alert warning">
                             <div className="inv-alert-icon"><WarningIcon /></div>
-                            <div className="inv-alert-text">Anda memiliki {totalBelumLunas} tagihan yang belum dibayar.</div>
+                            <div className="inv-alert-text">Anda memiliki {total_unpaid_invoices} tagihan yang belum dibayar.</div>
                         </div>
                     )}
-                    {totalBelumLunas === 0 && !flash.success && tagihans.total > 0 && (
+                    {!has_active_invoices && !flash.success && tagihans.total > 0 && (
                         <div className="inv-alert info">
                             <div className="inv-alert-icon"><CheckIcon /></div>
                             <div className="inv-alert-text">Semua tagihan Anda sudah lunas!</div>
@@ -244,7 +244,7 @@ export default function Tagihan({ tagihans, filters, invoice_statuses }) {
                     </div>
 
                     {/* ── Pagination ── */}
-                    {tagihans.links && tagihans.links.length > 3 && (
+                    {tagihans.links && tagihans.links.length > pagination_length && (
                         <div className="inv-pagination">
                             {tagihans.links.map((link, i) => (
                                 link.url ? (
