@@ -56,9 +56,24 @@ export default function Show({ invoice }) {
         style: 'currency', currency: 'IDR', minimumFractionDigits: 0
     }).format(number);
 
-    const formatDate = (dateString) => {
+    const formatDate = (dateString, showTime = true) => {
         if (!dateString) return '-';
-        return new Date(dateString).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
+
+        const date = new Date(dateString);
+
+        const datePart = date.toLocaleDateString('id-ID', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric'
+        });
+
+        if (!showTime) return datePart;
+
+        const pad = (n) => String(n).padStart(2, '0');
+
+        const timePart = `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+
+        return `${datePart}, ${timePart}`;
     };
 
     const isPaid = invoice.status === 'paid';
@@ -394,10 +409,10 @@ export default function Show({ invoice }) {
                         </div>
                         <div className="sh-dates">
                             <div className="sh-date-chip">
-                                <CalendarIcon /> Tanggal Invoice: <span>{formatDate(invoice.invoice_date)}</span>
+                                <CalendarIcon /> Tanggal Invoice: <span>{formatDate(invoice.invoice_date, false)}</span>
                             </div>
                             <div className="sh-date-chip">
-                                <CalendarIcon /> Jatuh Tempo: <span>{formatDate(invoice.due_date)}</span>
+                                <CalendarIcon /> Jatuh Tempo: <span>{formatDate(invoice.due_date, false)}</span>
                             </div>
                         </div>
                     </div>

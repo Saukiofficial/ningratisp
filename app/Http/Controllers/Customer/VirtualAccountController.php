@@ -5,70 +5,37 @@ namespace App\Http\Controllers\Customer;
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use App\Models\VirtualAccount;
+use App\Services\Customer\VirtualAccountStatusServices;
 use App\Services\MidtransService;
 use Illuminate\Http\Request;
 
 class VirtualAccountController extends Controller
 {
-    public function cancel(VirtualAccount $virtualAccount, MidtransService $midtransService)
+    public function cancel(VirtualAccount $virtualAccount, VirtualAccountStatusServices $statusService)
     {
-        $response = $midtransService->cancelVirtualAccount($virtualAccount->transaction_id, $virtualAccount->invoice->invoice_number);
+        $result = $statusService->cancel($virtualAccount);
 
-        if (isset($response['status_code']) && $response['status_code'] == 200) {
-            $virtualAccount->status = VirtualAccount::STATUS_CANCEL;
-            $virtualAccount->save();
-
-            return to_route('invoices.show', $virtualAccount->invoice_id)->with('success', 'Pembayaran berhasil dibatalkan.');
-        } elseif (isset($response['status_code']) && $response['status_code'] == 412) {
-            $virtualAccount->status = VirtualAccount::STATUS_EXPIRE;
-            $virtualAccount->save();
-
-            return to_route('invoices.show', $virtualAccount->invoice_id)->with('success', 'Pembayaran telah kadaluarsa.');
+        if ($result['status'] === 'failed') {
+            return back()->with('error', $result['message']);
         }
 
-        return back()->with('error', 'Gagal membatalkan pembayaran.');
+        return to_route('customer.invoices.show', $result['virtualAccount']->invoice_id)
+            ->with('success', $result['message']);
     }
 
-    public function checkStatus(VirtualAccount $virtualAccount, MidtransService $midtransService)
+    public function checkStatus(VirtualAccount $virtualAccount, VirtualAccountStatusServices $statusService)
     {
-        $response = $midtransService->getStatusVirtualAccount($virtualAccount->transaction_id);
+        $result = $statusService->syncStatus($virtualAccount);
 
-        if (isset($response['status_code']) && $response['status_code'] == 200) {
-            $virtualAccount->status = $response['transaction_status'];
-            $virtualAccount->save();
-
-            if (!in_array($virtualAccount->status, [VirtualAccount::STATUS_PENDING, VirtualAccount::STATUS_SETTLEMENT])) {
-                return to_route('invoices.show', $virtualAccount->invoice_id)->with('success', 'Status pembayaran berhasil diperbarui.');
-            } elseif ($virtualAccount->status == VirtualAccount::STATUS_SETTLEMENT) {
-                $this->handlePaymentFromCheckStatus($virtualAccount, $response);
-                return to_route('invoices.show', $virtualAccount->invoice_id)->with('success', 'Pembayaran berhasil dilakukan.');
-            }
-        } elseif (isset($response['status_code']) && $response['status_code'] == 407) {
-            $virtualAccount->status = VirtualAccount::STATUS_EXPIRE;
-            $virtualAccount->save();
-
-            return to_route('invoices.show', $virtualAccount->invoice_id)->with('success', 'Pembayaran telah kadaluarsa.');
+        if ($result['status'] === 'failed') {
+            return back()->with('error', $result['message']);
         }
 
-        return back()->with('success', 'Status pembayaran berhasil diperbarui.');
-    }
+        if ($result['status'] === 'unchanged') {
+            return back()->with('success', $result['message']);
+        }
 
-    private function handlePaymentFromCheckStatus(VirtualAccount $va, $data): ?Payment
-    {
-        $invoice = $va->invoice;
-        $customer = $invoice->customerPackage->customer;
-
-        $payment = app(\App\Services\PaymentAutoService::class)->recordCallbackIncomingPaymentWithAllocations(
-            $customer,
-            (float) ($data['gross_amount'] ?? 0),
-            ($va->total_amount - $va->fee_amount ?? 0),
-            $data['transaction_id'] ?? null,
-            $va->paymentMethod,
-            $invoice
-        );
-
-        app(\App\Services\ReceivableService::class)->syncForInvoice($invoice);
-
-        return $payment;
+        return to_route('customer.invoices.show', $result['virtualAccount']->invoice_id)
+            ->with('success', $result['message']);
     }
 }

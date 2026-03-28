@@ -24,15 +24,8 @@ class InvoiceController extends Controller
      */
     public function index(Request $request)
     {
-        $user = auth()->user();
-        $pendingVA = VirtualAccount::whereHas('invoice.customerPackage.customer', function ($query) use ($user) {
-            $query->where('id', $user->id);
-        })->where('status', 'pending')->where('expired_at', '>', now())->first();
-
-        if ($pendingVA) {
-            return to_route('pending-payment.show', $pendingVA);
-        }
-
+        /** @var \App\Models\Customer */
+        $user = auth('customers')->user();
         $query = $user->invoices();
 
         if ($request->filled('status')) {
@@ -114,7 +107,7 @@ class InvoiceController extends Controller
     public function checkout(Invoices $invoice)
     {
         if ($invoice->status === Invoices::STATUS_PAID) {
-            return to_route('invoices.show', $invoice)->with('error', 'Invoice already paid.');
+            return to_route('customer.invoices.show', $invoice)->with('error', 'Invoice already paid.');
         }
 
         $paymentMethods = PaymentMethod::with('fee')
@@ -170,7 +163,7 @@ class InvoiceController extends Controller
     public function pay(Request $request, Invoices $invoice, MidtransService $midtransService)
     {
         if ($invoice->status === Invoices::STATUS_PAID) {
-            return to_route('invoices.show', $invoice)->with('error', 'Invoice already paid.');
+            return to_route('customer.invoices.show', $invoice)->with('error', 'Invoice already paid.');
         }
 
         $paymentMethod = $request->input('payment_method');
@@ -227,7 +220,7 @@ class InvoiceController extends Controller
 
             $va->save();
 
-            return to_route('pending-payment.show', $va)->with('success', 'Virtual Account created successfully.');
+            return to_route('customer.pending-payment.show', $va)->with('success', 'Virtual Account created successfully.');
         } else {
             return to_route('invoices.checkout', $invoice)->with('error', 'Failed to create Virtual Account (' . $response['status_code'] . ').');
         }

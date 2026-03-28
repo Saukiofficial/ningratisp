@@ -280,9 +280,9 @@ export default function PendingPayment({ virtualAccount, flash }) {
                                             <p className="text-gray-600">Total Pembayaran</p>
                                             <p className="text-3xl font-bold text-blue-600">{formatRupiah(virtualAccount.total_amount)}</p>
                                         </div>
-                                        <img src={route('customer.qris.proxy', virtualAccount.transaction_id)} alt="QRIS Code" className="mx-auto mt-4" />
+                                        <img src={route('qris.proxy', virtualAccount.transaction_id)} alt="QRIS Code" className="mx-auto mt-4" />
                                         <button
-                                            onClick={() => downloadQris(route('customer.qris.proxy', virtualAccount.transaction_id), virtualAccount.invoice.invoice_number)}
+                                            onClick={() => downloadQris(route('qris.proxy', virtualAccount.transaction_id), virtualAccount.invoice.invoice_number)}
                                             className="mt-4 inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 disabled:opacity-50"
                                         >
                                             Unduh QRIS

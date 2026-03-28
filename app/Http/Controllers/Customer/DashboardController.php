@@ -12,18 +12,10 @@ use Inertia\Inertia;
 
 class DashboardController extends Controller
 {
-    public function __invoke()
+    public function __invoke(Request $request)
     {
-        $user = auth()->user();
-
-        $pendingVA = VirtualAccount::whereHas('invoice.customerPackage.customer', function ($query) use ($user) {
-            $query->where('id', $user->id);
-        })->where('status', 'pending')->where('expired_at', '>', now())->first();
-
-        if ($pendingVA) {
-            return to_route('pending-payment.show', $pendingVA);
-        }
-
+        /** @var \App\Models\Customer */
+        $user = auth('customers')->user();
         $customers = [
             'id' => 1,
             'nama' => $user->full_name ?? $user->billing_number,
@@ -41,7 +33,7 @@ class DashboardController extends Controller
             'pelanggan' => $customers,
             'statusLangganan' => $unpaidInvoices->isEmpty(),
             'unpaid_invoices' => $unpaidInvoices,
-            'pending_va' => $pendingVA,
+            'pending_va' => $request->attributes->get('pending_va'),
             'isolir_at' => $user->isolir_at ? Date::parse($user->isolir_at)->format('d F Y, H:i:s') : null
         ]);
     }

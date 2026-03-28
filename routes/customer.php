@@ -8,6 +8,7 @@ use App\Http\Controllers\Customer\DiscountController;
 use App\Http\Controllers\Customer\InvoiceController;
 use App\Http\Controllers\Customer\PendingPaymentController;
 use App\Http\Controllers\Customer\VirtualAccountController;
+use App\Http\Middleware\CheckPendingVirtualAccount;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -21,14 +22,12 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('customer')->group(function () {
 
-    Route::get('/', fn () => to_route('login'));
+    Route::get('/', fn() => to_route('login'));
 
     Route::get('/login', [AuthController::class, 'index'])->name('login');
     Route::post('/login', [AuthController::class, 'authProcess'])->name('login.auth');
 
-    // test view
     Route::group(['middleware' => 'auth:customers', 'as' => 'customer.'], function () {
-        Route::get('/dashboard', DashboardController::class)->name('dashboard');
         Route::get('/invoices/{invoice}/checkout', [InvoiceController::class, 'checkout'])->name('invoices.checkout');
         Route::post('invoices/{invoice}/pay', [InvoiceController::class, 'pay'])->name('invoices.pay');
         Route::post('invoices/{invoice}/discount', [InvoiceController::class, 'applyDiscount'])->name('invoices.apply-discount');
@@ -41,9 +40,14 @@ Route::prefix('customer')->group(function () {
         Route::get('pending-payment/{virtualAccount}', PendingPaymentController::class)->name('pending-payment.show');
         Route::post('/virtual-accounts/{virtualAccount}/cancel', [VirtualAccountController::class, 'cancel'])->name('virtual-accounts.cancel');
         Route::post('/virtual-accounts/{virtualAccount}/check-status', [VirtualAccountController::class, 'checkStatus'])->name('virtual-accounts.check-status');
-        Route::resource('/invoices', InvoiceController::class);
 
-        Route::get('/account', [AccountController::class, 'edit'])->name('account.edit');
+        // check pending VA page
+        Route::middleware(CheckPendingVirtualAccount::class)->group(function () {
+            Route::get('/dashboard', DashboardController::class)->name('dashboard');
+            Route::resource('/invoices', InvoiceController::class);
+            Route::get('/account', [AccountController::class, 'edit'])->name('account.edit');
+        });
+
         Route::put('/account', [AccountController::class, 'update'])->name('account.update');
         Route::put('/account/password', [AccountController::class, 'updatePassword'])->name('account.password.update');
 
