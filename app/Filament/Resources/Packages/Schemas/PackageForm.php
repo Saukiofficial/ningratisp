@@ -45,6 +45,12 @@ class PackageForm
                             ->maxLength(65535)
                             ->columnSpanFull(),
                         Toggle::make('is_active')
+                            ->label('Active')
+                            ->default(true)
+                            ->required(),
+                        Toggle::make('is_purchasable')
+                            ->label('Purchaseable')
+                            ->default(true)
                             ->required(),
                     ]),
             ]);

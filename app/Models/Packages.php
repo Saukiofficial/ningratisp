@@ -10,6 +10,10 @@ class Packages extends BaseModel
 {
     use HasFactory;
 
+    protected $casts = [
+        'is_purchasable' => 'boolean'
+    ];
+
     public function customerPackages(): HasMany
     {
         return $this->hasMany(CustomerPackages::class);
