@@ -36,6 +36,13 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        /** @var \App\Models\Customer */
+        $user = auth('customers')->user();
+        if ($user) {
+            $user->setAttribute('is_customer', true);
+            $user = $user?->only('id', 'username', 'email', 'phone', 'full_name', 'latitude', 'longitude', 'address', 'is_customer');
+        }
+
         return [
             ...parent::share($request),
             // TAMBAHKAN BAGIAN INI AGAR FLASH MESSAGE TERKIRIM
@@ -44,7 +51,7 @@ class HandleInertiaRequests extends Middleware
                 'error' => fn() => $request->session()->get('error'),
             ],
             'appEnv' => app()->environment(),
-            'auth.user' => Auth::user()?->only('id', 'username', 'email'),
+            'auth.user' => $user,
         ];
     }
 }

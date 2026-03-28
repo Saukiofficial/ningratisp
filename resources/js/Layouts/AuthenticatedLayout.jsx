@@ -35,12 +35,68 @@ const WifiLogoIcon = () => (
 
 export default function AuthenticatedLayout({ children }) {
     const { url, props } = usePage();
-    const { appEnv } = props;
+    const { appEnv, auth } = props;
+    const user = auth.user;
     useFlash();
+
+    const [showOnboarding, setShowOnboarding] = React.useState(false);
+    const [onboardingStep, setOnboardingStep] = React.useState(0);
+
+    const isProfileIncomplete = user?.is_customer && (!user?.full_name || !user?.phone || !user?.latitude || !user?.longitude);
+    const isAccountPage = url.startsWith('/account') || url.startsWith('/customer/account');
+
+    React.useEffect(() => {
+        if (isProfileIncomplete && !isAccountPage) {
+            router.get(route('customer.account.edit'));
+        }
+    }, [isProfileIncomplete, isAccountPage]);
+
+    React.useEffect(() => {
+        const hasSeenOnboarding = localStorage.getItem(`onboarding_seen_${user?.id}`);
+        if (!hasSeenOnboarding && user?.is_customer && !isProfileIncomplete) {
+            setShowOnboarding(true);
+        }
+    }, [user, isProfileIncomplete]);
+
+    const completeOnboarding = () => {
+        localStorage.setItem(`onboarding_seen_${user?.id}`, 'true');
+        setShowOnboarding(false);
+    };
 
     const handleLogout = (e) => {
         e.preventDefault();
         router.post((route('customer.logout')));
+    };
+
+    const onboardingSteps = [
+        {
+            title: "Selamat Datang di Ningrat Net!",
+            content: "Terima kasih telah melengkapi profil Anda. Mari kita lihat sekilas fitur utama aplikasi ini.",
+            target: null
+        },
+        {
+            title: "Dashboard Utama",
+            content: "Di sini Anda bisa melihat status koneksi, paket aktif, dan ringkasan tagihan Anda.",
+            target: "dashboard"
+        },
+        {
+            title: "Menu Tagihan",
+            content: "Klik di sini untuk melihat riwayat tagihan dan melakukan pembayaran dengan berbagai metode.",
+            target: "tagihan"
+        },
+        {
+            title: "Pengaturan Akun",
+            content: "Kelola informasi kontak, alamat, lokasi pemasangan, dan ganti password di menu ini.",
+            target: "akun"
+        }
+    ];
+
+    const nextStep = () => {
+        if (onboardingStep < onboardingSteps.length - 1) {
+            setOnboardingStep(onboardingStep + 1);
+        } else {
+            completeOnboarding();
+        }
     };
 
     return (
@@ -58,6 +114,113 @@ export default function AuthenticatedLayout({ children }) {
                 }
                 @media (min-width: 640px) {
                     .nnl-root { padding-bottom: 0; }
+                }
+
+                /* ── Profile Incomplete Alert ── */
+                .nnl-profile-alert {
+                    background: linear-gradient(90deg, #ff8c00, #ff6a00);
+                    color: white;
+                    text-align: center;
+                    padding: 10px 16px;
+                    font-size: 0.85rem;
+                    font-weight: 700;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 10px;
+                    box-shadow: 0 4px 12px rgba(255,110,0,0.3);
+                    z-index: 100;
+                    position: relative;
+                }
+                .nnl-profile-alert svg { width: 18px; height: 18px; }
+
+                /* ── Onboarding Overlay ── */
+                .nnl-onboard-overlay {
+                    position: fixed;
+                    inset: 0;
+                    background: rgba(0,0,0,0.85);
+                    z-index: 200;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 20px;
+                    backdrop-filter: blur(4px);
+                }
+                .nnl-onboard-card {
+                    background: #1a1a1a;
+                    border: 1px solid rgba(255,140,0,0.3);
+                    border-radius: 24px;
+                    width: 100%;
+                    max-width: 400px;
+                    padding: 32px;
+                    text-align: center;
+                    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+                    position: relative;
+                    overflow: hidden;
+                }
+                .nnl-onboard-card::before {
+                    content: '';
+                    position: absolute;
+                    top: 0; left: 0; right: 0; height: 1px;
+                    background: linear-gradient(90deg, transparent, #ff8c00, transparent);
+                }
+                .nnl-onboard-icon {
+                    width: 64px; height: 64px;
+                    background: rgba(255,140,0,0.1);
+                    color: #ff8c00;
+                    border-radius: 20px;
+                    display: flex; align-items: center; justify-content: center;
+                    margin: 0 auto 20px;
+                }
+                .nnl-onboard-title {
+                    font-family: 'Sora', sans-serif;
+                    font-size: 1.25rem;
+                    font-weight: 800;
+                    color: white;
+                    margin-bottom: 12px;
+                }
+                .nnl-onboard-content {
+                    font-size: 0.95rem;
+                    color: rgba(255,255,255,0.6);
+                    line-height: 1.6;
+                    margin-bottom: 24px;
+                }
+                .nnl-onboard-btn {
+                    background: linear-gradient(135deg, #ff8c00, #ff6a00);
+                    color: white;
+                    border: none;
+                    border-radius: 12px;
+                    padding: 12px 24px;
+                    font-weight: 700;
+                    font-size: 0.9rem;
+                    cursor: pointer;
+                    width: 100%;
+                    transition: transform 0.2s, box-shadow 0.2s;
+                }
+                .nnl-onboard-btn:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 8px 20px rgba(255,110,0,0.4);
+                }
+                .nnl-onboard-steps {
+                    display: flex; justify-content: center; gap: 6px; margin-top: 20px;
+                }
+                .nnl-onboard-dot {
+                    width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.1);
+                }
+                .nnl-onboard-dot.active {
+                    background: #ff8c00; width: 16px; border-radius: 3px;
+                }
+
+                /* Highlight animation */
+                @keyframes highlight-pulse {
+                    0% { box-shadow: 0 0 0 0 rgba(255,140,0,0.7); }
+                    70% { box-shadow: 0 0 0 10px rgba(255,140,0,0); }
+                    100% { box-shadow: 0 0 0 0 rgba(255,140,0,0); }
+                }
+                .nnl-highlight {
+                    animation: highlight-pulse 2s infinite;
+                    border-color: #ff8c00 !important;
+                    background: rgba(255,140,0,0.1) !important;
                 }
 
                 /* ── Header ── */
@@ -287,6 +450,39 @@ export default function AuthenticatedLayout({ children }) {
 
             <div className="nnl-root">
 
+                {/* ── Profile Incomplete Alert ── */}
+                {isProfileIncomplete && (
+                    <div className="nnl-profile-alert">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0zm-9 3.75h.008v.008H12v-.008z" />
+                        </svg>
+                        Mohon lengkapi Nama, WhatsApp, Latitude, dan Longitude Anda untuk melanjutkan.
+                    </div>
+                )}
+
+                {/* ── Onboarding Overlay ── */}
+                {showOnboarding && (
+                    <div className="nnl-onboard-overlay">
+                        <div className="nnl-onboard-card">
+                            <div className="nnl-onboard-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" style={{ width: 32, height: 32 }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
+                                </svg>
+                            </div>
+                            <h3 className="nnl-onboard-title">{onboardingSteps[onboardingStep].title}</h3>
+                            <p className="nnl-onboard-content">{onboardingSteps[onboardingStep].content}</p>
+                            <button onClick={nextStep} className="nnl-onboard-btn">
+                                {onboardingStep === onboardingSteps.length - 1 ? 'Mulai Sekarang' : 'Lanjut'}
+                            </button>
+                            <div className="nnl-onboard-steps">
+                                {onboardingSteps.map((_, i) => (
+                                    <div key={i} className={`nnl-onboard-dot ${i === onboardingStep ? 'active' : ''}`} />
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {/* ── Header ── */}
                 <header className="nnl-header">
                     {appEnv !== 'production' && (
@@ -315,22 +511,25 @@ export default function AuthenticatedLayout({ children }) {
                         {/* Desktop Nav */}
                         <nav className="nnl-nav">
                             <Link
+                                id="nav-dashboard"
                                 href={route('customer.dashboard')}
-                                className={`nnl-nav-link ${url.startsWith('/dashboard') ? 'active' : ''}`}
+                                className={`nnl-nav-link ${url.startsWith('/dashboard') ? 'active' : ''} ${showOnboarding && onboardingSteps[onboardingStep].target === 'dashboard' ? 'nnl-highlight' : ''}`}
                             >
                                 <HomeIcon isActive={url.startsWith('/dashboard')} />
                                 Dashboard
                             </Link>
                             <Link
+                                id="nav-tagihan"
                                 href={route('customer.invoices.index')}
-                                className={`nnl-nav-link ${url.startsWith('/tagihan') ? 'active' : ''}`}
+                                className={`nnl-nav-link ${url.startsWith('/tagihan') ? 'active' : ''} ${showOnboarding && onboardingSteps[onboardingStep].target === 'tagihan' ? 'nnl-highlight' : ''}`}
                             >
                                 <DocumentIcon isActive={url.startsWith('/tagihan')} />
                                 Tagihan
                             </Link>
                             <Link
+                                id="nav-akun"
                                 href={route('customer.account.edit')}
-                                className={`nnl-nav-link ${url.startsWith('/account') ? 'active' : ''}`}
+                                className={`nnl-nav-link ${url.startsWith('/account') ? 'active' : ''} ${showOnboarding && onboardingSteps[onboardingStep].target === 'akun' ? 'nnl-highlight' : ''}`}
                             >
                                 <AccountIcon isActive={url.startsWith('/account')} />
                                 Akun
@@ -351,15 +550,27 @@ export default function AuthenticatedLayout({ children }) {
 
                 {/* ── Bottom Nav (Mobile) ── */}
                 <div className="nnl-bottom-nav">
-                    <Link href={route('customer.dashboard')} className={`nnl-bottom-link ${url.startsWith('/dashboard') ? 'active' : ''}`}>
+                    <Link
+                        id="mob-dashboard"
+                        href={route('customer.dashboard')}
+                        className={`nnl-bottom-link ${url.startsWith('/dashboard') ? 'active' : ''} ${showOnboarding && onboardingSteps[onboardingStep].target === 'dashboard' ? 'nnl-highlight' : ''}`}
+                    >
                         <div className="nnl-bottom-icon-wrap"><HomeIcon isActive={url.startsWith('/dashboard')} /></div>
                         <span className="nnl-bottom-label">Dashboard</span>
                     </Link>
-                    <Link href={route('customer.invoices.index')} className={`nnl-bottom-link ${url.startsWith('/tagihan') ? 'active' : ''}`}>
+                    <Link
+                        id="mob-tagihan"
+                        href={route('customer.invoices.index')}
+                        className={`nnl-bottom-link ${url.startsWith('/tagihan') ? 'active' : ''} ${showOnboarding && onboardingSteps[onboardingStep].target === 'tagihan' ? 'nnl-highlight' : ''}`}
+                    >
                         <div className="nnl-bottom-icon-wrap"><DocumentIcon isActive={url.startsWith('/tagihan')} /></div>
                         <span className="nnl-bottom-label">Tagihan</span>
                     </Link>
-                    <Link href={route('customer.account.edit')} className={`nnl-bottom-link ${url.startsWith('/account') ? 'active' : ''}`}>
+                    <Link
+                        id="mob-akun"
+                        href={route('customer.account.edit')}
+                        className={`nnl-bottom-link ${url.startsWith('/account') ? 'active' : ''} ${showOnboarding && onboardingSteps[onboardingStep].target === 'akun' ? 'nnl-highlight' : ''}`}
+                    >
                         <div className="nnl-bottom-icon-wrap"><AccountIcon isActive={url.startsWith('/account')} /></div>
                         <span className="nnl-bottom-label">Akun</span>
                     </Link>

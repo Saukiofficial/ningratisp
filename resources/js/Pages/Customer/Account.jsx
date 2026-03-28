@@ -54,6 +54,13 @@ export default function Account({ customer }) {
     const [isEditing, setIsEditing] = React.useState(false);
     const [passwordEditing, setPasswordEditing] = React.useState(false);
 
+    // Auto-open edit mode if profile is incomplete
+    React.useEffect(() => {
+        if (!customer.full_name || !customer.whatsapp_number || !customer.latitude || !customer.longitude) {
+            setIsEditing(true);
+        }
+    }, [customer]);
+
     const { data, setData, put, errors, processing, recentlySuccessful } = useForm({
         email: customer.email || '',
         full_name: customer.full_name || '',
@@ -231,6 +238,7 @@ export default function Account({ customer }) {
                 }
                 .ac-input:focus { border-color: rgba(255,140,0,0.5); box-shadow: 0 0 0 3px rgba(255,140,0,0.07); }
                 .ac-input::placeholder { color: rgba(255,255,255,0.2); }
+                .ac-input.highlight-required { border-color: rgba(255,140,0,0.4); background: rgba(255,140,0,0.03); }
                 .ac-textarea {
                     width: 100%; background: #111; border: 1px solid rgba(255,255,255,0.1);
                     border-radius: 10px; padding: 10px 13px; font-size: 0.85rem; font-weight: 500;
@@ -361,10 +369,17 @@ export default function Account({ customer }) {
                             {/* ── Edit Mode ── */}
                             {isEditing && (
                                 <form onSubmit={submitAccount} className="ac-form">
+                                    {(!customer.full_name || !customer.whatsapp_number || !customer.latitude || !customer.longitude) && (
+                                        <div style={{ padding: '12px 16px', background: 'rgba(255,140,0,0.1)', border: '1px solid rgba(255,140,0,0.25)', borderRadius: '12px', fontSize: '0.8rem', color: '#ff8c00', fontWeight: '600', marginBottom: '4px' }}>
+                                            ⚠️ Mohon lengkapi data profil yang ditandai wajib (*) di bawah ini.
+                                        </div>
+                                    )}
+
                                     <div>
-                                        <label htmlFor="full_name" className="ac-field-label">Name</label>
-                                        <input id="full_name" type="full_name" required value={data.full_name} autoComplete="full_name"
-                                            onChange={e => setData('full_name', e.target.value)} className="ac-input" />
+                                        <label htmlFor="full_name" className="ac-field-label">Name <span style={{ color: '#ff8c00' }}>*</span></label>
+                                        <input id="full_name" type="text" required value={data.full_name} autoComplete="full_name"
+                                            onChange={e => setData('full_name', e.target.value)}
+                                            className={`ac-input ${!data.full_name ? 'highlight-required' : ''}`} />
                                         {errors.full_name && <div className="ac-field-error">{errors.full_name}</div>}
                                     </div>
 
@@ -376,10 +391,11 @@ export default function Account({ customer }) {
                                     </div>
 
                                     <div>
-                                        <label htmlFor="whatsapp_number" className="ac-field-label">Nomor WhatsApp</label>
-                                        <input id="whatsapp_number" type="text" value={data.whatsapp_number}
+                                        <label htmlFor="whatsapp_number" className="ac-field-label">Nomor WhatsApp <span style={{ color: '#ff8c00' }}>*</span></label>
+                                        <input id="whatsapp_number" type="text" required value={data.whatsapp_number}
                                             onChange={e => setData('whatsapp_number', e.target.value)}
-                                            placeholder="contoh: 6281234567890" className="ac-input" />
+                                            placeholder="contoh: 6281234567890"
+                                            className={`ac-input ${!data.whatsapp_number ? 'highlight-required' : ''}`} />
                                         <div className="ac-field-hint">Gunakan format internasional tanpa tanda +, contoh: 6281234567890.</div>
                                         {errors.whatsapp_number && <div className="ac-field-error">{errors.whatsapp_number}</div>}
                                     </div>
@@ -394,20 +410,22 @@ export default function Account({ customer }) {
                                     <div className="ac-field-grid">
                                         <div>
                                             <div className="ac-location-label-row">
-                                                <label htmlFor="latitude" className="ac-field-label" style={{ margin: 0 }}>Latitude</label>
+                                                <label htmlFor="latitude" className="ac-field-label" style={{ margin: 0 }}>Latitude <span style={{ color: '#ff8c00' }}>*</span></label>
                                                 <button type="button" onClick={() => getPosition()} className="ac-location-btn"
                                                     disabled={!isGeolocationAvailable || !isGeolocationEnabled}>
                                                     <LocationIcon /> Lokasi saya
                                                 </button>
                                             </div>
-                                            <input id="latitude" type="number" step="0.0000001" value={data.latitude}
-                                                onChange={e => setData('latitude', e.target.value)} className="ac-input" />
+                                            <input id="latitude" type="number" step="0.0000001" required value={data.latitude}
+                                                onChange={e => setData('latitude', e.target.value)}
+                                                className={`ac-input ${!data.latitude ? 'highlight-required' : ''}`} />
                                             {errors.latitude && <div className="ac-field-error">{errors.latitude}</div>}
                                         </div>
                                         <div>
-                                            <label htmlFor="longitude" className="ac-field-label">Longitude</label>
-                                            <input id="longitude" type="number" step="0.0000001" value={data.longitude}
-                                                onChange={e => setData('longitude', e.target.value)} className="ac-input" />
+                                            <label htmlFor="longitude" className="ac-field-label">Longitude <span style={{ color: '#ff8c00' }}>*</span></label>
+                                            <input id="longitude" type="number" step="0.0000001" required value={data.longitude}
+                                                onChange={e => setData('longitude', e.target.value)}
+                                                className={`ac-input ${!data.longitude ? 'highlight-required' : ''}`} />
                                             {errors.longitude && <div className="ac-field-error">{errors.longitude}</div>}
                                         </div>
                                     </div>
