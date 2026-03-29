@@ -20,6 +20,7 @@
         "@inertiajs/react": "^2.1.6",
         "@laravel/echo-react": "^2.2.3",
         "lucide-react": "^0.563.0",
+        "react-content-loader": "^7.1.2",
         "react-dom": "^19.1.1",
         "react-geolocated": "^4.4.0",
         "react-toastify": "^11.0.5",

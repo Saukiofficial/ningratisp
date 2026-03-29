@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { Head, Link, usePage, router } from '@inertiajs/react';
+import React, { useState, useEffect } from 'react';
+import { Head, Link, usePage, router, WhenVisible } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { route } from 'ziggy-js';
+import ContentLoader from 'react-content-loader';
 import './Index.css';
 
 const FilterIcon = () => (
@@ -9,6 +10,59 @@ const FilterIcon = () => (
         <path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z" />
     </svg>
 );
+
+const MobileSkeleton = () => {
+    const isDark = document.documentElement.classList.contains('dark');
+    const bgColor = isDark ? '#1a1a1a' : '#f1f5f9';
+    const fgColor = isDark ? '#262626' : '#e2e8f0';
+
+    return (
+        <div className="inv-mobile-card" style={{ cursor: 'default', borderStyle: 'none' }}>
+            <ContentLoader
+                speed={2}
+                width="100%"
+                height={100}
+                viewBox="0 0 340 100"
+                backgroundColor={bgColor}
+                foregroundColor={fgColor}
+                uniqueKey="mobile-inv-skeleton"
+            >
+                <rect x="0" y="0" rx="4" ry="4" width="120" height="14" />
+                <rect x="0" y="22" rx="6" ry="6" width="160" height="24" />
+                <rect x="240" y="0" rx="12" ry="12" width="100" height="28" />
+                <rect x="0" y="70" rx="1" ry="1" width="340" height="1" />
+                <rect x="220" y="82" rx="4" ry="4" width="120" height="12" />
+            </ContentLoader>
+        </div>
+    );
+};
+
+const TableSkeleton = () => {
+    const isDark = document.documentElement.classList.contains('dark');
+    const bgColor = isDark ? '#1a1a1a' : '#f1f5f9';
+    const fgColor = isDark ? '#262626' : '#e2e8f0';
+
+    return (
+        <tr style={{ cursor: 'default' }}>
+            <td colSpan="4" style={{ padding: 0 }}>
+                <ContentLoader
+                    speed={2}
+                    width="100%"
+                    height={60}
+                    viewBox="0 0 800 60"
+                    backgroundColor={bgColor}
+                    foregroundColor={fgColor}
+                    uniqueKey="table-inv-skeleton"
+                >
+                    <rect x="20" y="20" rx="4" ry="4" width="150" height="20" />
+                    <rect x="220" y="20" rx="4" ry="4" width="120" height="20" />
+                    <rect x="420" y="20" rx="10" ry="10" width="80" height="20" />
+                    <rect x="620" y="15" rx="8" ry="8" width="140" height="30" />
+                </ContentLoader>
+            </td>
+        </tr>
+    );
+};
 
 const ChevronIcon = ({ open }) => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
@@ -56,6 +110,25 @@ const WarningIcon = () => (
 
 export default function Tagihan({ tagihans, filters, invoice_statuses, pagination_length, has_active_invoices, total_unpaid_invoices }) {
     const { flash } = usePage().props;
+    const [isLoading, setIsLoading] = useState(false);
+    const [isInfiniteLoading, setIsInfiniteLoading] = useState(false);
+
+    useEffect(() => {
+        const removeStartListener = router.on('start', (event) => {
+            // Only show main loader if NOT an infinite scroll request
+            if (!event.detail.visit.only?.includes('tagihans')) {
+                setIsLoading(true);
+            }
+        });
+        const removeFinishListener = router.on('finish', () => {
+            setIsLoading(false);
+            setIsInfiniteLoading(false);
+        });
+        return () => {
+            removeStartListener();
+            removeFinishListener();
+        };
+    }, []);
 
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [filterState, setFilterState] = useState({
@@ -171,35 +244,72 @@ export default function Tagihan({ tagihans, filters, invoice_statuses, paginatio
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {tagihans.data.map((tagihan) => (
-                                        <tr key={tagihan.id} onClick={() => router.visit(route('customer.invoices.show', tagihan.id))}>
-                                            <td className="date">
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: 'var(--text-secondary)', fontSize: '0.7rem', marginBottom: 3 }}>
-                                                    <CalendarIcon /> Tanggal Tagihan
-                                                </div>
-                                                {formatDate(tagihan.invoice_date)}
-                                            </td>
-                                            <td className="amount">
-                                                {formatRupiah(tagihan.balance_due)}
-                                                {tagihan.discount && (
-                                                    <span className="inv-voucher">
-                                                        <TagIcon /> {tagihan.discount.name}
+                                    {isLoading ? (
+                                        <>
+                                            <TableSkeleton />
+                                            <TableSkeleton />
+                                            <TableSkeleton />
+                                            <TableSkeleton />
+                                            <TableSkeleton />
+                                        </>
+                                    ) : (
+                                        tagihans.data.map((tagihan) => (
+                                            <tr
+                                                key={tagihan.id}
+                                                onClick={() =>
+                                                    router.visit(route('customer.invoices.show', tagihan.id))
+                                                }
+                                            >
+                                                <td className="date">
+                                                    <div
+                                                        style={{
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            gap: 5,
+                                                            color: 'var(--text-secondary)',
+                                                            fontSize: '0.7rem',
+                                                            marginBottom: 3,
+                                                        }}
+                                                    >
+                                                        <CalendarIcon /> Tanggal Tagihan
+                                                    </div>
+                                                    {formatDate(tagihan.invoice_date)}
+                                                </td>
+
+                                                <td className="amount">
+                                                    {formatRupiah(tagihan.balance_due)}
+                                                    {tagihan.discount && (
+                                                        <span className="inv-voucher">
+                                                            <TagIcon /> {tagihan.discount.name}
+                                                        </span>
+                                                    )}
+                                                </td>
+
+                                                <td>
+                                                    <span
+                                                        className={`inv-badge ${tagihan.status === invoice_statuses.paid
+                                                            ? 'paid'
+                                                            : 'unpaid'
+                                                            }`}
+                                                    >
+                                                        <span className="inv-badge-dot" />
+                                                        {tagihan.status === invoice_statuses.paid
+                                                            ? 'Lunas'
+                                                            : 'Belum Dibayar'}
                                                     </span>
-                                                )}
-                                            </td>
-                                            <td>
-                                                <span className={`inv-badge ${tagihan.status === invoice_statuses.paid ? 'paid' : 'unpaid'}`}>
-                                                    <span className="inv-badge-dot" />
-                                                    {tagihan.status === invoice_statuses.paid ? 'Lunas' : 'Belum Dibayar'}
-                                                </span>
-                                            </td>
-                                            <td onClick={(e) => e.stopPropagation()}>
-                                                <Link href={route('customer.invoices.show', tagihan.id)} className="inv-view-btn">
-                                                    Lihat Detail <ArrowRightIcon />
-                                                </Link>
-                                            </td>
-                                        </tr>
-                                    ))}
+                                                </td>
+
+                                                <td onClick={(e) => e.stopPropagation()}>
+                                                    <Link
+                                                        href={route('customer.invoices.show', tagihan.id)}
+                                                        className="inv-view-btn"
+                                                    >
+                                                        Lihat Detail <ArrowRightIcon />
+                                                    </Link>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
                                 </tbody>
                             </table>
                         )}
@@ -207,43 +317,80 @@ export default function Tagihan({ tagihans, filters, invoice_statuses, paginatio
 
                     {/* ── Mobile Cards ── */}
                     <div className="inv-mobile-list">
-                        {tagihans.data.length === 0 ? (
+                        {isLoading ? (
+                            <>
+                                <MobileSkeleton />
+                                <MobileSkeleton />
+                                <MobileSkeleton />
+                            </>
+                        ) : tagihans.data.length === 0 ? (
                             <div className="inv-empty">
                                 <div className="inv-empty-icon"><BillIcon /></div>
                                 <div className="inv-empty-text">Tidak ada tagihan ditemukan</div>
                             </div>
                         ) : (
-                            tagihans.data.map((tagihan) => (
-                                <div key={tagihan.id} className="inv-mobile-card"
-                                    onClick={() => router.visit(route('customer.invoices.show', tagihan.id))}>
-                                    <div className="inv-mobile-card-top">
-                                        <div>
-                                            <div className="inv-mobile-date">
-                                                <CalendarIcon /> {formatDate(tagihan.invoice_date)}
+                            <>
+                                {tagihans.data.map((tagihan) => (
+                                    <div key={tagihan.id} className="inv-mobile-card"
+                                        onClick={() => router.visit(route('customer.invoices.show', tagihan.id))}>
+                                        <div className="inv-mobile-card-top">
+                                            <div>
+                                                <div className="inv-mobile-date">
+                                                    <CalendarIcon /> {formatDate(tagihan.invoice_date)}
+                                                </div>
+                                                <div className="inv-mobile-amount">{formatRupiah(tagihan.balance_due)}</div>
+                                                {tagihan.discount && (
+                                                    <span className="inv-voucher" style={{ marginTop: 6, display: 'inline-flex' }}>
+                                                        <TagIcon /> Voucher: {tagihan.discount.name}
+                                                    </span>
+                                                )}
                                             </div>
-                                            <div className="inv-mobile-amount">{formatRupiah(tagihan.balance_due)}</div>
-                                            {tagihan.discount && (
-                                                <span className="inv-voucher" style={{ marginTop: 6, display: 'inline-flex' }}>
-                                                    <TagIcon /> Voucher: {tagihan.discount.name}
-                                                </span>
-                                            )}
+                                            <span className={`inv-badge ${tagihan.status === invoice_statuses.paid ? 'paid' : 'unpaid'}`}>
+                                                <span className="inv-badge-dot" />
+                                                {tagihan.status === invoice_statuses.paid ? 'Lunas' : 'Belum Dibayar'}
+                                            </span>
                                         </div>
-                                        <span className={`inv-badge ${tagihan.status === invoice_statuses.paid ? 'paid' : 'unpaid'}`}>
-                                            <span className="inv-badge-dot" />
-                                            {tagihan.status === invoice_statuses.paid ? 'Lunas' : 'Belum Dibayar'}
-                                        </span>
-                                    </div>
-                                    <div className="inv-mobile-card-footer">
-                                        <div className="inv-mobile-arrow">
-                                            Lihat Detail <ArrowRightIcon />
+                                        <div className="inv-mobile-card-bottom">
+                                            <div className="inv-mobile-arrow">
+                                                Lihat Detail <ArrowRightIcon />
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))
+                                ))}
+
+                                {/* Infinite Scroll Trigger (Official v2 Pattern) */}
+                                {tagihans.next_page_url && (
+                                    <div style={{ padding: '40px 0', minHeight: '100px' }}>
+                                        {isInfiniteLoading ? (
+                                            <MobileSkeleton />
+                                        ) : (
+                                            <WhenVisible
+                                                always
+                                                fallback={<MobileSkeleton />}
+                                                params={{
+                                                    data: {
+                                                        page: tagihans.current_page + 1,
+                                                        ...filters
+                                                    },
+                                                    only: ['tagihans'],
+                                                    merge: true, // Appends data because backend uses Inertia::merge
+                                                    preserveScroll: true,
+                                                    preserveState: true,
+                                                    preserveUrl: true, // Keeps URL clean during scroll
+                                                    onStart: () => setIsInfiniteLoading(true),
+                                                    onSuccess: () => setIsInfiniteLoading(false),
+                                                }}
+                                            >
+                                                <MobileSkeleton />
+                                            </WhenVisible>
+                                        )}
+                                    </div>
+                                )}
+                            </>
                         )}
                     </div>
 
-                    {/* ── Pagination ── */}
+                    {/* ── Pagination (Desktop Only) ── */}
                     {tagihans.links && tagihans.links.length > pagination_length && (
                         <div className="inv-pagination">
                             {tagihans.links.map((link, i) => (

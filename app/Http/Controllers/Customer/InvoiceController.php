@@ -45,10 +45,9 @@ class InvoiceController extends Controller
         $unpaidQuery = (clone $invoicesQuery)->where('invoices.status', Invoices::STATUS_UNPAID);
         $hasUnpaidInvoices = $unpaidQuery->exists();
         $totalUnpaidInvoices = $unpaidQuery->count();
-        $invoices = $invoicesQuery->paginate($paginationLength)->withQueryString();
 
         return Inertia::render('Customer/Invoices/Index', [
-            'tagihans' => $invoices,
+            'tagihans' => Inertia::scroll(fn() => $invoicesQuery->paginate($paginationLength)->withQueryString()),
             'pagination_length' => $paginationLength,
             'has_active_invoices' => $hasUnpaidInvoices,
             'total_unpaid_invoices' => $totalUnpaidInvoices,
