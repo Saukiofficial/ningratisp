@@ -3,22 +3,23 @@ import { Link, usePage, router } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import { useFlash } from '@/Hooks/useFlash';
 import { Sun, Moon, Laptop, ChevronDown } from 'lucide-react';
+import ContentLoader from 'react-content-loader';
 import './AuthenticatedLayout.css';
 
 const HomeIcon = ({ isActive }) => (
-    <svg className="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+    <svg className={`w-5 h-5 ${isActive ? 'text-[#ff8c00]' : 'text-current'}`} aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
         <path d="m19.707 9.293-2-2-7-7a1 1 0 0 0-1.414 0l-7 7-2 2a1 1 0 0 0 1.414 1.414L2 10.414V18a2 2 0 0 0 2 2h3a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h3a2 2 0 0 0 2-2v-7.586l.293.293a1 1 0 0 0 1.414-1.414Z" />
     </svg>
 );
 
 const DocumentIcon = ({ isActive }) => (
-    <svg className="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 20">
+    <svg className={`w-5 h-5 ${isActive ? 'text-[#ff8c00]' : 'text-current'}`} aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 20">
         <path d="M16 14V2a2 2 0 0 0-2-2H2a2 2 0 0 0-2 2v15a3 3 0 0 0 3 3h12a1 1 0 0 0 0-2h-1v-2a2 2 0 0 0 2-2ZM4 2h2v12H4V2Zm8 16H3a1 1 0 0 1 0-2h9v2Z" />
     </svg>
 );
 
 const AccountIcon = ({ isActive }) => (
-    <svg className="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 20">
+    <svg className={`w-5 h-5 ${isActive ? 'text-[#ff8c00]' : 'text-current'}`} aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 20">
         <path d="M8 10a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.42 0-8 2.24-8 5v1a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-1c0-2.76-3.58-5-8-5Z" />
     </svg>
 );
@@ -35,12 +36,45 @@ const WifiLogoIcon = () => (
     </svg>
 );
 
+// ─── Skeleton Component ──────────────────────────────────────────────────────
+
+const PageSkeleton = () => {
+    const isDark = document.documentElement.classList.contains('dark');
+    const bgColor = isDark ? '#1a1a1a' : '#f1f5f9';
+    const fgColor = isDark ? '#262626' : '#e2e8f0';
+
+    return (
+        <div className="nnl-page-skeleton">
+            <ContentLoader
+                speed={2}
+                width="100%"
+                height={600}
+                viewBox="0 0 800 600"
+                backgroundColor={bgColor}
+                foregroundColor={fgColor}
+                uniqueKey="page-skeleton"
+            >
+                {/* Header/Hero area */}
+                <rect x="0" y="0" rx="24" ry="24" width="100%" height="200" />
+                
+                {/* Content blocks */}
+                <rect x="0" y="230" rx="20" ry="20" width="31%" height="140" />
+                <rect x="34.5%" y="230" rx="20" ry="20" width="31%" height="140" />
+                <rect x="69%" y="230" rx="20" ry="20" width="31%" height="140" />
+                
+                <rect x="0" y="400" rx="24" ry="24" width="100%" height="200" />
+            </ContentLoader>
+        </div>
+    );
+};
+
 export default function AuthenticatedLayout({ children }) {
     const { url, props } = usePage();
     const { appEnv, auth } = props;
     const user = auth.user;
     useFlash();
 
+    const [isPageLoading, setIsPageLoading] = React.useState(false);
     const [theme, setTheme] = React.useState(() => {
         return localStorage.getItem('theme') || 'system';
     });
@@ -51,6 +85,15 @@ export default function AuthenticatedLayout({ children }) {
 
     const isProfileIncomplete = user?.is_customer && (!user?.full_name || !user?.whatsapp_number || !user?.latitude || !user?.longitude);
     const isAccountPage = url.startsWith('/account') || url.startsWith('/customer/account');
+
+    React.useEffect(() => {
+        const removeStartListener = router.on('start', () => setIsPageLoading(true));
+        const removeFinishListener = router.on('finish', () => setIsPageLoading(false));
+        return () => {
+            removeStartListener();
+            removeFinishListener();
+        };
+    }, []);
 
     React.useEffect(() => {
         const root = window.document.documentElement;
@@ -133,6 +176,36 @@ export default function AuthenticatedLayout({ children }) {
         }
     };
 
+    const isActive = (path) => {
+        const currentPath = url.split('?')[0];
+        
+        // Exact matches for dashboard variations
+        if (path === '/dashboard') {
+            return currentPath === '/dashboard' || 
+                   currentPath === '/customer/dashboard' || 
+                   currentPath === '/customer' ||
+                   currentPath === '/';
+        }
+        
+        // Prefix matches for other sections
+        if (path === '/tagihan') {
+            return currentPath === '/tagihan' || 
+                   currentPath.startsWith('/tagihan/') || 
+                   currentPath === '/customer/invoices' || 
+                   currentPath.startsWith('/customer/invoices/') ||
+                   currentPath.startsWith('/pembayaran/'); // Related payment pages
+        }
+        
+        if (path === '/account') {
+            return currentPath === '/account' || 
+                   currentPath.startsWith('/account/') || 
+                   currentPath === '/customer/account' || 
+                   currentPath.startsWith('/customer/account/');
+        }
+
+        return currentPath === path || currentPath.startsWith(path + '/');
+    };
+
     return (
         <>
             <div className="nnl-root">
@@ -197,25 +270,25 @@ export default function AuthenticatedLayout({ children }) {
                             <Link
                                 id="nav-dashboard"
                                 href={route('customer.dashboard')}
-                                className={`nnl-nav-link ${url.startsWith('/dashboard') ? 'active' : ''} ${showOnboarding && onboardingSteps[onboardingStep].target === 'dashboard' ? 'nnl-highlight' : ''}`}
+                                className={`nnl-nav-link ${isActive('/dashboard') ? 'active' : ''} ${showOnboarding && onboardingSteps[onboardingStep].target === 'dashboard' ? 'nnl-highlight' : ''}`}
                             >
-                                <HomeIcon isActive={url.startsWith('/dashboard')} />
+                                <HomeIcon isActive={isActive('/dashboard')} />
                                 Dashboard
                             </Link>
                             <Link
                                 id="nav-tagihan"
                                 href={route('customer.invoices.index')}
-                                className={`nnl-nav-link ${url.startsWith('/tagihan') ? 'active' : ''} ${showOnboarding && onboardingSteps[onboardingStep].target === 'tagihan' ? 'nnl-highlight' : ''}`}
+                                className={`nnl-nav-link ${isActive('/tagihan') ? 'active' : ''} ${showOnboarding && onboardingSteps[onboardingStep].target === 'tagihan' ? 'nnl-highlight' : ''}`}
                             >
-                                <DocumentIcon isActive={url.startsWith('/tagihan')} />
+                                <DocumentIcon isActive={isActive('/tagihan')} />
                                 Tagihan
                             </Link>
                             <Link
                                 id="nav-akun"
                                 href={route('customer.account.edit')}
-                                className={`nnl-nav-link ${url.startsWith('/account') ? 'active' : ''} ${showOnboarding && onboardingSteps[onboardingStep].target === 'akun' ? 'nnl-highlight' : ''}`}
+                                className={`nnl-nav-link ${isActive('/account') ? 'active' : ''} ${showOnboarding && onboardingSteps[onboardingStep].target === 'akun' ? 'nnl-highlight' : ''}`}
                             >
-                                <AccountIcon isActive={url.startsWith('/account')} />
+                                <AccountIcon isActive={isActive('/account')} />
                                 Akun
                             </Link>
                         </nav>
@@ -274,32 +347,34 @@ export default function AuthenticatedLayout({ children }) {
                 </header>
 
                 {/* ── Page Content ── */}
-                <main className="nnl-main">{children}</main>
+                <main className="nnl-main">
+                    {isPageLoading ? <PageSkeleton /> : children}
+                </main>
 
                 {/* ── Bottom Nav (Mobile) ── */}
                 <div className="nnl-bottom-nav">
                     <Link
                         id="mob-dashboard"
                         href={route('customer.dashboard')}
-                        className={`nnl-bottom-link ${url.startsWith('/dashboard') ? 'active' : ''} ${showOnboarding && onboardingSteps[onboardingStep].target === 'dashboard' ? 'nnl-highlight' : ''}`}
+                        className={`nnl-bottom-link ${isActive('/dashboard') ? 'active' : ''} ${showOnboarding && onboardingSteps[onboardingStep].target === 'dashboard' ? 'nnl-highlight' : ''}`}
                     >
-                        <div className="nnl-bottom-icon-wrap"><HomeIcon isActive={url.startsWith('/dashboard')} /></div>
+                        <div className="nnl-bottom-icon-wrap"><HomeIcon isActive={isActive('/dashboard')} /></div>
                         <span className="nnl-bottom-label">Dashboard</span>
                     </Link>
                     <Link
                         id="mob-tagihan"
                         href={route('customer.invoices.index')}
-                        className={`nnl-bottom-link ${url.startsWith('/tagihan') ? 'active' : ''} ${showOnboarding && onboardingSteps[onboardingStep].target === 'tagihan' ? 'nnl-highlight' : ''}`}
+                        className={`nnl-bottom-link ${isActive('/tagihan') ? 'active' : ''} ${showOnboarding && onboardingSteps[onboardingStep].target === 'tagihan' ? 'nnl-highlight' : ''}`}
                     >
-                        <div className="nnl-bottom-icon-wrap"><DocumentIcon isActive={url.startsWith('/tagihan')} /></div>
+                        <div className="nnl-bottom-icon-wrap"><DocumentIcon isActive={isActive('/tagihan')} /></div>
                         <span className="nnl-bottom-label">Tagihan</span>
                     </Link>
                     <Link
                         id="mob-akun"
                         href={route('customer.account.edit')}
-                        className={`nnl-bottom-link ${url.startsWith('/account') ? 'active' : ''} ${showOnboarding && onboardingSteps[onboardingStep].target === 'akun' ? 'nnl-highlight' : ''}`}
+                        className={`nnl-bottom-link ${isActive('/account') ? 'active' : ''} ${showOnboarding && onboardingSteps[onboardingStep].target === 'akun' ? 'nnl-highlight' : ''}`}
                     >
-                        <div className="nnl-bottom-icon-wrap"><AccountIcon isActive={url.startsWith('/account')} /></div>
+                        <div className="nnl-bottom-icon-wrap"><AccountIcon isActive={isActive('/account')} /></div>
                         <span className="nnl-bottom-label">Akun</span>
                     </Link>
                 </div>

@@ -124,8 +124,22 @@
     padding: 18px 20px;
     margin-bottom: 24px;
     position: relative;
-    overflow: hidden;
     transition: background 0.3s, border-color 0.3s;
+    z-index: 10; /* Ensure it's above other elements */
+}
+
+.inv-filter-content {
+    display: none; /* Hidden by default on mobile */
+}
+
+.inv-filter-content.is-open {
+    display: block; /* Visible when toggled on mobile */
+}
+
+@media (min-width: 640px) {
+    .inv-filter-content {
+        display: block !important; /* Always visible on desktop */
+    }
 }
 
 .inv-filter-card::before {
@@ -179,7 +193,7 @@
 .inv-filter-body {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 12px;
+    gap: 16px;
     margin-top: 16px;
 }
 

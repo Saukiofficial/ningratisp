@@ -27,6 +27,7 @@ class InvoiceController extends Controller
         /** @var \App\Models\Customer */
         $user = auth('customers')->user();
         $query = $user->invoices();
+        $unpaidQuery = (clone $query)->where('invoices.status', Invoices::STATUS_UNPAID);
 
         if ($request->filled('status')) {
             $query->where('invoices.status', $request->status);
@@ -42,13 +43,11 @@ class InvoiceController extends Controller
 
         $paginationLength = 10;
         $invoicesQuery = $query->with('discount')->latest('invoice_date');
-        $unpaidQuery = (clone $invoicesQuery)->where('invoices.status', Invoices::STATUS_UNPAID);
         $hasUnpaidInvoices = $unpaidQuery->exists();
         $totalUnpaidInvoices = $unpaidQuery->count();
 
         return Inertia::render('Customer/Invoices/Index', [
             'tagihans' => Inertia::scroll(fn() => $invoicesQuery->paginate($paginationLength)->withQueryString()),
-            'pagination_length' => $paginationLength,
             'has_active_invoices' => $hasUnpaidInvoices,
             'total_unpaid_invoices' => $totalUnpaidInvoices,
             'filters' => $request->only(['status', 'start_date', 'end_date']),

@@ -383,14 +383,25 @@
     background: var(--nav-hover-bg);
 }
 
-.nnl-nav-link.active {
-    color: #ff8c00;
-    background: var(--nav-active-bg);
-    border-color: rgba(255, 140, 0, 0.2);
+/* Desktop nav link active state */
+.nnl-nav .nnl-nav-link.active {
+    color: #ff8c00 !important;
+    background: var(--nav-active-bg) !important;
+    border-color: rgba(255, 140, 0, 0.3) !important;
+    font-weight: 800;
 }
 
-.nnl-nav-link.active svg {
-    color: #ff8c00;
+/* Mobile bottom nav active state */
+.nnl-bottom-nav .nnl-bottom-link.active {
+    color: #ff8c00 !important;
+}
+
+.nnl-bottom-nav .nnl-bottom-link.active .nnl-bottom-icon-wrap {
+    background: var(--nav-active-bg) !important;
+}
+
+.nnl-bottom-nav .nnl-bottom-link.active .nnl-bottom-label {
+    font-weight: 800;
 }
 
 /* Logout button */
@@ -427,33 +438,22 @@
     }
 }
 
-/* ── Onboarding Overlay ── */
-.nnl-onboard-card {
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 24px;
-    width: 100%;
-    max-width: 400px;
-    padding: 32px;
-    text-align: center;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-    position: relative;
-    overflow: hidden;
+.nnl-main {
+    flex-grow: 1;
 }
 
-.nnl-onboard-title {
-    font-family: 'Sora', sans-serif;
-    font-size: 1.25rem;
-    font-weight: 800;
-    color: var(--text-primary);
-    margin-bottom: 12px;
+/* ── Page Skeleton ── */
+.nnl-page-skeleton {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px 16px;
+    height: calc(100vh - 128px);
 }
-
-.nnl-onboard-content {
-    font-size: 0.95rem;
-    color: var(--text-secondary);
-    line-height: 1.6;
-    margin-bottom: 24px;
+@media (min-width: 640px) {
+    .nnl-page-skeleton { padding: 32px 24px; }
+}
+@media (min-width: 1024px) {
+    .nnl-page-skeleton { padding: 40px 32px; }
 }
 
 /* ── Bottom nav (mobile) ── */

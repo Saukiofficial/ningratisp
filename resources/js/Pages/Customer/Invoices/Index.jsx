@@ -108,7 +108,7 @@ const WarningIcon = () => (
     </svg>
 );
 
-export default function Tagihan({ tagihans, filters, invoice_statuses, pagination_length, has_active_invoices, total_unpaid_invoices }) {
+export default function Tagihan({ tagihans, filters, invoice_statuses, has_active_invoices, total_unpaid_invoices }) {
     const { flash } = usePage().props;
     const [isLoading, setIsLoading] = useState(false);
     const [isInfiniteLoading, setIsInfiniteLoading] = useState(false);
@@ -193,7 +193,7 @@ export default function Tagihan({ tagihans, filters, invoice_statuses, paginatio
                                 {isFilterOpen ? 'Tutup' : 'Buka'} <ChevronIcon open={isFilterOpen} />
                             </button>
                         </div>
-                        <div className={`${isFilterOpen ? '' : 'hidden'} sm:block`}>
+                        <div className={`inv-filter-content ${isFilterOpen ? 'is-open' : ''}`}>
                             <div className="inv-filter-body">
                                 <div>
                                     <div className="inv-field-label">Status</div>
@@ -391,7 +391,7 @@ export default function Tagihan({ tagihans, filters, invoice_statuses, paginatio
                     </div>
 
                     {/* ── Pagination (Desktop Only) ── */}
-                    {tagihans.links && tagihans.links.length > pagination_length && (
+                    {tagihans.links && tagihans.links.length && (
                         <div className="inv-pagination">
                             {tagihans.links.map((link, i) => (
                                 link.url ? (
