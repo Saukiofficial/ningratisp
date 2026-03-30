@@ -49,6 +49,7 @@ class DiscountService
             if ($discount && $this->validateDiscountForCustomer($discount, $customer)) {
                 return $this->applyDiscountToInvoice($invoice, $discount);
             }
+
             return $invoice;
         }
 
@@ -72,46 +73,88 @@ class DiscountService
         return $invoice;
     }
 
-    public function validateDiscountForCustomer(Discount $discount, Customer $customer): bool
+    public function validateDiscountForCustomer(Discount $discount, Customer $customer, ?Invoices $currentInvoice = null, bool $forUsage = false): array
     {
-
-        if (!$discount->canClaimed) {
-            return false;
+        if (! $discount->canClaimed && ! $forUsage) {
+            return [
+                'valid' => false,
+                'message' => 'Diskon ini tidak dapat diklaim saat ini.',
+            ];
         }
 
         if (! $discount->is_active || ! $discount->isWithinDateRange()) {
-            return false;
+            return [
+                'valid' => false,
+                'message' => 'Diskon ini sudah tidak aktif atau telah melewati masa berlaku.',
+            ];
         }
 
-        // Check customer category if specified on the discount
         if ($discount->customer_category && $discount->customer_category !== $customer->customer_category) {
-            return false;
+            return [
+                'valid' => false,
+                'message' => 'Diskon ini hanya berlaku untuk kategori pelanggan tertentu.',
+            ];
         }
 
-        // Check overall usage limit
         if ($discount->usage_limit !== null && $discount->used_count >= $discount->usage_limit) {
-            return false;
+            return [
+                'valid' => false,
+                'message' => 'Kuota diskon ini sudah habis.',
+            ];
         }
 
-        // Check per-customer usage limit
-        if (!empty($discount->max_per_user)) {
-            $customerUsage = $customer->discounts()->where('discount_id', $discount->id)->count();
-            if ($customerUsage >= $discount->max_per_user) {
-                return false;
+        if (! empty($discount->max_per_user)) {
+            $claimsCount = $customer->discounts()->where('discount_id', $discount->id)->count();
+
+            // Count invoices where this discount is used and PAID
+            $paidUsageCount = $customer->invoices()
+                ->where('invoices.status', Invoices::STATUS_PAID)
+                ->where('discount_id', $discount->id)
+                ->count();
+
+            // Also count UNPAID invoices that are using this discount (excluding the current one)
+            // to prevent over-reserving if we want to be strict.
+            $activeAssignmentCount = $customer->invoices()
+                ->where('invoices.status', '!=', Invoices::STATUS_PAID)
+                ->where('discount_id', $discount->id)
+                ->when($currentInvoice, fn($q) => $q->where('invoices.id', '!=', $currentInvoice->id))
+                ->count();
+
+            $totalUsage = $paidUsageCount + $activeAssignmentCount;
+
+            // If we are validating for payment, we check against max_per_user
+            if ($forUsage) {
+                if ($paidUsageCount >= $discount->max_per_user) {
+                    return [
+                        'valid' => false,
+                        'message' => 'Kamu sudah mencapai batas penggunaan diskon ini.',
+                    ];
+                }
+            } else {
+                // If validating for a NEW claim, we check claimsCount vs max_per_user
+                if ($claimsCount >= $discount->max_per_user) {
+                    return [
+                        'valid' => false,
+                        'message' => 'Kamu sudah mencapai batas klaim diskon ini.',
+                    ];
+                }
             }
         }
 
-        return true;
+        return [
+            'valid' => true,
+            'message' => 'Diskon berhasil diterapkan.',
+        ];
     }
 
-    public function applyDiscountToInvoice(Invoices $invoice, Discount $discount, $recordDiscountUsage = true): Invoices
+    public function applyDiscountToInvoice(Invoices $invoice, Discount $discount, $recordDiscountUsage = false): Invoices
     {
         $subtotal = $invoice->subtotal;
         $discountAmount = 0;
 
         if ($discount->type === Discount::PERCENTAGE) {
             $discountAmount = ($subtotal * $discount->value) / 100;
-            if (!empty(floatval($discount->max_discount_amount)) && $discountAmount > $discount->max_discount_amount) {
+            if (! empty(floatval($discount->max_discount_amount)) && $discountAmount > $discount->max_discount_amount) {
                 $discountAmount = $discount->max_discount_amount;
             }
         } elseif ($discount->type === Discount::FIXED_AMOUNT) {
@@ -126,38 +169,29 @@ class DiscountService
         $invoice->recalculateTotals();
         $invoice->save();
 
-        if ($recordDiscountUsage) {
-            $this->recordDiscountUsage(
-                $discount,
-                $invoice->customerPackage->customer,
-                'Discount applied to invoice : ' . $invoice->invoice_number
-            );
-        }
-
         return $invoice;
     }
 
-    public function customerApplyDiscountToInvoice(Invoices $invoice, Discount $discount): Invoices
+    public function finalizeDiscountUsage(Invoices $invoice): void
     {
-        return $this->applyDiscountToInvoice(
-            $invoice,
-            $discount,
-            false
-        );
-    }
+        if (! $invoice->discount_id || $invoice->status !== Invoices::STATUS_PAID) {
+            return;
+        }
 
-    private function recordDiscountUsage(Discount $discount, Customer $customer, ?string $notes = null): void
-    {
-        DB::transaction(function () use ($discount, $customer, $notes) {
+        DB::transaction(function () use ($invoice) {
+            $discount = $invoice->discount;
+            $customer = $invoice->customerPackage->customer;
+
             // Increment total usage count on the discount itself
             $discount->increment('used_count');
 
-            // Create or update the record in the customer_discounts pivot table
-            $customer->discounts()->attach($discount->id, [
-                'applied_at' => now(),
-                'is_active' => true, // Or based on specific logic
-                'notes' => $notes
-            ]);
+            // Mark the claim as inactive in the pivot table
+            $customer->discounts()
+                ->wherePivot('discount_id', $invoice->discount_id)
+                ->wherePivot('is_active', true)
+                ->first()
+                ?->pivot
+                ->update(['is_active' => false]);
         });
     }
 

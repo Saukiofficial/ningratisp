@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
-use App\Models\Fee;
 use App\Models\Customer\Invoices;
 use App\Models\Discount;
+use App\Models\Fee;
 use App\Models\PaymentMethod;
 use App\Models\VirtualAccount;
 use App\Services\DiscountService;
@@ -55,7 +55,7 @@ class InvoiceController extends Controller
                 'paid' => Invoices::STATUS_PAID,
                 'unpaid' => Invoices::STATUS_UNPAID,
             ],
-            'flash' => $this->getFlash()
+            'flash' => $this->getFlash(),
         ]);
     }
 
@@ -105,7 +105,7 @@ class InvoiceController extends Controller
 
         return Inertia::render('Customer/Invoices/Show', [
             'invoice' => $invoiceData,
-            'flash' => $this->getFlash()
+            'flash' => $this->getFlash(),
 
         ]);
     }
@@ -128,9 +128,8 @@ class InvoiceController extends Controller
                 ];
             });
 
-        // 1. Count how many times each discount_id is used on OTHER unpaid invoices
+        // 1. Count how many times each discount_id is used on ALL other invoices
         $usedCounts = auth()->user()->invoices()
-            ->where('invoices.status', Invoices::STATUS_UNPAID)
             ->where('invoices.id', '!=', $invoice->id)
             ->whereNotNull('discount_id')
             ->get()
@@ -162,7 +161,7 @@ class InvoiceController extends Controller
             'invoice' => $invoice->load('discount'),
             'paymentMethods' => $paymentMethods,
             'claimedDiscounts' => $availableDiscounts->values(), // Pass the correctly filtered collection
-            'flash' => $this->getFlash()
+            'flash' => $this->getFlash(),
         ]);
     }
 
@@ -172,16 +171,55 @@ class InvoiceController extends Controller
             return to_route('customer.invoices.show', $invoice)->with('error', 'Invoice already paid.');
         }
 
-        $paymentMethod = $request->input('payment_method');
+        $paymentMethodId = $request->input('payment_method');
+        $discountId = $request->input('discount_id');
+
+        // Handle Discount
+        if ($discountId) {
+            $customer = auth('customers')->user();
+            $discount = Discount::query()->active()->find($discountId);
+
+            if (! $discount) {
+                return to_route('customer.invoices.checkout', $invoice)->with('error', 'Invalid or expired discount.');
+            }
+
+            // Check if user has this discount claimed (if it's not auto-applied)
+            $hasClaim = $customer->discounts()
+                ->where('discounts.id', $discountId)
+                ->wherePivot('is_active', true)
+                ->exists();
+
+            if (! $hasClaim) {
+                return to_route('customer.invoices.checkout', $invoice)->with('error', 'You have not claimed this discount.');
+            }
+
+            $validation = $this->discountService->validateDiscountForCustomer($discount, $customer, $invoice, true);
+            if (! $validation['valid']) {
+                return to_route('customer.invoices.checkout', $invoice)->with('error', $validation['message']);
+            }
+
+            // Apply but do NOT record usage yet (it will be done when paid)
+            $this->discountService->applyDiscountToInvoice($invoice, $discount, false);
+            $invoice->refresh();
+        } else {
+            // Ensure no discount is applied if not requested
+            if ($invoice->discount_id) {
+                $invoice->discount_id = null;
+                $invoice->discount_amount = 0;
+                $invoice->recalculateTotals();
+                $invoice->save();
+            }
+        }
 
         // get payment method and fee
-        $paymentMethod = PaymentMethod::query()->findOrFail($paymentMethod);
-        $fee = $paymentMethod->fee ?
-            $paymentMethod->fee->unit == Fee::PERCENTAGE :
-            0;
-        $fee = $paymentMethod->fee?->amount ?? 0;
-        if ($fee != 0 && $paymentMethod->fee->unit == Fee::PERCENTAGE) {
-            $fee = (floatval($invoice->balance_due) * floatval($paymentMethod->fee->amount)) / 100;
+        $paymentMethod = PaymentMethod::query()->findOrFail($paymentMethodId);
+        $fee = 0;
+        if ($paymentMethod->fee) {
+            if ($paymentMethod->fee->unit == Fee::PERCENTAGE) {
+                $fee = (floatval($invoice->balance_due) * floatval($paymentMethod->fee->amount)) / 100;
+            } else {
+                $fee = floatval($paymentMethod->fee->amount);
+            }
         }
 
         $orderId = uuid_create();
@@ -202,7 +240,7 @@ class InvoiceController extends Controller
                 'status' => $response['transaction_status'],
                 'expired_at' => $response['expiry_time'],
                 'total_amount' => $invoice->balance_due + $fee,
-                'fee_amount' => $fee
+                'fee_amount' => $fee,
             ]);
 
             if (isset($response['va_numbers'])) {
@@ -228,7 +266,7 @@ class InvoiceController extends Controller
 
             return to_route('customer.pending-payment.show', $va)->with('success', 'Virtual Account created successfully.');
         } else {
-            return to_route('invoices.checkout', $invoice)->with('error', 'Failed to create Virtual Account (' . $response['status_code'] . ').');
+            return to_route('customer.invoices.checkout', $invoice)->with('error', 'Failed to create Virtual Account (' . ($response['status_code'] ?? json_encode($response)) . ').');
         }
     }
 
@@ -242,7 +280,7 @@ class InvoiceController extends Controller
         $customer = auth()->user();
         $discount = $customer->discounts()->where('discounts.id', $request->discount_id)->wherePivot('is_active', true)->first();
 
-        if (!$discount) {
+        if (! $discount) {
             return back()->with('error', 'Invalid or expired discount.');
         }
 

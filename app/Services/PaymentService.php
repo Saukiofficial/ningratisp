@@ -16,7 +16,6 @@ use Illuminate\Support\Facades\DB;
 
 class PaymentService
 {
-
     protected $isManualPayment = true;
 
     public function __construct(
@@ -63,7 +62,7 @@ class PaymentService
                 'file_path' => $filePath,
                 'file_name' => $fileName,
                 'fee_id' => $method->fee->id,
-                'is_manual' => $this->isManualPayment
+                'is_manual' => $this->isManualPayment,
                 // Do not set invoice_id to allow allocations across multiple invoices
             ]);
             $payment->save();
@@ -107,7 +106,7 @@ class PaymentService
                 'total_amount' => $amount,
                 'price' => $amount,
                 'reference_id' => $referenceId ?? ('PAY-' . now()->format('YmdHis')),
-                'payment_datetime' => !empty($datetime) ? Date::parse($datetime) : Carbon::now(),
+                'payment_datetime' => ! empty($datetime) ? Date::parse($datetime) : Carbon::now(),
                 'is_cancel' => false,
                 'description' => 'Incoming payment',
                 'voucher_id' => null,
@@ -116,7 +115,7 @@ class PaymentService
                 'file_path' => $filePath,
                 'file_name' => $fileName,
                 'fee_id' => $method->fee->id,
-                'is_manual' => $this->isManualPayment
+                'is_manual' => $this->isManualPayment,
                 // Do not set invoice_id to allow allocations across multiple invoices
             ]);
             $payment->save();
@@ -167,7 +166,7 @@ class PaymentService
             $trxId,
             $invoice
         );
-        if (!empty($payment)) {
+        if (! empty($payment)) {
             $payment->update(['price' => $unitPrice]);
             $payment->save();
         }
@@ -240,13 +239,7 @@ class PaymentService
     private function deactivateDiscountIfUsed(Invoices $invoice): void
     {
         if ($invoice->payment_status === Payment::STATUS_PAID && $invoice->discount_id) {
-            $customer = $invoice->customerPackage->customer;
-            $customer->discounts()
-                ->wherePivot('discount_id', $invoice->discount_id)
-                ->wherePivot('is_active', true)
-                ->first()
-                ?->pivot
-                ->update(['is_active' => false]);
+            $this->discountService->finalizeDiscountUsage($invoice);
         }
     }
 
@@ -265,7 +258,7 @@ class PaymentService
                     $q->where('balance_due', '>', 0)->orWhereNull('balance_due');
                 });
 
-            if (!empty($invoiceIds)) {
+            if (! empty($invoiceIds)) {
                 $invoices->whereIn('invoices.id', $invoiceIds);
             }
 
@@ -329,7 +322,7 @@ class PaymentService
                 'payment_method_id' => $payment->payment_method_id,
                 'payment_type' => 'refund',
                 'invoice_id' => $invoiceId,
-                'is_manual' => $this->isManualPayment
+                'is_manual' => $this->isManualPayment,
             ]);
             $refund->save();
 

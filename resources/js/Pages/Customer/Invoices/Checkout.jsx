@@ -138,18 +138,26 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, children, isProc
 
 // ─── Order Summary Sidebar ────────────────────────────────────────────────────
 
-const OrderSummary = ({ invoice, claimedDiscounts = [], selectedMethod, handleOpenConfirmation, isProcessing, summary }) => {
+const OrderSummary = ({ invoice, claimedDiscounts = [], selectedMethod, handleOpenConfirmation, isProcessing, summary, selectedDiscount, setSelectedDiscount, onRemoveDiscountTrigger }) => {
     const { data, setData, post, processing, errors, clearErrors } = useForm({ code: '' });
 
     const handleClaimVoucher = (e) => {
         e.preventDefault();
-        post(route('customer.discounts.claim'), { onSuccess: () => setData('code', '') });
+        if (!data.code.trim()) return;
+        post(route('customer.discounts.claim'), {
+            preserveScroll: true,
+            onSuccess: () => setData('code', ''),
+        });
     };
-    const handleApplyDiscount = (discountId) => {
-        router.post(route('customer.invoices.apply-discount', { invoice: invoice.id }), { discount_id: discountId });
+    const handleApplyDiscount = (discount) => {
+        setSelectedDiscount(discount);
     };
     const handleRemoveDiscount = () => {
-        router.post(route('customer.invoices.remove-discount', { invoice: invoice.id }));
+        if (invoice.discount_id && selectedDiscount?.id === invoice.discount_id) {
+            onRemoveDiscountTrigger();
+        } else {
+            setSelectedDiscount(null);
+        }
     };
 
     const formatRupiah = (n) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
@@ -180,10 +188,10 @@ const OrderSummary = ({ invoice, claimedDiscounts = [], selectedMethod, handleOp
                     <span className="ck-summary-label">Subtotal</span>
                     <span className="ck-summary-val">{formatRupiah(invoice.subtotal)}</span>
                 </div>
-                {invoice.discount_amount > 0 && (
+                {summary.discount > 0 && (
                     <div className="ck-summary-row discount">
-                        <span className="ck-summary-label">Diskon ({invoice.discount.name})</span>
-                        <span className="ck-summary-val">−{formatRupiah(invoice.discount_amount)}</span>
+                        <span className="ck-summary-label">Diskon ({selectedDiscount?.name})</span>
+                        <span className="ck-summary-val">−{formatRupiah(summary.discount)}</span>
                     </div>
                 )}
                 {summary.fee > 0 && (
@@ -202,12 +210,12 @@ const OrderSummary = ({ invoice, claimedDiscounts = [], selectedMethod, handleOp
 
             {/* Voucher section */}
             <div className="ck-voucher-section">
-                {invoice.discount ? (
+                {selectedDiscount ? (
                     <div className="ck-discount-applied">
                         <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                             <TagIcon />
                             <span style={{ fontSize: '0.83rem', fontWeight: 700, color: '#34d399' }}>
-                                {invoice.discount.name} diterapkan
+                                {selectedDiscount.name} diterapkan
                             </span>
                         </div>
                         <button onClick={handleRemoveDiscount} className="ck-remove-discount">
@@ -217,7 +225,7 @@ const OrderSummary = ({ invoice, claimedDiscounts = [], selectedMethod, handleOp
                 ) : (
                     <>
                         <div className="ck-voucher-label">Punya Voucher?</div>
-                        <div className="ck-voucher-row">
+                        <form onSubmit={handleClaimVoucher} className="ck-voucher-row">
                             <input
                                 type="text"
                                 value={data.code}
@@ -227,10 +235,10 @@ const OrderSummary = ({ invoice, claimedDiscounts = [], selectedMethod, handleOp
                                 className="ck-voucher-input"
                                 maxLength={10}
                             />
-                            <button type="button" onClick={handleClaimVoucher} disabled={processing} className="ck-voucher-btn">
+                            <button type="submit" disabled={processing || !data.code.trim()} className="ck-voucher-btn">
                                 {processing ? <SpinnerIcon /> : 'Claim'}
                             </button>
-                        </div>
+                        </form>
                         {errors.code && <p className="ck-field-error">{errors.code}</p>}
 
                         {processedDiscounts.length > 0 && (
@@ -240,7 +248,7 @@ const OrderSummary = ({ invoice, claimedDiscounts = [], selectedMethod, handleOp
                                     {processedDiscounts.map(pd => (
                                         <div
                                             key={pd.id}
-                                            onClick={() => pd.isApplicable && handleApplyDiscount(pd.discount.id)}
+                                            onClick={() => pd.isApplicable && handleApplyDiscount(pd.discount)}
                                             className={`ck-voucher-item ${pd.isApplicable ? 'applicable' : 'disabled'}`}
                                             title={!pd.isApplicable ? 'Diskon terlalu besar untuk invoice ini' : ''}
                                         >
@@ -282,24 +290,64 @@ const OrderSummary = ({ invoice, claimedDiscounts = [], selectedMethod, handleOp
 
 export default function Checkout({ invoice, paymentMethods = [], claimedDiscounts = [], flash }) {
     const [selectedMethod, setSelectedMethod] = useState(paymentMethods[0] || null);
+    const [selectedDiscount, setSelectedDiscount] = useState(invoice.discount || null);
     const [isProcessing, setIsProcessing] = useState(false);
     const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
+    const [isRemoveDiscountModalOpen, setIsRemoveDiscountModalOpen] = useState(false);
     const [confirmationData, setConfirmationData] = useState(null);
-    const [summary, setSummary] = useState({ fee: 0, grandTotal: invoice.balance_due });
+    const [summary, setSummary] = useState({ fee: 0, discount: 0, grandTotal: invoice.balance_due });
 
-    const calculateFee = (fee) => {
+    const handleConfirmRemoveDiscount = () => {
+        setIsProcessing(true);
+        router.post(route('customer.invoices.remove-discount', { invoice: invoice.id }), {}, {
+            onSuccess: () => {
+                setSelectedDiscount(null);
+                setIsRemoveDiscountModalOpen(false);
+            },
+            onError: () => toast.error('Gagal menghapus diskon'),
+            onFinish: () => setIsProcessing(false),
+        });
+    };
+
+    const calculateDiscountAmount = (discount, subtotal) => {
+        if (!discount) return 0;
+        let amount = 0;
+        if (discount.type === 'percentage') {
+            amount = (subtotal * parseFloat(discount.value)) / 100;
+            if (discount.max_discount_amount && amount > parseFloat(discount.max_discount_amount)) {
+                amount = parseFloat(discount.max_discount_amount);
+            }
+        } else if (discount.type === 'fixed_amount') {
+            amount = parseFloat(discount.value);
+        }
+        return Math.min(subtotal, amount);
+    };
+
+    const calculateFee = (fee, currentBalance) => {
         if (!fee) return 0;
-        return fee.unit === 'p' ? (parseFloat(invoice.balance_due) * parseFloat(fee.amount)) / 100 : parseFloat(fee.amount);
+        return fee.unit === 'p' ? (currentBalance * parseFloat(fee.amount)) / 100 : parseFloat(fee.amount);
     };
 
     useEffect(() => {
+        const subtotal = parseFloat(invoice.subtotal);
+        const discountAmount = calculateDiscountAmount(selectedDiscount, subtotal);
+        const balanceAfterDiscount = subtotal - discountAmount;
+
         if (selectedMethod) {
-            const fee = calculateFee(selectedMethod.fee);
-            setSummary({ fee, grandTotal: parseFloat(invoice.balance_due) + fee });
+            const fee = calculateFee(selectedMethod.fee, balanceAfterDiscount);
+            setSummary({
+                fee,
+                discount: discountAmount,
+                grandTotal: balanceAfterDiscount + fee
+            });
         } else {
-            setSummary({ fee: 0, grandTotal: parseFloat(invoice.balance_due) });
+            setSummary({
+                fee: 0,
+                discount: discountAmount,
+                grandTotal: balanceAfterDiscount
+            });
         }
-    }, [selectedMethod, invoice.balance_due]);
+    }, [selectedMethod, selectedDiscount, invoice.subtotal]);
 
     const handleOpenConfirmation = () => {
         if (!selectedMethod) return;
@@ -310,7 +358,10 @@ export default function Checkout({ invoice, paymentMethods = [], claimedDiscount
     const handlePayment = () => {
         if (!confirmationData) return;
         setIsProcessing(true);
-        router.post(route('customer.invoices.pay', { invoice: invoice.id }), { payment_method: confirmationData.method.id }, {
+        router.post(route('customer.invoices.pay', { invoice: invoice.id }), {
+            payment_method: confirmationData.method.id,
+            discount_id: selectedDiscount?.id
+        }, {
             onSuccess: () => setIsConfirmationModalOpen(false),
             onError: (errors) => toast.error(Object.values(errors)[0] || 'Payment processing failed.', {
                 theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light'
@@ -358,6 +409,24 @@ export default function Checkout({ invoice, paymentMethods = [], claimedDiscount
                 )}
             </ConfirmationModal>
 
+            {/* ── Remove Discount Confirmation Modal ── */}
+            <ConfirmationModal
+                isOpen={isRemoveDiscountModalOpen}
+                onClose={() => setIsRemoveDiscountModalOpen(false)}
+                onConfirm={handleConfirmRemoveDiscount}
+                title="Hapus Diskon?"
+                isProcessing={isProcessing}
+            >
+                <p className="ck-modal-hint">Apakah Anda yakin ingin menghapus diskon yang sudah terpasang pada invoice ini?</p>
+                <div style={{
+                    padding: '12px 16px', borderRadius: 12, background: 'rgba(239,68,68,0.08)',
+                    border: '1px solid rgba(239,68,68,0.2)', color: '#f87171', fontSize: '0.8rem',
+                    textAlign: 'center', fontWeight: 500
+                }}>
+                    Tindakan ini akan mengatur ulang total tagihan Anda.
+                </div>
+            </ConfirmationModal>
+
             <div className="ck-root">
                 <div className="ck-container">
 
@@ -386,7 +455,7 @@ export default function Checkout({ invoice, paymentMethods = [], claimedDiscount
                                 ) : (
                                     paymentMethods.map((method) => {
                                         const isSelected = selectedMethod && selectedMethod.id === method.id;
-                                        const fee = calculateFee(method.fee);
+                                        const feeLabel = method.fee.unit == 'p' ? method.fee.amount + ' %' : formatRupiah(method.fee.amount)
                                         return (
                                             <div
                                                 key={method.id}
@@ -396,7 +465,7 @@ export default function Checkout({ invoice, paymentMethods = [], claimedDiscount
                                                 <div className="ck-method-left">
                                                     <div className="ck-method-name">{method.name}</div>
                                                     <div className="ck-method-fee">
-                                                        Biaya Admin: {formatRupiah(fee)}
+                                                        Biaya Admin: {feeLabel}
                                                     </div>
                                                 </div>
                                                 <div className="ck-radio">
@@ -422,6 +491,9 @@ export default function Checkout({ invoice, paymentMethods = [], claimedDiscount
                                 handleOpenConfirmation={handleOpenConfirmation}
                                 isProcessing={isProcessing}
                                 summary={summary}
+                                selectedDiscount={selectedDiscount}
+                                setSelectedDiscount={setSelectedDiscount}
+                                onRemoveDiscountTrigger={() => setIsRemoveDiscountModalOpen(true)}
                             />
                         </div>
 

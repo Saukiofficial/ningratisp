@@ -18,18 +18,19 @@ class DiscountController extends Controller
         ]);
 
         $discount = Discount::where('code', $request->code)->first();
-        $customer = auth()->user();
+        $customer = auth('customers')->user();
 
-        if (!$this->discountService->validateDiscountForCustomer($discount, $customer)) {
-            return back()->with('error', 'This discount is not applicable to you.');
+        $result = $this->discountService->validateDiscountForCustomer($discount, $customer);
+
+        if (empty($result['valid'])) {
+            return back()->with('error', $result['message']);
         }
 
         $customer->discounts()->attach($discount->id, [
             'is_active' => true,
             'applied_at' => now(),
-            'notes' => 'Claimed via portal customer'
+            'notes' => 'Claimed via portal customer',
         ]);
-
 
         return back()->with('success', 'Discount has been added to your account.');
     }
