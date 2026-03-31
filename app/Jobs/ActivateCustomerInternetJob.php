@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Helpers\MikrotikAPINative;
 use App\Models\Customer;
+use App\Models\Enum\RolesEnum;
 use App\Models\User;
 use Filament\Notifications\Notification;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -18,8 +19,8 @@ class ActivateCustomerInternetJob implements ShouldQueue
      */
     public function __construct(
         public Customer $customer,
-        public User $user,
-        public array $data = []
+        public array $data = [],
+        public ?User $user = null,
     ) {}
 
     /**
@@ -33,11 +34,14 @@ class ActivateCustomerInternetJob implements ShouldQueue
         );
 
         if (isset($response['error'])) {
-            Notification::make()
-                ->title('Active internet failed : ' . $this->customer->username)
-                ->body(json_encode($response))
-                ->danger()
-                ->sendToDatabase($this->user);
+            $admin = User::role(RolesEnum::SUPER_ADMIN)->first();
+            if ($admin) {
+                Notification::make()
+                    ->title('Active internet failed : ' . $this->customer->username)
+                    ->body(json_encode($response))
+                    ->danger()
+                    ->sendToDatabase($this->user);
+            }
         }
     }
 }
