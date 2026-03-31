@@ -10,6 +10,7 @@
     "require": {
         "php": "^8.2",
         "bezhansalleh/filament-language-switch": "*",
+        "bezhansalleh/filament-shield": "^4.2",
         "erag/laravel-pwa": "^1.9",
         "filament/filament": "^4.0",
         "flowframe/laravel-trend": "^0.4.0",

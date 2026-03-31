@@ -8,11 +8,14 @@ use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use App\Filament\Widgets\WhatsappStatusWidget;
+use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Support\Enums\Width;
 
 class WhatsappInformation extends Page
 {
+    use HasPageShield;
+
     protected static string | BackedEnum | null $navigationIcon = 'heroicon-o-information-circle';
 
     protected string $view = 'filament.pages.whatsapp-information';

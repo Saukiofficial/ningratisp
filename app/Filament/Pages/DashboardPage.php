@@ -9,6 +9,7 @@ use App\Filament\Widgets\NetRevenueChart;
 use App\Filament\Widgets\PaymentsByMethodChart;
 use App\Filament\Widgets\RevenueOverviewChart;
 use App\Filament\Widgets\VirtualAccountStatusChart;
+use App\Models\Enum\RolesEnum;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Pages\Dashboard;
@@ -36,6 +37,12 @@ class DashboardPage extends Dashboard
 
     public function getHeaderWidgets(): array
     {
+        /** @var \App\Models\User */
+        $user = auth('web')->user();
+        if (!$user->hasRole(RolesEnum::SUPER_ADMIN)) {
+            return [];
+        }
+
         return [
             FinancialStatsOverview::class,
             MRRStats::class,
@@ -44,14 +51,24 @@ class DashboardPage extends Dashboard
 
     public function getWidgets(): array
     {
-        return [
+        $financeChart = [
             RevenueOverviewChart::class,
             NetRevenueChart::class,
             PaymentsByMethodChart::class,
             VirtualAccountStatusChart::class,
             AccountsReceivableChart::class,
+        ];
+        $widgets = [
             AccountWidget::class,
             FilamentInfoWidget::class,
         ];
+
+        /** @var \App\Models\User */
+        $user = auth('web')->user();
+        if ($user->hasRole(RolesEnum::SUPER_ADMIN)) {
+            $widgets = array_merge($financeChart, $widgets);
+        }
+
+        return $widgets;
     }
 }
