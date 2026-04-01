@@ -11,7 +11,7 @@ class Packages extends BaseModel
     use HasFactory;
 
     protected $casts = [
-        'is_purchasable' => 'boolean'
+        'is_purchasable' => 'boolean',
     ];
 
     public function customerPackages(): HasMany
@@ -22,5 +22,22 @@ class Packages extends BaseModel
     public function pppProfile(): BelongsTo
     {
         return $this->belongsTo(PppProfile::class);
+    }
+
+    public static function getDropDownWithPpp(): array
+    {
+        return self::query()
+            ->with('pppProfile')
+            ->where('is_purchasable', true)
+            ->whereHas('pppProfile')
+            ->get()
+            ->mapWithKeys(function ($package) {
+                $profileName = $package->pppProfile?->profile_name ?? '-';
+
+                return [
+                    $package->id => "{$profileName} ({$package->name})",
+                ];
+            })
+            ->toArray();
     }
 }

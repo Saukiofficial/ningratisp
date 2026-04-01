@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Customers\Tables;
 
+use App\Helpers\MikrotikAPINative;
 use App\Models\Customer;
 use App\Models\Discount;
 use App\Models\PppProfile;
@@ -9,6 +10,7 @@ use App\Services\ZeroTierProxyService;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
@@ -147,6 +149,26 @@ class CustomersTable
                                 ])
                                 ->success()
                                 ->send();
+                        }),
+                    DeleteAction::make()
+                        ->visible(
+                            fn(Customer $record) => !$record->invoices()->exists()
+                        )
+                        ->action(function (Customer $record, DeleteAction $action) {
+                            $removePpoe = (new MikrotikAPINative())->deletePpoeCustomer($record->username);
+                            if (!empty($removePpoe['error']) && $removePpoe['status'] == true) {
+                                Notification::make()
+                                    ->title('Failed remove PPPoE Customer')
+                                    ->body($removePpoe['message'] ?? '')
+                                    ->danger()->send();
+                                $action->halt(true);
+                                return;
+                            }
+
+                            $record->delete();
+                            Notification::make()
+                                ->title('Success remove PPPoE Customer')
+                                ->success()->send();
                         })
                 ])
             ])

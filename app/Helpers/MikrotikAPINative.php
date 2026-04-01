@@ -3,6 +3,7 @@
 namespace App\Helpers;
 
 use App\Models\LogMikrotik;
+use App\Models\PppProfile;
 use App\Models\Voucher;
 use App\Trait\HasMikrotikConfiguration;
 use Exception;
@@ -28,19 +29,20 @@ class MikrotikAPINative
         $this->port = $port ?? config('app.mikrotik.port', 8728);
         $this->ssl = $ssl ?? config('app.mikrotik.ssl', false);
 
-        $this->api = new RouterosAPI();
+        $this->api = new RouterosAPI;
         $this->api->port = $this->port;
         $this->api->ssl = $this->ssl;
         $this->api->attempts = 1;
-        $this->api->timeout = !empty($this->getRequestTimeout()) ?
+        $this->api->timeout = ! empty($this->getRequestTimeout()) ?
             $this->getRequestTimeout() : 3;
     }
 
     private function connect()
     {
-        if (!$this->api->connected) {
+        if (! $this->api->connected) {
             return $this->api->connect($this->host, $this->user, $this->password);
         }
+
         return true;
     }
 
@@ -50,7 +52,7 @@ class MikrotikAPINative
         $response = [];
 
         try {
-            if (!$this->connect()) {
+            if (! $this->connect()) {
                 throw new Exception('Failed to connect to MikroTik');
             }
 
@@ -62,7 +64,7 @@ class MikrotikAPINative
                     'detail' => 'MikroTik Error',
                     'error' => 400,
                     'message' => $response['!trap'][0]['message'] ?? 'Unknown error',
-                    'status' => $error
+                    'status' => $error,
                 ];
             }
         } catch (Exception $e) {
@@ -71,7 +73,7 @@ class MikrotikAPINative
                 'detail' => 'Exception Request',
                 'error' => 500,
                 'message' => $e->getMessage(),
-                'status' => $error
+                'status' => $error,
             ];
         }
 
@@ -81,7 +83,7 @@ class MikrotikAPINative
                 'detail' => 'Empty Response',
                 'error' => 400,
                 'message' => 'Empty Response',
-                'status' => $error
+                'status' => $error,
             ];
         }
 
@@ -111,7 +113,7 @@ class MikrotikAPINative
     public function isConnected(): bool
     {
         try {
-            $api = new RouterosAPI();
+            $api = new RouterosAPI;
             $api->port = $this->port;
             $api->ssl = $this->ssl;
             $api->timeout = 3;
@@ -137,7 +139,7 @@ class MikrotikAPINative
      */
     public function createVoucher($code, $uptime = 3, $uptimeType = 'h', $server = null, $profile = 'default', $password = null)
     {
-        if (!defined("App\Models\Voucher::" . strtoupper($uptimeType) . "_{$uptime}")) {
+        if (! defined("App\Models\Voucher::" . strtoupper($uptimeType) . "_{$uptime}")) {
             return false;
         }
 
@@ -150,11 +152,11 @@ class MikrotikAPINative
             'limit-uptime' => $profile['limit'],
         ];
 
-        if (!empty($server)) {
+        if (! empty($server)) {
             $params['server'] = $server;
         }
 
-        if (!empty($password)) {
+        if (! empty($password)) {
             $params['password'] = $password;
         }
 
@@ -162,12 +164,62 @@ class MikrotikAPINative
 
         if (is_string($response)) {
             $response = $this->request('/ip/hotspot/user/print', [
-                '?.id' => $response
+                '?.id' => $response,
             ]);
             $response = $this->parseFirstResponse($response);
         }
 
         return $response;
+    }
+
+    /**
+     * Create kode voucher
+     *
+     * @param  string  $code  Kode voucher
+     * @param  int  $uptime  Limit aktif (Jam)
+     * @param  string  $uptimeType  Tipe uptime (d=Hari, h=Jam, m=Menit, s=Detik)
+     * @param  string  $server  Server hotspot
+     * @param  string  $profile  Profile hotspot
+     * @param  string  $password  Profile hotspot
+     */
+    public function createPpoeCustomer($username, PppProfile $pppProfile, $password = 12345, $localIp = null, $remoteIp = null)
+    {
+        $this->action = str(__FUNCTION__)->snake('-');
+
+        $params = [
+            'name' => $username,
+            'password' => $password,
+            'service' => 'pppoe',
+            'profile' => $pppProfile->profile_name,
+            'local-address' => $localIp,
+            'remote-address' => $remoteIp,
+        ];
+
+        $response = $this->request('/ppp/secret/add', $params);
+
+        if (is_string($response)) {
+            $response = $this->request('/ppp/secret/print', [
+                '?.id' => $response,
+            ]);
+            $response = $this->parseFirstResponse($response);
+        }
+
+        return $response;
+    }
+
+    public function deletePpoeCustomer($username)
+    {
+        $user = $this->getPppUser($username);
+        if (empty($user['.id'])) {
+            $user['status'] = true;
+            return $user;
+        }
+
+        $response = $this->request('/ppp/secret/remove', [
+            '.id' => $user['.id'],
+        ]);
+
+        return $this->parseFirstResponse($response);
     }
 
     /**
@@ -241,16 +293,16 @@ class MikrotikAPINative
         $this->action = str(__FUNCTION__)->snake('-');
         $this->setShouldLog(false);
 
-        $response = !$fromCache ? $this->request('/ppp/secret/print') : cache($cacheKey);
+        $response = ! $fromCache ? $this->request('/ppp/secret/print') : cache($cacheKey);
         if (empty($response) && $fromCache) {
             $response = $this->request('/ppp/secret/print');
 
-            if (is_array($response) && !isset($response['error'])) {
+            if (is_array($response) && ! isset($response['error'])) {
                 Cache::remember($cacheKey, now()->addHour(), fn() => $response);
             }
         }
 
-        if (!$fromCache && (is_array($response) && !isset($response['error']))) {
+        if (! $fromCache && (is_array($response) && ! isset($response['error']))) {
             Cache::delete($cacheKey);
             Cache::remember($cacheKey, now()->addHour(), fn() => $response);
         }
@@ -339,7 +391,7 @@ class MikrotikAPINative
 
         return $this->request('/interface/monitor-traffic', [
             'interface' => $interface,
-            'once' => ''
+            'once' => '',
         ]);
     }
 
@@ -350,7 +402,7 @@ class MikrotikAPINative
 
         return $this->request('/ping', [
             'address' => $ipAddress,
-            'count' => (string)$count
+            'count' => (string) $count,
         ]);
     }
 
@@ -362,13 +414,13 @@ class MikrotikAPINative
 
         // Find the secret by username
         $secrets = $this->request('/ppp/secret/print', [
-            '?name' => $username
+            '?name' => $username,
         ]);
 
-        if (empty($secrets) || !isset($secrets[0]['.id'])) {
+        if (empty($secrets) || ! isset($secrets[0]['.id'])) {
             return [
                 'error' => 404,
-                'message' => 'User not found'
+                'message' => 'User not found',
             ];
         }
 
@@ -381,12 +433,12 @@ class MikrotikAPINative
 
         $response = $this->request('/ppp/secret/set', [
             '.id' => $secretId,
-            'comment' => $comment
+            'comment' => $comment,
         ]);
 
         if (empty($response['status'])) {
             $response = $this->request('/ppp/secret/print', [
-                '?name' => $username
+                '?name' => $username,
             ]);
             $response = $this->parseFirstResponse($response);
         }
@@ -397,7 +449,7 @@ class MikrotikAPINative
     public function getPppUser($username)
     {
         $response = $this->request('/ppp/secret/print', [
-            '?name' => $username
+            '?name' => $username,
         ]);
 
         return $this->parseFirstResponse($response);
@@ -412,6 +464,6 @@ class MikrotikAPINative
 
     private function parseFirstResponse($response)
     {
-        return !empty($response) && !isset($response['error']) ? $response[0] : $response;
+        return ! empty($response) && ! isset($response['error']) ? $response[0] : $response;
     }
 }
