@@ -55,7 +55,7 @@ class InvoiceService
                 ->where('invoices.status', Invoices::STATUS_UNPAID)
                 ->first();
 
-            if ($activeInvoice && !empty($customer->isolir_at)) {
+            if ($activeInvoice && ! empty($customer->isolir_at)) {
                 continue;
             }
 
@@ -104,9 +104,9 @@ class InvoiceService
             $this->addItem(
                 $invoice,
                 InvoiceItem::ITEM_ADJUSTMENT,
-                'Penyesuaian (' . $desc . ')',
+                'Penyesuaian ('.$desc.')',
                 1,
-                - ($price - $invoice->amount)
+                -($price - $invoice->amount)
             );
             $this->hasAdjustment = false;
         }
@@ -134,6 +134,13 @@ class InvoiceService
     public function recalc(Invoices $invoice): void
     {
         $invoice->recalculateTotals();
+    }
+
+    public function adjustInvoice(Invoices $invoice, float $adjustmentAmount, string $description = 'Penyesuaian Tagihan'): void
+    {
+        $this->addItem($invoice, InvoiceItem::ITEM_ADJUSTMENT, $description, 1, $adjustmentAmount);
+        $invoice->recalculateTotals();
+        $invoice->save();
     }
 
     public function updatePaymentStatus(Invoices $invoice): void

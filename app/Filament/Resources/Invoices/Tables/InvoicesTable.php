@@ -5,12 +5,15 @@ namespace App\Filament\Resources\Invoices\Tables;
 use App\Models\Invoices;
 use App\Models\Payment;
 use App\Models\PaymentMethod;
+use App\Services\CreditService;
+use App\Services\InvoiceService;
+use App\Services\PaymentService;
+use App\Services\ReceivableService;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
@@ -18,8 +21,10 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Support\Icons\Heroicon;
 use Filament\Support\RawJs;
-use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\Indicator;
@@ -107,7 +112,7 @@ class InvoicesTable
                         }
 
                         return $indicators;
-                    })
+                    }),
             ])
             ->recordActions([
                 ActionGroup::make([
@@ -155,7 +160,7 @@ class InvoicesTable
                                     ->default(now()),
                                 Select::make('payment_method_id')
                                     ->label('Payment Method')
-                                    ->options(\App\Models\PaymentMethod::query()->whereHas('fee')->orderBy('name')->pluck('name', 'id')->toArray())
+                                    ->options(PaymentMethod::query()->whereHas('fee')->orderBy('name')->pluck('name', 'id')->toArray())
                                     ->searchable()
                                     ->preload()
                                     ->required()
@@ -182,25 +187,25 @@ class InvoicesTable
                                 ])
                                 ->storeFileNamesIn('file_name')
                                 ->visibility('public')
-                                ->directory('public/payment-struct')
+                                ->directory('public/payment-struct'),
                         ])
                         ->action(function (array $data, Invoices $record) {
                             $customer = $record->customerPackage?->customer;
-                            if (!$customer) {
-                                \Filament\Notifications\Notification::make()
+                            if (! $customer) {
+                                Notification::make()
                                     ->title('No customer found for this invoice')
                                     ->danger()
                                     ->send();
+
                                 return;
                             }
 
                             $method = null;
-                            if (!empty($data['payment_method_id'])) {
-                                $method = \App\Models\PaymentMethod::find($data['payment_method_id']);
+                            if (! empty($data['payment_method_id'])) {
+                                $method = PaymentMethod::find($data['payment_method_id']);
                             }
 
-
-                            app(\App\Services\PaymentService::class)->recordIncomingPaymentWithAllocations(
+                            app(PaymentService::class)->recordIncomingPaymentWithAllocations(
                                 $customer,
                                 (float) ($data['amount'] ?? 0),
                                 $method,
@@ -212,9 +217,9 @@ class InvoicesTable
                             );
 
                             $record->refresh();
-                            app(\App\Services\ReceivableService::class)->syncForInvoice($record);
+                            app(ReceivableService::class)->syncForInvoice($record);
 
-                            \Filament\Notifications\Notification::make()
+                            Notification::make()
                                 ->title('Payment recorded')
                                 ->success()
                                 ->send();
@@ -235,45 +240,114 @@ class InvoicesTable
                                 ->maxValue(function (Invoices $record) {
                                     $balance = (float) ($record->balance_due ?? 0);
                                     $customer = $record->customerPackage?->customer;
-                                    $available = $customer ? app(\App\Services\CreditService::class)->getBalance($customer) : 0.0;
+                                    $available = $customer ? app(CreditService::class)->getBalance($customer) : 0.0;
+
                                     return min($balance, $available);
                                 })
                                 ->required()
                                 ->default(function (Invoices $record) {
                                     $balance = (float) ($record->balance_due ?? 0);
                                     $customer = $record->customerPackage?->customer;
-                                    $available = $customer ? app(\App\Services\CreditService::class)->getBalance($customer) : 0.0;
+                                    $available = $customer ? app(CreditService::class)->getBalance($customer) : 0.0;
+
                                     return min($balance, $available);
                                 })
                                 ->helperText(function (Invoices $record) {
                                     $customer = $record->customerPackage?->customer;
-                                    $available = $customer ? app(\App\Services\CreditService::class)->getBalance($customer) : 0.0;
+                                    $available = $customer ? app(CreditService::class)->getBalance($customer) : 0.0;
                                     $balance = (float) ($record->balance_due ?? 0);
+
                                     return 'Available credit: IDR ' . number_format($available, 2) . ' | Balance due: IDR ' . number_format($balance, 2);
                                 }),
                         ])
                         ->action(function (Invoices $record, array $data) {
                             $customer = $record->customerPackage?->customer;
-                            if (!$customer) {
-                                \Filament\Notifications\Notification::make()
+                            if (! $customer) {
+                                Notification::make()
                                     ->title('No customer found for this invoice')
                                     ->danger()
                                     ->send();
+
                                 return;
                             }
 
-                            $res = app(\App\Services\CreditService::class)
+                            $res = app(CreditService::class)
                                 ->applyCreditToInvoice($customer, $record, (float) ($data['amount'] ?? 0));
                             $record->refresh();
-                            app(\App\Services\ReceivableService::class)->syncForInvoice($record);
+                            app(ReceivableService::class)->syncForInvoice($record);
 
-                            \Filament\Notifications\Notification::make()
+                            Notification::make()
                                 ->title('Credit applied: ' . number_format((float) ($res['applied'] ?? 0), 2))
                                 ->success()
                                 ->send();
                         })
                         ->visible(false),
                     // ->visible(fn(Invoices $record) => $record->status !== Invoices::STATUS_CANCELLED && (float) ($record->balance_due ?? 0) > 0),
+                    Action::make('adjustment')
+                        ->label('Adjustment')
+                        ->icon(Heroicon::OutlinedAdjustmentsHorizontal)
+                        ->schema([
+                            Section::make('Invoice Adjustment')
+                                ->description('Adjust the total amount of this invoice by adding an adjustment item.')
+                                ->schema([
+                                    TextInput::make('invoice_number')
+                                        ->label('Invoice Number')
+                                        ->disabled()
+                                        ->default(fn(Invoices $record) => $record->invoice_number),
+                                    TextInput::make('customer')
+                                        ->label('Invoice Number')
+                                        ->disabled()
+                                        ->default(fn(Invoices $record) => $record->customerPackage->customer->full_name),
+                                    TextInput::make('current_total')
+                                        ->label('Current Total Amount')
+                                        ->disabled()
+                                        ->numeric()
+                                        ->prefix('Rp')
+                                        ->mask(RawJs::make('$money($input)'))
+                                        ->stripCharacters(',')
+                                        ->default(fn(Invoices $record) => (float) $record->total_amount),
+                                    TextInput::make('adjustment_amount')
+                                        ->label('Adjustment Nominal')
+                                        ->numeric()
+                                        ->prefix('Rp')
+                                        ->mask(RawJs::make('$money($input)'))
+                                        ->stripCharacters(',')
+                                        ->live(true)
+                                        ->required()
+                                        ->afterStateUpdated(function (Get $get, Set $set, $state) {
+                                            $current = (float) ($get('current_total') ?? 0);
+                                            $adj = (float) ($state ?? 0);
+                                            $set('new_total', number_format($current + $adj));
+                                        }),
+                                    TextInput::make('new_total')
+                                        ->label('New Estimated Total')
+                                        ->disabled()
+                                        ->prefix('Rp')
+                                        ->live()
+                                        ->dehydrated(false)
+                                        ->default(
+                                            fn(Invoices $record) => number_format($record->total_amount)
+                                        ),
+                                    TextInput::make('description')
+                                        ->label('Reason/Description')
+                                        ->required()
+                                        ->columnSpanFull()
+                                        ->default('Penyesuaian Tagihan'),
+                                ])->columns(2),
+                        ])
+                        ->action(function (Invoices $record, array $data) {
+                            app(InvoiceService::class)->adjustInvoice(
+                                $record,
+                                (float) ($data['adjustment_amount'] ?? 0),
+                                $data['description']
+                            );
+
+                            Notification::make()
+                                ->title('Invoice adjusted successfully')
+                                ->success()
+                                ->send();
+                        })
+                        ->visible(fn(Invoices $record) => $record->status !== Invoices::STATUS_CANCELLED && $record->status !== Invoices::STATUS_PAID),
                     DeleteAction::make()
                         ->visible(
                             fn(Invoices $record) => $record->status == Invoices::STATUS_UNPAID
@@ -308,8 +382,8 @@ class InvoicesTable
                                 ->body("Invoice {$no} deleted")
                                 ->success()
                                 ->send();
-                        })
-                ])
+                        }),
+                ]),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
