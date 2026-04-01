@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Customers\RelationManagers;
 use App\Models\CustomerPackages;
 use App\Models\Invoices;
 use App\Models\PaymentMethod;
+use App\Services\InvoiceService;
 use App\Services\PaymentService;
 use App\Services\ReceivableService;
 use Filament\Actions\Action;
@@ -163,6 +164,71 @@ class ActiveInvoicesRelationManager extends RelationManager
                                 ->success()
                                 ->send();
                         }),
+                    Action::make('adjustment')
+                        ->label('Adjustment')
+                        ->icon(Heroicon::OutlinedAdjustmentsHorizontal)
+                        ->schema([
+                            Section::make('Invoice Adjustment')
+                                ->description('Adjust the total amount of this invoice by adding an adjustment item.')
+                                ->schema([
+                                    TextInput::make('invoice_number')
+                                        ->label('Invoice Number')
+                                        ->disabled()
+                                        ->default(fn(Invoices $record) => $record->invoice_number),
+                                    TextInput::make('customer')
+                                        ->label('Invoice Number')
+                                        ->disabled()
+                                        ->default(fn(Invoices $record) => $record->customerPackage->customer->full_name),
+                                    TextInput::make('current_total')
+                                        ->label('Current Total Amount')
+                                        ->disabled()
+                                        ->numeric()
+                                        ->prefix('Rp')
+                                        ->mask(RawJs::make('$money($input)'))
+                                        ->stripCharacters(',')
+                                        ->default(fn(Invoices $record) => (float) $record->total_amount),
+                                    TextInput::make('adjustment_amount')
+                                        ->label('Adjustment Nominal')
+                                        ->numeric()
+                                        ->prefix('Rp')
+                                        ->mask(RawJs::make('$money($input)'))
+                                        ->stripCharacters(',')
+                                        ->live(true)
+                                        ->required()
+                                        ->afterStateUpdated(function ($get, $set, $state) {
+                                            $current = (float) ($get('current_total') ?? 0);
+                                            $adj = (float) ($state ?? 0);
+                                            $set('new_total', number_format($current + $adj));
+                                        }),
+                                    TextInput::make('new_total')
+                                        ->label('New Estimated Total')
+                                        ->disabled()
+                                        ->prefix('Rp')
+                                        ->live()
+                                        ->dehydrated(false)
+                                        ->default(
+                                            fn(Invoices $record) => number_format($record->total_amount)
+                                        ),
+                                    TextInput::make('description')
+                                        ->label('Reason/Description')
+                                        ->required()
+                                        ->columnSpanFull()
+                                        ->default('Penyesuaian Tagihan'),
+                                ])->columns(2),
+                        ])
+                        ->action(function (Invoices $record, array $data) {
+                            app(InvoiceService::class)->adjustInvoice(
+                                $record,
+                                (float) ($data['adjustment_amount'] ?? 0),
+                                $data['description']
+                            );
+
+                            Notification::make()
+                                ->title('Invoice adjusted successfully')
+                                ->success()
+                                ->send();
+                        })
+                        ->visible(fn(Invoices $record) => $record->status !== Invoices::STATUS_CANCELLED && $record->status !== Invoices::STATUS_PAID),
                     Action::make('delete')
                         ->modalHeading(
                             fn(): string => __('filament-actions::delete.single.modal.heading', ['label' => $this->getRelationshipTitle()])
