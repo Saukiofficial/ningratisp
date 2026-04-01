@@ -104,9 +104,9 @@ class InvoiceService
             $this->addItem(
                 $invoice,
                 InvoiceItem::ITEM_ADJUSTMENT,
-                'Penyesuaian ('.$desc.')',
+                'Penyesuaian (' . $desc . ')',
                 1,
-                -($price - $invoice->amount)
+                - ($price - $invoice->amount)
             );
             $this->hasAdjustment = false;
         }
@@ -209,6 +209,7 @@ class InvoiceService
     {
         $ym = $periodStart->format('Ym');
         $latestInvoice = Invoices::query()
+            ->where('invoice_type', Invoices::TYPE_MONTHLY)
             ->whereYear('invoice_date', $periodStart->year)
             ->whereMonth('invoice_date', $periodStart->month)
             ->orderByDesc('invoice_number')
