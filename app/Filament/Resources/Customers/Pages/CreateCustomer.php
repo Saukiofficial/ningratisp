@@ -174,10 +174,22 @@ class CreateCustomer extends CreateRecord
 
         return $schema
             ->components([
-                Section::make('Router')
+                Section::make('Information')
+                    ->description('Informasi basic mengenai customer')
                     ->schema([
+                        Select::make('area')
+                            ->options($areas->pluck('name', 'customer_prefix'))
+                            ->searchable()
+                            ->required()
+                            ->live()
+                            ->afterStateUpdated(function ($get, $set, $state) use ($areas) {
+                                $state = $state == '-' ? null : $state;
+                                $set('username', $get('ppp_user') . $state);
+                                $network = $areas->firstWhere('customer_prefix', $state)?->network_prefix ?? '';
+                                $set('ip_network', $network);
+                            }),
                         TextInput::make('full_name')
-                            ->label('Name'),
+                            ->label('Nama Lengkap'),
                         TextInput::make('ppp_user')
                             ->label('Username')
                             ->required()
@@ -196,37 +208,30 @@ class CreateCustomer extends CreateRecord
                                 $set('package_selected', $component->getOptions()[$state] ?? null);
                                 $set('package_id', $state);
                             }),
-                        Select::make('area')
-                            ->options($areas->pluck('name', 'customer_prefix'))
-                            ->searchable()
-                            ->required()
-                            ->live()
-                            ->afterStateUpdated(function ($get, $set, $state) use ($areas) {
-                                $state = $state == '-' ? null : $state;
-                                $set('username', $get('ppp_user') . $state);
-                                $network = $areas->firstWhere('customer_prefix', $state)?->network_prefix ?? '';
-                                $set('ip_network', $network);
-                            }),
                         Hidden::make('ip_network'),
                         Hidden::make('password')->default(12345),
                         Hidden::make('form_create')->default(true),
                         TextInput::make('phone')
+                            ->label('No. Whatsapp')
                             ->mask('9999-9999-9999')
                             ->placeholder('0812-3456-789'),
                     ]),
-                Section::make('PPoe Information')
+                Section::make('PPPOE Information')
+                    ->description('Gunakan username dan password pada WAN Modem')
                     ->schema([
                         TextInput::make('package_selected')
-                            ->label('package')
+                            ->label('Paket dipilih')
                             ->disabled()
                             ->live(),
                         TextInput::make('username')
                             ->label('Username')
                             ->disabled()
                             ->dehydrated()
+                            ->copyable()
                             ->live(),
                         TextInput::make('password_pptp')
                             ->label('Password')
+                            ->copyable()
                             ->dehydrated()
                             ->disabled()
                             ->default(12345)
