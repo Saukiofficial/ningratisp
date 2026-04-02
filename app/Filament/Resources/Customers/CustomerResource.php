@@ -20,6 +20,7 @@ use Filament\Tables\Table;
 use Filament\Actions\Action;
 use App\Helpers\MikrotikAPINative;
 use App\Models\PppProfile;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use UnitEnum;
@@ -33,6 +34,10 @@ class CustomerResource extends Resource
     protected static ?int $navigationSort = 1;
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-user-group';
+
+    protected static ?string $recordTitleAttribute = 'username';
+
+    protected static int $globalSearchResultsLimit = 20;
 
     public static function form(Schema $schema): Schema
     {
@@ -114,6 +119,24 @@ class CustomerResource extends Resource
     {
         return [
             CustomerStats::class
+        ];
+    }
+
+    public static function getGlobalSearchResultUrl(Model $record): ?string
+    {
+        return static::getUrl('view', ['record' => $record]);
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['username', 'full_name', 'billing_number'];
+    }
+
+    public static function getGlobalSearchResultDetails(Model $record): array
+    {
+        return [
+            'ID Pelanggan' => $record->billing_number,
+            'Name' => $record->full_name,
         ];
     }
 }

@@ -27,6 +27,10 @@ class InvoiceResource extends Resource
 
     protected static string | UnitEnum | null $navigationGroup = 'Transactions';
 
+    protected static ?string $recordTitleAttribute = 'invoice_number';
+
+    protected static int $globalSearchResultsLimit = 20;
+
     public static function form(Schema $schema): Schema
     {
         return InvoiceForm::configure($schema);
@@ -67,5 +71,24 @@ class InvoiceResource extends Resource
     public static function canCreate(): bool
     {
         return false;
+    }
+
+    public static function getGlobalSearchResultUrl(Model $record): ?string
+    {
+        return static::getUrl('index', ['search' => $record->invoice_number]);
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['invoice_number', 'customerPackage.customer.full_name'];
+    }
+
+    public static function getGlobalSearchResultDetails(Model $record): array
+    {
+        return [
+            'Customer' => $record->customerPackage->customer->full_name ?? $record->customerPackage->customer->username,
+            'Tanggal' => $record->invoice_date->format('d F Y'),
+            'Status' => Invoices::getStatusLabel()[$record->status]
+        ];
     }
 }
