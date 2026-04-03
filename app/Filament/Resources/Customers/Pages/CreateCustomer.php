@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Customers\Pages;
 use App\Filament\Resources\Customers\CustomerResource;
 use App\Helpers\MikrotikAPINative;
 use App\Models\Customer;
+use App\Models\CustomerInstallationOrder;
 use App\Models\Packages;
 use App\Models\PppArea;
 use App\Models\PppProfile;
@@ -24,9 +25,90 @@ class CreateCustomer extends CreateRecord
 
     protected static string $resource = CustomerResource::class;
 
+    // public function mount(): void
+    // {
+    //     parent::mount();
+
+    //     $queryData = request()->query(); // Use query() instead of all()
+
+    //     if (!empty($queryData)) {
+    //         // Map query param names to form field names
+    //         $formData = [
+    //             'full_name'        => $queryData['full_name'] ?? null,
+    //             'phone'            => $queryData['phone'] ?? null,
+    //             'area'             => $queryData['area'] ?? null,
+    //             'package_id'       => $queryData['package_id'] ?? null,
+    //             'ppp_user'         => $queryData['ppp_user'] ?? null,
+    //             'password_pptp'    => $queryData['password_pptp'] ?? null,
+    //             'installation_order_id' => $queryData['installation_order_id'] ?? null,
+    //         ];
+
+    //         // Trigger area logic before filling the form
+    //         if (!empty($queryData['area'])) {
+    //             $areas = PppArea::all(['name', 'customer_prefix', 'network_prefix']);
+    //             $network = $areas->firstWhere('customer_prefix', $queryData['area'])?->network_prefix ?? '';
+    //             $formData['ip_network'] = $network;
+
+    //             if (!empty($queryData['ppp_user'])) {
+    //                 $formData['username'] = $queryData['ppp_user'] . $queryData['area'];
+    //             }
+    //         }
+
+    //         // Fill with only non-null values merged over current state
+    //         $this->form->fill(array_merge(
+    //             $this->form->getState(),
+    //             array_filter($formData, fn($v) => !is_null($v))
+    //         ));
+    //     }
+    // }
+
+    public function mount(): void
+    {
+        parent::mount();
+
+        $queryData = request()->query();
+
+        if (! empty($queryData)) {
+            // Set directly into $this->data instead of using form->fill()
+            if (! empty($queryData['full_name'])) {
+                $this->data['full_name'] = $queryData['full_name'];
+            }
+            if (! empty($queryData['phone'])) {
+                $this->data['phone'] = $queryData['phone'];
+            }
+            if (! empty($queryData['area'])) {
+                $this->data['area'] = $queryData['area'];
+            }
+            if (! empty($queryData['package_id'])) {
+                $this->data['package_id'] = $queryData['package_id'];
+            }
+            if (! empty($queryData['package_selected'])) {
+                $this->data['package_selected'] = $queryData['package_selected'];
+            }
+            if (! empty($queryData['password_pptp'])) {
+                $this->data['password_pptp'] = $queryData['password_pptp'];
+            }
+            if (! empty($queryData['installation_order_id'])) {
+                $this->data['installation_order_id'] = $queryData['installation_order_id'];
+            }
+
+            // Area logic
+            if (! empty($queryData['area'])) {
+                $areas = PppArea::all(['name', 'customer_prefix', 'network_prefix']);
+                $network = $areas->firstWhere('customer_prefix', $queryData['area'])?->network_prefix ?? '';
+                $this->data['ip_network'] = $network;
+
+                if (! empty($queryData['ppp_user'])) {
+                    $this->data['ppp_user'] = $queryData['ppp_user'];
+                    $this->data['username'] = $queryData['ppp_user'].$queryData['area'];
+                }
+            }
+        }
+    }
+
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        if (!empty($data['form_create']) && Customer::query()->where('username', $data['username'])->exists()) {
+        if (! empty($data['form_create']) && Customer::query()->where('username', $data['username'])->exists()) {
             Notification::make()
                 ->title('Username sudah terdaftar')
                 ->danger()->send();
@@ -76,31 +158,31 @@ class CreateCustomer extends CreateRecord
             $networkPrefix = $data['ip_network'];
 
             $mikrotikLocalIps = $secrets->pluck('local-address')
-                ->filter(fn($ip) => $ip && str_starts_with($ip, $networkPrefix))
-                ->map(fn($ip) => ($octet = str_replace($networkPrefix, '', $ip)) && is_numeric($octet) ? (int)$octet : null)
+                ->filter(fn ($ip) => $ip && str_starts_with($ip, $networkPrefix))
+                ->map(fn ($ip) => ($octet = str_replace($networkPrefix, '', $ip)) && is_numeric($octet) ? (int) $octet : null)
                 ->filter();
 
             $databaseLocalIps = Customer::query()
-                ->where('local_address', 'like', $networkPrefix . '%')
+                ->where('local_address', 'like', $networkPrefix.'%')
                 ->where('id', '!=', $record->id) // exclude current record
                 ->pluck('local_address')
-                ->map(fn($ip) => ($octet = str_replace($networkPrefix, '', $ip)) && is_numeric($octet) ? (int)$octet : null)
+                ->map(fn ($ip) => ($octet = str_replace($networkPrefix, '', $ip)) && is_numeric($octet) ? (int) $octet : null)
                 ->filter();
 
             $existingLocalIps = $mikrotikLocalIps->merge($databaseLocalIps)->unique()->sort();
             $localIpSuffix = $existingLocalIps->isEmpty() ? 1 : $existingLocalIps->last() + 1;
-            $localIp = $networkPrefix . $localIpSuffix;
+            $localIp = $networkPrefix.$localIpSuffix;
 
             $mikrotikRemoteIps = $secrets->pluck('remote-address')
-                ->filter(fn($ip) => $ip && str_starts_with($ip, $networkPrefix))
-                ->map(fn($ip) => ($octet = str_replace($networkPrefix, '', $ip)) && is_numeric($octet) ? (int)$octet : null)
+                ->filter(fn ($ip) => $ip && str_starts_with($ip, $networkPrefix))
+                ->map(fn ($ip) => ($octet = str_replace($networkPrefix, '', $ip)) && is_numeric($octet) ? (int) $octet : null)
                 ->filter();
 
             $databaseRemoteIps = Customer::query()
-                ->where('remote_address', 'like', $networkPrefix . '%')
+                ->where('remote_address', 'like', $networkPrefix.'%')
                 ->where('id', '!=', $record->id)
                 ->pluck('remote_address')
-                ->map(fn($ip) => ($octet = str_replace($networkPrefix, '', $ip)) && is_numeric($octet) ? (int)$octet : null)
+                ->map(fn ($ip) => ($octet = str_replace($networkPrefix, '', $ip)) && is_numeric($octet) ? (int) $octet : null)
                 ->filter();
 
             $existingRemoteIps = $mikrotikRemoteIps->merge($databaseRemoteIps)->unique()->sort();
@@ -116,12 +198,12 @@ class CreateCustomer extends CreateRecord
                 $this->halt();
             }
 
-            $remoteIp = $networkPrefix . $nextIpSuffix;
+            $remoteIp = $networkPrefix.$nextIpSuffix;
 
             // 3. Check PPP Profile
             $pppProfile = PppProfile::find($data['ppp_profile_id']);
 
-            if (!$pppProfile) {
+            if (! $pppProfile) {
                 Notification::make()
                     ->title('PPP Profile not found')
                     ->danger()->send();
@@ -153,7 +235,7 @@ class CreateCustomer extends CreateRecord
             $record->update([
                 'local_address' => $localIp,
                 'remote_address' => $remoteIp,
-                'service_name' => 'pppoe'
+                'service_name' => 'pppoe',
             ]);
 
             return $record;
@@ -166,6 +248,14 @@ class CreateCustomer extends CreateRecord
             'package_id' => $this->data['package_id'],
             'start_date' => now(),
         ]);
+
+        if (! empty($this->data['installation_order_id'])) {
+            CustomerInstallationOrder::find($this->data['installation_order_id'])?->update([
+                'status' => CustomerInstallationOrder::STATUS_DONE,
+                'finished_date' => now(),
+                'customer_id' => $this->record->id,
+            ]);
+        }
     }
 
     public function form(Schema $schema): Schema
@@ -177,6 +267,7 @@ class CreateCustomer extends CreateRecord
                 Section::make('Information')
                     ->description('Informasi basic mengenai customer')
                     ->schema([
+                        Hidden::make('installation_order_id'),
                         Select::make('area')
                             ->options($areas->pluck('name', 'customer_prefix'))
                             ->searchable()
@@ -184,7 +275,7 @@ class CreateCustomer extends CreateRecord
                             ->live()
                             ->afterStateUpdated(function ($get, $set, $state) use ($areas) {
                                 $state = $state == '-' ? null : $state;
-                                $set('username', $get('ppp_user') . $state);
+                                $set('username', $get('ppp_user').$state);
                                 $network = $areas->firstWhere('customer_prefix', $state)?->network_prefix ?? '';
                                 $set('ip_network', $network);
                             }),
@@ -195,7 +286,7 @@ class CreateCustomer extends CreateRecord
                             ->required()
                             ->live(true)
                             ->afterStateUpdated(
-                                fn($get, $set, $state) => $set('username', $state . $get('area'))
+                                fn ($get, $set, $state) => $set('username', $state.$get('area'))
                             ),
                         Select::make('package_id')
                             ->label('Paket')

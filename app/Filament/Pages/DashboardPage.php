@@ -4,12 +4,14 @@ namespace App\Filament\Pages;
 
 use App\Filament\Widgets\AccountsReceivableChart;
 use App\Filament\Widgets\FinancialStatsOverview;
+use App\Filament\Widgets\LatestInstallationOrders;
 use App\Filament\Widgets\MRRStats;
 use App\Filament\Widgets\NetRevenueChart;
 use App\Filament\Widgets\PaymentsByMethodChart;
 use App\Filament\Widgets\RevenueOverviewChart;
 use App\Filament\Widgets\VirtualAccountStatusChart;
 use App\Models\Enum\RolesEnum;
+use App\Models\User;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Pages\Dashboard;
@@ -31,15 +33,15 @@ class DashboardPage extends Dashboard
                         ->body('The widget data has been updated.')
                         ->success()
                         ->send();
-                })
+                }),
         ];
     }
 
     public function getHeaderWidgets(): array
     {
-        /** @var \App\Models\User */
+        /** @var User */
         $user = auth('web')->user();
-        if (!$user->hasRole(RolesEnum::SUPER_ADMIN)) {
+        if (! $user->hasRole(RolesEnum::SUPER_ADMIN)) {
             return [];
         }
 
@@ -57,13 +59,14 @@ class DashboardPage extends Dashboard
             PaymentsByMethodChart::class,
             VirtualAccountStatusChart::class,
             AccountsReceivableChart::class,
+            LatestInstallationOrders::class,
         ];
         $widgets = [
             AccountWidget::class,
             FilamentInfoWidget::class,
         ];
 
-        /** @var \App\Models\User */
+        /** @var User */
         $user = auth('web')->user();
         if ($user->hasRole(RolesEnum::SUPER_ADMIN)) {
             $widgets = array_merge($financeChart, $widgets);
