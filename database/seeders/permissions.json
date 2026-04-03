@@ -203,6 +203,13 @@
         "permissions": [
             "View:Customer",
             "ViewAny:Customer",
+            "Create:Customer",
+            "Update:Customer",
+            "Delete:Customer",
+            "DeleteAny:Customer",
+            "Restore:Customer",
+            "ForceDelete:Customer",
+            "ForceDeleteAny:Customer",
             "View:DashboardPage",
             "View:InformationMikrotik",
             "View:CustomerConnection",
