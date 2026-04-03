@@ -4,6 +4,7 @@ namespace App\Filament\Widgets;
 
 use App\Filament\Trait\RefreshDashboardWidget;
 use App\Models\Invoices;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Filament\Support\RawJs;
 use Flowframe\Trend\Trend;
 use Flowframe\Trend\TrendValue;
@@ -12,7 +13,7 @@ use Leandrocfe\FilamentApexCharts\Widgets\ApexChartWidget;
 
 class RevenueOverviewChart extends ApexChartWidget
 {
-    use RefreshDashboardWidget;
+    use RefreshDashboardWidget, HasWidgetShield;
 
     protected static ?string $chartId = 'revenueOverviewChart';
     protected static ?string $heading = 'Revenue Overview (Last 12 Months)';

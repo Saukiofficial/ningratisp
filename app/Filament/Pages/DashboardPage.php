@@ -39,12 +39,6 @@ class DashboardPage extends Dashboard
 
     public function getHeaderWidgets(): array
     {
-        /** @var User */
-        $user = auth('web')->user();
-        if (! $user->hasRole(RolesEnum::SUPER_ADMIN)) {
-            return [];
-        }
-
         return [
             FinancialStatsOverview::class,
             MRRStats::class,
@@ -53,25 +47,15 @@ class DashboardPage extends Dashboard
 
     public function getWidgets(): array
     {
-        $financeChart = [
+        return [
             RevenueOverviewChart::class,
             NetRevenueChart::class,
             PaymentsByMethodChart::class,
             VirtualAccountStatusChart::class,
             AccountsReceivableChart::class,
             LatestInstallationOrders::class,
-        ];
-        $widgets = [
             AccountWidget::class,
             FilamentInfoWidget::class,
         ];
-
-        /** @var User */
-        $user = auth('web')->user();
-        if ($user->hasRole(RolesEnum::SUPER_ADMIN)) {
-            $widgets = array_merge($financeChart, $widgets);
-        }
-
-        return $widgets;
     }
 }

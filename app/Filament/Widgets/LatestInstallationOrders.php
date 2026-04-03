@@ -4,6 +4,7 @@ namespace App\Filament\Widgets;
 
 use App\Filament\Resources\CustomerInstallations\CustomerInstallationResource;
 use App\Models\CustomerInstallationOrder;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Filament\Actions\Action;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -11,6 +12,8 @@ use Filament\Widgets\TableWidget as BaseWidget;
 
 class LatestInstallationOrders extends BaseWidget
 {
+    use HasWidgetShield;
+
     protected static ?int $sort = 4;
 
     protected int|string|array $columnSpan = 'full';

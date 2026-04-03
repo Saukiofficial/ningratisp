@@ -4,6 +4,7 @@ namespace App\Filament\Widgets;
 
 use App\Filament\Trait\RefreshDashboardWidget;
 use App\Models\Invoices;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Filament\Support\RawJs;
 use Flowframe\Trend\Trend;
 use Flowframe\Trend\TrendValue;
@@ -12,7 +13,7 @@ use Leandrocfe\FilamentApexCharts\Widgets\ApexChartWidget;
 
 class NetRevenueChart extends ApexChartWidget
 {
-    use RefreshDashboardWidget;
+    use RefreshDashboardWidget, HasWidgetShield;
 
     protected static ?string $chartId = 'netRevenueChart';
     protected static ?string $heading = 'Net Revenue (Last 12 Months)';

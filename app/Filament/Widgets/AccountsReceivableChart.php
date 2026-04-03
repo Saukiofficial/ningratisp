@@ -4,6 +4,7 @@ namespace App\Filament\Widgets;
 
 use App\Filament\Trait\RefreshDashboardWidget;
 use App\Models\Invoices;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Filament\Support\RawJs;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -12,7 +13,7 @@ use Livewire\Attributes\On;
 
 class AccountsReceivableChart extends ApexChartWidget
 {
-    use RefreshDashboardWidget;
+    use RefreshDashboardWidget, HasWidgetShield;
 
     protected static ?string $chartId = 'accountsReceivableChart';
     protected static ?string $heading = 'Accounts Receivable Aging';

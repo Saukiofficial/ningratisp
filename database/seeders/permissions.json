@@ -194,7 +194,21 @@
             "View:PaymentsByMethodChart",
             "View:RevenueOverviewChart",
             "View:VirtualAccountStatusChart",
-            "View:StatsOverview"
+            "View:StatsOverview",
+            "ViewAny:CustomerInstallationOrder",
+            "View:CustomerInstallationOrder",
+            "Create:CustomerInstallationOrder",
+            "Update:CustomerInstallationOrder",
+            "Delete:CustomerInstallationOrder",
+            "DeleteAny:CustomerInstallationOrder",
+            "Restore:CustomerInstallationOrder",
+            "ForceDelete:CustomerInstallationOrder",
+            "ForceDeleteAny:CustomerInstallationOrder",
+            "RestoreAny:CustomerInstallationOrder",
+            "Replicate:CustomerInstallationOrder",
+            "Reorder:CustomerInstallationOrder",
+            "View:CustomerInstallationOverview",
+            "View:LatestInstallationOrders"
         ]
     },
     {
@@ -213,7 +227,21 @@
             "View:DashboardPage",
             "View:InformationMikrotik",
             "View:CustomerConnection",
-            "ViewAny:CustomerConnection"
+            "ViewAny:CustomerConnection",
+            "ViewAny:CustomerInstallationOrder",
+            "View:CustomerInstallationOrder",
+            "Create:CustomerInstallationOrder",
+            "Update:CustomerInstallationOrder",
+            "Delete:CustomerInstallationOrder",
+            "DeleteAny:CustomerInstallationOrder",
+            "Restore:CustomerInstallationOrder",
+            "ForceDelete:CustomerInstallationOrder",
+            "ForceDeleteAny:CustomerInstallationOrder",
+            "RestoreAny:CustomerInstallationOrder",
+            "Replicate:CustomerInstallationOrder",
+            "Reorder:CustomerInstallationOrder",
+            "View:CustomerInstallationOverview",
+            "View:LatestInstallationOrders"
         ]
     }
 ]

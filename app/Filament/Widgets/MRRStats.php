@@ -5,6 +5,7 @@ namespace App\Filament\Widgets;
 use App\Filament\Trait\RefreshDashboardWidget;
 use App\Helpers\NumberFormatter;
 use App\Models\Invoices;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Flowframe\Trend\Trend;
@@ -12,7 +13,7 @@ use Illuminate\Support\Facades\Cache;
 
 class MRRStats extends BaseWidget
 {
-    use RefreshDashboardWidget;
+    use RefreshDashboardWidget, HasWidgetShield;
 
     protected function getStats(): array
     {

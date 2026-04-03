@@ -4,6 +4,7 @@ namespace App\Filament\Widgets;
 
 use App\Filament\Trait\RefreshDashboardWidget;
 use App\Models\Payment;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Filament\Support\RawJs;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -11,7 +12,7 @@ use Leandrocfe\FilamentApexCharts\Widgets\ApexChartWidget;
 
 class PaymentsByMethodChart extends ApexChartWidget
 {
-    use RefreshDashboardWidget;
+    use RefreshDashboardWidget, HasWidgetShield;
 
     protected static ?string $chartId = 'paymentsByMethodChart';
     protected static ?string $heading = 'Payments by Method (Last 30 Days)';
