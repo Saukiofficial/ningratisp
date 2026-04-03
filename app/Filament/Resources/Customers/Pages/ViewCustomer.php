@@ -10,9 +10,11 @@ use App\Filament\Resources\Customers\RelationManagers\PaymentsRelationManager;
 use App\Helpers\MikrotikAPINative;
 use App\Models\Customer;
 use Filament\Actions\Action;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
+use Filament\Support\Icons\Heroicon;
 
 class ViewCustomer extends ViewRecord
 {
@@ -21,9 +23,11 @@ class ViewCustomer extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
-            EditAction::make(),
+            EditAction::make()
+                ->icon(Heroicon::OutlinedPencilSquare),
             Action::make('isolir')
                 ->color('danger')
+                ->icon(Heroicon::OutlinedSignalSlash)
                 ->visible(fn(Customer $record) => empty($record->isolir_at))
                 ->requiresConfirmation()
                 ->action(function (Customer $record) {
@@ -55,6 +59,7 @@ class ViewCustomer extends ViewRecord
 
             Action::make('open_isolir')
                 ->color('success')
+                ->icon(Heroicon::OutlinedSignal)
                 ->visible(fn(Customer $record) => ! empty($record->isolir_at))
                 ->requiresConfirmation()
                 ->action(function (Customer $record) {
@@ -82,6 +87,27 @@ class ViewCustomer extends ViewRecord
                         ->success()
                         ->send();
                 }),
+            DeleteAction::make()
+                ->icon(Heroicon::OutlinedTrash)
+                ->visible(
+                    fn(Customer $record) => !$record->invoices()->exists()
+                )
+                ->action(function (Customer $record, DeleteAction $action) {
+                    $removePpoe = (new MikrotikAPINative())->deletePpoeCustomer($record->username);
+                    if (!empty($removePpoe['error']) && $removePpoe['status'] == true) {
+                        Notification::make()
+                            ->title('Failed remove PPPoE Customer')
+                            ->body($removePpoe['message'] ?? '')
+                            ->danger()->send();
+                        $action->halt(true);
+                        return;
+                    }
+
+                    $record->delete();
+                    Notification::make()
+                        ->title('Success remove PPPoE Customer')
+                        ->success()->send();
+                })
         ];
     }
 

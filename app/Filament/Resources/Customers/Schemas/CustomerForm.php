@@ -4,14 +4,11 @@ namespace App\Filament\Resources\Customers\Schemas;
 
 use App\Models\Customer;
 use App\Models\Discount;
-use App\Models\Packages;
 use Filament\Actions\Action;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -55,6 +52,7 @@ class CustomerForm
                                         ->title('Failed')
                                         ->body('Password mismatch')
                                         ->danger()->send();
+
                                     return;
                                 }
 
@@ -65,7 +63,7 @@ class CustomerForm
                                     ->title('Success')
                                     ->body('Password updated')
                                     ->success()->send();
-                            })
+                            }),
                     ])
                     ->aside()
                     ->schema([
@@ -76,6 +74,7 @@ class CustomerForm
                     ])
                     ->columnSpanFull(),
                 Section::make('Router')
+                    ->aside()
                     ->description('Router information for PPP configuration')
                     ->collapsed()
                     ->schema([
@@ -87,7 +86,7 @@ class CustomerForm
                     ])
                     ->afterHeader([
                         Action::make('sync')
-                            ->visible(fn(?Customer $record) => $record)
+                            ->visible(fn (?Customer $record) => $record),
                     ])
                     ->columnSpanFull(),
             ]);
