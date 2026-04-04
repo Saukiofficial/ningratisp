@@ -54,7 +54,8 @@ class CustomerResource extends Resource
         return CustomersTable::configure($table)
             ->headerActions([
                 Action::make('syncWithMikrotik')
-                    ->label('Sync Customers to MikroTik')
+                    ->icon(Heroicon::OutlinedArrowPath)
+                    ->label('Sync from MikroTik')
                     ->action(function () {
                         $mikrotik = new MikrotikAPINative();
                         $secrets = collect(

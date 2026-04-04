@@ -6,6 +6,7 @@ use App\Filament\Resources\CustomerInstallations\CustomerInstallationResource;
 use App\Filament\Widgets\CustomerInstallationOverview;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
+use Filament\Support\Icons\Heroicon;
 
 class ListCustomerInstallations extends ListRecords
 {
@@ -14,7 +15,8 @@ class ListCustomerInstallations extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            CreateAction::make()
+                ->icon(Heroicon::OutlinedPlus),
         ];
     }
 

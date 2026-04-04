@@ -6,6 +6,7 @@ use App\Filament\Resources\CustomerInstallations\CustomerInstallationResource;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ViewAction;
 use Filament\Resources\Pages\EditRecord;
+use Filament\Support\Icons\Heroicon;
 
 class EditCustomerInstallation extends EditRecord
 {
@@ -14,8 +15,10 @@ class EditCustomerInstallation extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            ViewAction::make(),
-            DeleteAction::make(),
+            ViewAction::make()
+                ->icon(Heroicon::OutlinedEye),
+            DeleteAction::make()
+                ->icon(Heroicon::OutlinedTrash),
         ];
     }
 }

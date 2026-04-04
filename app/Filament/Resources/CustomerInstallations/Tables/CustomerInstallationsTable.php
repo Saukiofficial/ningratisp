@@ -4,6 +4,7 @@ namespace App\Filament\Resources\CustomerInstallations\Tables;
 
 use App\Filament\Resources\Customers\CustomerResource;
 use App\Models\CustomerInstallationOrder;
+use App\Models\Packages;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
@@ -17,6 +18,7 @@ use Filament\Notifications\Notification;
 use Filament\Support\Colors\Color;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class CustomerInstallationsTable
@@ -36,14 +38,14 @@ class CustomerInstallationsTable
                     ->sortable(),
                 TextColumn::make('status')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn(string $state): string => match ($state) {
                         CustomerInstallationOrder::STATUS_PENDING => 'gray',
                         CustomerInstallationOrder::STATUS_ON_PROGRESS => 'warning',
                         CustomerInstallationOrder::STATUS_DONE => 'success',
                         CustomerInstallationOrder::STATUS_CANCELLED => 'danger',
                         default => 'gray',
                     })
-                    ->formatStateUsing(fn (string $state): string => CustomerInstallationOrder::getStatusLabel()[$state] ?? $state)
+                    ->formatStateUsing(fn(string $state): string => CustomerInstallationOrder::getStatusLabel()[$state] ?? $state)
                     ->sortable(),
                 TextColumn::make('installation_date')
                     ->dateTime()
@@ -58,7 +60,21 @@ class CustomerInstallationsTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                SelectFilter::make('area')
+                    ->relationship('area', 'name')
+                    ->searchable()
+                    ->preload(),
+                SelectFilter::make('package')
+                    ->relationship('package', 'name')
+                    ->getOptionLabelFromRecordUsing(
+                        fn(Packages $record) => $record->packageLabel
+                    )
+                    ->searchable()
+                    ->preload(),
+                SelectFilter::make('status')
+                    ->options(CustomerInstallationOrder::getStatusLabel())
+                    ->multiple()
+                    ->default([CustomerInstallationOrder::STATUS_PENDING, CustomerInstallationOrder::STATUS_ON_PROGRESS])
             ])
             ->recordActions([
                 ActionGroup::make([
@@ -67,7 +83,7 @@ class CustomerInstallationsTable
                         ->icon(Heroicon::OutlinedPlay)
                         ->color('warning')
                         ->requiresConfirmation()
-                        ->visible(fn (CustomerInstallationOrder $record) => $record->status === CustomerInstallationOrder::STATUS_PENDING)
+                        ->visible(fn(CustomerInstallationOrder $record) => $record->status === CustomerInstallationOrder::STATUS_PENDING)
                         ->action(function (CustomerInstallationOrder $record) {
                             $record->update(['status' => CustomerInstallationOrder::STATUS_ON_PROGRESS]);
                             Notification::make()->title('Installation started')->success()->send();
@@ -78,7 +94,7 @@ class CustomerInstallationsTable
                         ->icon(Heroicon::OutlinedPlayPause)
                         ->color(Color::Gray[100])
                         ->visible(
-                            fn (CustomerInstallationOrder $record) => in_array($record->status, [CustomerInstallationOrder::STATUS_CANCELLED, CustomerInstallationOrder::STATUS_ON_PROGRESS])
+                            fn(CustomerInstallationOrder $record) => in_array($record->status, [CustomerInstallationOrder::STATUS_CANCELLED, CustomerInstallationOrder::STATUS_ON_PROGRESS])
                         )
                         ->requiresConfirmation()
                         ->action(function (CustomerInstallationOrder $record, array $data) {
@@ -93,7 +109,7 @@ class CustomerInstallationsTable
                         ->icon(Heroicon::OutlinedXCircle)
                         ->color('danger')
                         ->requiresConfirmation()
-                        ->visible(fn (CustomerInstallationOrder $record) => in_array($record->status, [CustomerInstallationOrder::STATUS_PENDING, CustomerInstallationOrder::STATUS_ON_PROGRESS]))
+                        ->visible(fn(CustomerInstallationOrder $record) => in_array($record->status, [CustomerInstallationOrder::STATUS_PENDING, CustomerInstallationOrder::STATUS_ON_PROGRESS]))
                         ->schema([
                             Textarea::make('cancelled_reason')
                                 ->required(),
@@ -110,7 +126,7 @@ class CustomerInstallationsTable
                         ->label('Finish & Create Customer')
                         ->icon(Heroicon::OutlinedCheckCircle)
                         ->color('success')
-                        ->visible(fn (CustomerInstallationOrder $record) => $record->status === CustomerInstallationOrder::STATUS_ON_PROGRESS)
+                        ->visible(fn(CustomerInstallationOrder $record) => $record->status === CustomerInstallationOrder::STATUS_ON_PROGRESS)
                         ->schema([
                             DateTimePicker::make('finished_date')
                                 ->default(now())
@@ -147,7 +163,7 @@ class CustomerInstallationsTable
                         ->label('Maps')
                         ->icon(Heroicon::OutlinedMapPin)
                         ->color('info')
-                        ->url(fn (CustomerInstallationOrder $record) => $record->maps_link)
+                        ->url(fn(CustomerInstallationOrder $record) => $record->maps_link)
                         ->openUrlInNewTab(),
 
                     ViewAction::make(),

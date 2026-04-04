@@ -21,7 +21,7 @@ class CustomerInstallationOverview extends BaseWidget
                 ->description('Completed installations')
                 ->color('success'),
             Stat::make('Cancelled', CustomerInstallationOrder::where('status', CustomerInstallationOrder::STATUS_CANCELLED)->count())
-                ->description('Cancelled or rescheduled orders')
+                ->description('Cancelled installations')
                 ->color('danger'),
         ];
     }

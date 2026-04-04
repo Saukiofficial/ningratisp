@@ -23,7 +23,7 @@ class CustomerInstallationOrder extends Model
             self::STATUS_PENDING => 'Pending (To-do)',
             self::STATUS_ON_PROGRESS => 'On Progress',
             self::STATUS_DONE => 'Done',
-            self::STATUS_CANCELLED => 'Cancelled / Rescheduled',
+            self::STATUS_CANCELLED => 'Cancelled',
         ];
     }
 

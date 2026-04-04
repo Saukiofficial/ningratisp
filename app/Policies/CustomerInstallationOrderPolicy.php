@@ -11,7 +11,7 @@ use Illuminate\Auth\Access\HandlesAuthorization;
 class CustomerInstallationOrderPolicy
 {
     use HandlesAuthorization;
-    
+
     public function viewAny(AuthUser $authUser): bool
     {
         return $authUser->can('ViewAny:CustomerInstallationOrder');
@@ -29,11 +29,19 @@ class CustomerInstallationOrderPolicy
 
     public function update(AuthUser $authUser, CustomerInstallationOrder $customerInstallationOrder): bool
     {
+        if ($customerInstallationOrder->status == CustomerInstallationOrder::STATUS_DONE) {
+            return false;
+        }
+
         return $authUser->can('Update:CustomerInstallationOrder');
     }
 
     public function delete(AuthUser $authUser, CustomerInstallationOrder $customerInstallationOrder): bool
     {
+        if ($customerInstallationOrder->status == CustomerInstallationOrder::STATUS_DONE) {
+            return false;
+        }
+
         return $authUser->can('Delete:CustomerInstallationOrder');
     }
 
@@ -49,6 +57,10 @@ class CustomerInstallationOrderPolicy
 
     public function forceDelete(AuthUser $authUser, CustomerInstallationOrder $customerInstallationOrder): bool
     {
+        if ($customerInstallationOrder->status == CustomerInstallationOrder::STATUS_DONE) {
+            return false;
+        }
+
         return $authUser->can('ForceDelete:CustomerInstallationOrder');
     }
 
@@ -71,5 +83,4 @@ class CustomerInstallationOrderPolicy
     {
         return $authUser->can('Reorder:CustomerInstallationOrder');
     }
-
 }
