@@ -40,6 +40,9 @@ class ActiveInvoicesRelationManager extends RelationManager
 
     public function table(Table $table): Table
     {
+        /** @var \App\Models\User */
+        $user = auth('web')->user();
+
         return $table
             ->modifyQueryUsing(
                 fn(Builder $query) => $query->where($this->getRelationshipName() . '.status', Invoices::STATUS_UNPAID)
@@ -234,7 +237,7 @@ class ActiveInvoicesRelationManager extends RelationManager
                             fn(): string => __('filament-actions::delete.single.modal.heading', ['label' => $this->getRelationshipTitle()])
                         )
                         ->visible(
-                            fn(Invoices $record) => $record->status == Invoices::STATUS_UNPAID
+                            fn(Invoices $record) => $user->can('delete', $record) &&  $record->status == Invoices::STATUS_UNPAID
                         )
                         ->modalSubmitActionLabel(__('filament-actions::delete.single.modal.actions.delete.label'))
                         ->successNotificationTitle(__('filament-actions::delete.single.notifications.deleted.title'))
@@ -416,7 +419,7 @@ class ActiveInvoicesRelationManager extends RelationManager
             ->headerActions([
                 Action::make('create_invoice')
                     ->visible(
-                        fn(RelationManager $livewire) => $livewire->getOwnerRecord()
+                        fn(RelationManager $livewire) => $user->can('Create:Invoices') && $livewire->getOwnerRecord()
                             ->customerPackages()
                             ->where('status', CustomerPackages::STATUS_ACTIVE)
                             ->exists()

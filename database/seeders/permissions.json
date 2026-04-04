@@ -241,7 +241,14 @@
             "Replicate:CustomerInstallationOrder",
             "Reorder:CustomerInstallationOrder",
             "View:CustomerInstallationOverview",
-            "View:LatestInstallationOrders"
+            "View:LatestInstallationOrders",
+            "ViewAny:Invoices",
+            "View:Invoices",
+            "Update:Invoices",
+            "Restore:Invoices",
+            "RestoreAny:Invoices",
+            "Replicate:Invoices",
+            "Reorder:Invoices"
         ]
     }
 ]

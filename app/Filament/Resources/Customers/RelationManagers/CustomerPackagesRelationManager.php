@@ -50,6 +50,9 @@ class CustomerPackagesRelationManager extends RelationManager
 
     public function table(Table $table): Table
     {
+        /** @var \App\Models\User */
+        $user = auth('web')->user();
+
         return $table
             ->recordTitleAttribute('package.name')
             ->columns([
@@ -74,6 +77,7 @@ class CustomerPackagesRelationManager extends RelationManager
             ])
             ->headerActions([
                 Action::make('add_package')
+                    ->visible($user->can('Create:Packages'))
                     ->schema([
                         Select::make('package_id')
                             ->required()
@@ -142,6 +146,7 @@ class CustomerPackagesRelationManager extends RelationManager
             ])
             ->recordActions([
                 Action::make('activate')
+                    ->visible($user->can('Create:Packages'))
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->visible(
@@ -170,7 +175,7 @@ class CustomerPackagesRelationManager extends RelationManager
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
                     ->visible(
-                        fn(CustomerPackages $record) => $record->status === CustomerPackages::STATUS_ACTIVE
+                        fn(CustomerPackages $record) => $user->can('Create:Packages') && $record->status === CustomerPackages::STATUS_ACTIVE
                     )
                     ->requiresConfirmation()
                     ->action(function (CustomerPackages $record) {
