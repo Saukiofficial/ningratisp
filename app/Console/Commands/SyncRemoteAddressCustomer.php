@@ -49,7 +49,7 @@ class SyncRemoteAddressCustomer extends Command
         $bar->setFormat(' %current%/%max% [%bar%] %percent:3s%%');
         $bar->start();
 
-        $customerMikrotik = (new MikrotikAPINative)->getPppSecrets();
+        $customerMikrotik = (new MikrotikAPINative)->getPppSecrets(false);
 
         if (!empty($customerMikrotik['error'])) {
             $this->newLine();
