@@ -13,32 +13,35 @@ class PppAreaSeeder extends Seeder
     public function run(): void
     {
         $areas = [
-            ['name' => 'Daleman', 'network_prefix' => '192.168.70.', 'customer_prefix' => '_daleman'],
-            ['name' => 'Banaresep', 'network_prefix' => '192.168.70.', 'customer_prefix' => '_benaresep'],
-            ['name' => 'Lenteng', 'network_prefix' => '192.168.70.', 'customer_prefix' => '_lenteng'],
+            ['name' => 'Daleman', 'network_prefix' => '192.168.70.', 'remote_prefix' => '192.168.70.', 'customer_prefix' => '_daleman'],
+            ['name' => 'Banaresep', 'network_prefix' => '192.168.70.', 'remote_prefix' => '192.168.70.', 'customer_prefix' => '_benaresep'],
+            ['name' => 'Lenteng', 'network_prefix' => '192.168.70.', 'remote_prefix' => '192.168.70.', 'customer_prefix' => '_lenteng'],
 
-            ['name' => 'Poreh Tengah', 'network_prefix' => '192.168.30.', 'customer_prefix' => '_porehtengah'],
-            ['name' => 'Kanok', 'network_prefix' => '192.168.30.', 'customer_prefix' => '_kanok'],
-            ['name' => 'Gutoguh', 'network_prefix' => '192.168.30.', 'customer_prefix' => '_gutoguh'],
+            ['name' => 'Poreh Tengah', 'network_prefix' => '192.168.30.', 'remote_prefix' => '192.168.30.', 'customer_prefix' => '_porehtengah'],
+            ['name' => 'Kanok', 'network_prefix' => '192.168.30.', 'remote_prefix' => '192.168.30.', 'customer_prefix' => '_kanok'],
+            ['name' => 'Gutoguh', 'network_prefix' => '192.168.30.', 'remote_prefix' => '192.168.30.', 'customer_prefix' => '_gutoguh'],
 
-            ['name' => 'Serseran', 'network_prefix' => '192.168.60.', 'customer_prefix' => '_serseran'],
-            ['name' => 'Muangan', 'network_prefix' => '192.168.60.', 'customer_prefix' => '_muangan'],
-            ['name' => 'Cangkreng Laok', 'network_prefix' => '192.168.60.', 'customer_prefix' => '_cangkrenglaok'],
-            ['name' => 'Kalekoy', 'network_prefix' => '192.168.60.', 'customer_prefix' => '_kalekoy'],
+            ['name' => 'Serseran', 'network_prefix' => '192.168.60.', 'remote_prefix' => '192.168.60.', 'customer_prefix' => '_serseran'],
+            ['name' => 'Muangan', 'network_prefix' => '192.168.60.', 'remote_prefix' => '192.168.60.', 'customer_prefix' => '_muangan'],
+            ['name' => 'Cangkreng Laok', 'network_prefix' => '192.168.60.', 'remote_prefix' => '192.168.60.', 'customer_prefix' => '_cangkrenglaok'],
+            ['name' => 'Kalekoy', 'network_prefix' => '192.168.60.', 'remote_prefix' => '192.168.60.', 'customer_prefix' => '_kalekoy'],
 
-            ['name' => 'Benrengoh', 'network_prefix' => '192.168.50.', 'customer_prefix' => '_benrengoh'],
+            ['name' => 'Benrengoh', 'network_prefix' => '192.168.50.', 'remote_prefix' => '192.168.50.', 'customer_prefix' => '_benrengoh'],
 
-            ['name' => 'Tonggel', 'network_prefix' => '192.168.40.', 'customer_prefix' => '_tonggel'],
-            ['name' => 'Meddelan', 'network_prefix' => '192.168.40.', 'customer_prefix' => '_meddelan'],
+            ['name' => 'Tonggel', 'network_prefix' => '192.168.40.', 'remote_prefix' => '192.168.40.', 'customer_prefix' => '_tonggel'],
+            ['name' => 'Meddelan', 'network_prefix' => '192.168.40.', 'remote_prefix' => '192.168.40.', 'customer_prefix' => '_meddelan'],
 
-            ['name' => 'Cangkreng', 'network_prefix' => '192.168.20.', 'customer_prefix' => '_cangkreng'],
-            ['name' => 'Pocang', 'network_prefix' => '192.168.20.', 'customer_prefix' => '_pocang'],
+            ['name' => 'Cangkreng', 'network_prefix' => '192.168.20.', 'remote_prefix' => '192.168.21.', 'customer_prefix' => '_cangkreng'],
+            ['name' => 'Pocang', 'network_prefix' => '192.168.20.', 'remote_prefix' => '192.168.21.', 'customer_prefix' => '_pocang'],
 
-            ['name' => 'General / Pusat', 'network_prefix' => '192.168.10.', 'customer_prefix' => '_'],
+            ['name' => 'General / Pusat', 'network_prefix' => '192.168.10.', 'remote_prefix' => '192.168.10.', 'customer_prefix' => '_'],
         ];
 
         foreach ($areas as $area) {
-            PppArea::query()->updateOrCreate($area);
+            PppArea::query()->updateOrCreate(
+                ['customer_prefix' => $area['customer_prefix']],
+                $area
+            );
         }
     }
 }
