@@ -81,7 +81,8 @@ class RouterPanelProvider extends PanelProvider
                     ->resourceCheckboxListColumns([
                         'default' => 1,
                         'sm' => 2,
-                    ]),
+                    ])
+                    ->navigationGroup('Authorization'),
                 FilamentApexChartsPlugin::make(),
             ])
             ->databaseNotifications()
