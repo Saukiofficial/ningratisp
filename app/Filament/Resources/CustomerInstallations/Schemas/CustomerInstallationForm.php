@@ -27,7 +27,7 @@ class CustomerInstallationForm
                             ->required()
                             ->maxLength(255)
                             ->label('No. Whatsapp')
-                            ->mask('9999-9999-9999')
+                            ->mask('9999-9999-999999')
                             ->placeholder('0812-3456-789'),
                         Select::make('ppp_area_id')
                             ->label('Area')
