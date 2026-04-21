@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Helpers\TaxCalculate;
 use App\Http\Requests\MidtransCallbackRequest;
 use App\Http\Requests\VoucherRequest;
+use App\Jobs\DeleteQrisImageJob;
 use App\Models\PaymentMethod;
 use App\Models\Voucher;
 use App\Services\HotspotService;
@@ -13,6 +14,8 @@ use App\Services\Model\PaymentMethodService;
 use App\Services\Model\VoucherService;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 
 class HotspotController extends Controller
 {
@@ -25,8 +28,8 @@ class HotspotController extends Controller
 
     public function preVoucherRequest(VoucherRequest $request, PaymentMethodService $service)
     {
-        $prices = (new Voucher())->pricesDetail();
-        if (!isset($prices[$request->validated('pointer')])) {
+        $prices = (new Voucher)->pricesDetail();
+        if (! isset($prices[$request->validated('pointer')])) {
             return false;
         }
         $price = $prices[$request->validated('pointer')];
@@ -40,12 +43,13 @@ class HotspotController extends Controller
         $data['pointer'] = $request->validated('pointer');
         $data['sealcode'] = fake()->unique()->bothify('?#?#??##?#?#??##');
         $data['priceDetail'] = $price;
+
         return view('hotspot/landing-payment-link-static', $data);
     }
 
     public function voucherRequestQris(VoucherRequest $request, HotspotService $service)
     {
-        $pmService = new PaymentMethodService();
+        $pmService = new PaymentMethodService;
         $voucher = $service->generateVoucher($request->validated('pointer'));
         $channelId = 'qris';
         $channel = $pmService->buildData()->where('code', '=', $channelId)->firstOrFail();
@@ -58,19 +62,20 @@ class HotspotController extends Controller
         $voucher->fill([
             'seal_code' => $sealcode,
             'fee_id' => $fee->id,
-            'whatsapp_number' => $request->whatsapp_number ?? null
+            'whatsapp_number' => $request->whatsapp_number ?? null,
         ]);
         $voucher->save();
 
         try {
-            $pg = new MidtransService();
+            $pg = new MidtransService;
             $response = $pg->generateQRIS($voucher->order_id, $total);
         } catch (Exception $e) {
             $voucher->delete();
+
             return abort(500);
         }
 
-        if (!isset($response['status_code']) && $response['status_code'] != '201' && $response['fraud_status'] != 'accept') {
+        if (! isset($response['status_code']) && $response['status_code'] != '201' && $response['fraud_status'] != 'accept') {
             return abort(403);
         }
 
@@ -84,7 +89,25 @@ class HotspotController extends Controller
             if ($action['name'] == 'get-status') {
                 $statusUrl = $action['url'];
             }
-        };
+        }
+
+        if ($imgUrl) {
+            try {
+                $responseHttp = Http::get($imgUrl);
+                if ($responseHttp->successful()) {
+                    $imageContent = $responseHttp->body();
+                    $fileName = 'qris-'.$voucher->order_id.'.png';
+                    $filePath = 'qris/'.$fileName;
+                    Storage::disk('public')->put($filePath, $imageContent);
+
+                    $imgUrl = Storage::disk('public')->url($filePath);
+
+                    DeleteQrisImageJob::dispatch($filePath)->delay(now()->addMinutes(15));
+                }
+            } catch (Exception $e) {
+                // Keep original imgUrl if download fails
+            }
+        }
 
         $voucher->fill(['external_link' => $imgUrl]);
         $voucher->save();
@@ -96,7 +119,7 @@ class HotspotController extends Controller
 
     public function voucherRequest(VoucherRequest $request, HotspotService $service)
     {
-        $pmService = new PaymentMethodService();
+        $pmService = new PaymentMethodService;
         $voucher = $service->generateVoucher($request->validated('pointer'));
         $channelId = $request->validated('channel_id');
         $channel = $pmService->get($channelId);
@@ -112,13 +135,13 @@ class HotspotController extends Controller
         $data['others'] = "<script>localStorage.setItem('orderid', '{$voucher->order_id}')</script>";
 
         try {
-            $pg = new MidtransService();
+            $pg = new MidtransService;
             $response = $pg->paymentLink($voucher->order_id, $total, $voucher->expired_at, $voucher->description, [$channel->midtrans_code]);
         } catch (Exception $e) {
             return abort(500);
         }
 
-        if (!isset($response['payment_url'])) {
+        if (! isset($response['payment_url'])) {
             return abort(403);
         }
 
@@ -126,12 +149,14 @@ class HotspotController extends Controller
         $voucher->fill(['external_link' => $url]);
         $voucher->save();
         $data['url'] = $url;
+
         return view('redirectorjs', $data);
     }
 
     public function midtransCallback(MidtransCallbackRequest $request, MidtransService $service)
     {
         $service->handleNotification($request->all());
+
         return response()->json();
     }
 
@@ -145,12 +170,12 @@ class HotspotController extends Controller
 
         $response = [
             'error' => true,
-            'message' => 'Vocuher tidak ditemukan'
+            'message' => 'Vocuher tidak ditemukan',
         ];
         $voucherRow = $service->buildData()->where(['seal_code' => $sealcode]);
         $voucher = $voucherRow->first(['order_id', 'code', 'duration', 'description', 'status', 'price']);
         $fee = $voucherRow->first()->fee;
-        if (!empty($voucher)) {
+        if (! empty($voucher)) {
             $response['error'] = empty($voucher->status) ? true : false;
             $response['message'] = empty($voucher->status) ? 'Voucher belum dibayar' : 'Voucher lunas';
             $voucher->code = empty($voucher->status) ? null : $voucher->code;
@@ -176,7 +201,7 @@ class HotspotController extends Controller
             ->first();
         if (empty($voucher) || empty($voucher->payment()->exists())) {
             return [
-                'status' => 'fail'
+                'status' => 'fail',
             ];
         }
 
