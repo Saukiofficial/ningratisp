@@ -25,11 +25,11 @@ class PaymentService
     public function recordIncomingVoucherPayment(Voucher $voucher, array $callbackData) {}
 
     public function recordIncomingPayment(
-        Invoices $invoice,
         Customer $customer,
         float $amount,
         ?PaymentMethod $method = null,
         ?string $referenceId = null,
+        ?Invoices $invoice = null,
         ?string $filePath = null,
         ?string $fileName = null,
     ): Payment {
@@ -40,7 +40,7 @@ class PaymentService
         }
 
         return DB::transaction(function () use (
-
+            $customer,
             $amount,
             $method,
             $referenceId,
@@ -48,6 +48,13 @@ class PaymentService
             $filePath,
             $fileName
         ) {
+            if ($referenceId) {
+                $existing = Payment::where('reference_id', $referenceId)->first();
+                if ($existing) {
+                    return $existing;
+                }
+            }
+
             $payment = new Payment;
             $payment->fill([
                 'total_amount' => $amount,
@@ -67,7 +74,9 @@ class PaymentService
             ]);
             $payment->save();
 
-            $this->payInvoice($payment, $invoice);
+            if ($invoice) {
+                $this->payInvoice($payment, $invoice);
+            }
 
             return $payment;
         });
@@ -101,6 +110,13 @@ class PaymentService
             $invoiceIds,
             $datetime
         ) {
+            if ($referenceId) {
+                $existing = Payment::where('reference_id', $referenceId)->first();
+                if ($existing) {
+                    return $existing;
+                }
+            }
+
             $payment = new Payment;
             $payment->fill([
                 'total_amount' => $amount,
@@ -134,19 +150,6 @@ class PaymentService
                 $this->autoAllocate($payment, $customer, $invoiceIds);
             }
 
-            // // current payment
-            // if ($payment->payment_datetime->format('Y-m') == now()->format('Y-m')) {
-            //     ActivateCustomerInternetJob::dispatch(
-            //         $customer,
-            //         Auth::user()
-            //     );
-
-            //     if (!empty($customer->isolir_at)) {
-            //         $customer->isolir_at = null;
-            //         $customer->save();
-            //     }
-            // }
-
             return $payment;
         });
     }
@@ -176,16 +179,9 @@ class PaymentService
 
     public function payInvoice(Payment $payment, Invoices $invoice): void
     {
-        DB::transaction(function () use ($payment, $invoice) {
-            $remaining = max(round((float) $payment->total_amount, 2), 0.0);
-            if ($remaining <= 0) {
-                return;
-            }
-
-            $invoice->refresh();
-            $invoice->recalculateTotals();
-            $invoice->save();
-        });
+        $this->allocatePaymentToInvoices($payment, [
+            $invoice->id => $payment->total_amount,
+        ]);
     }
 
     public function allocatePaymentToInvoices(Payment $payment, array $invoiceIdsAndAmounts): void
