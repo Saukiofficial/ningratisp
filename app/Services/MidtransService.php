@@ -2,15 +2,12 @@
 
 namespace App\Services;
 
-use App\Helpers\MikrotikAPI;
-use App\Jobs\GenerateMikrotikVoucherJob;
-use App\Jobs\SendWhatsappMessageJob;
 use App\Models\Fee;
 use App\Models\Invoices;
 use App\Models\LogMidtrans;
 use App\Models\PaymentMethod;
-use App\Services\Model\PaymentService;
-use App\Services\Model\VoucherService;
+use App\Services\Midtrans\InvoiceNotificationHandler;
+use App\Services\Midtrans\VoucherNotificationHandler;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\Http;
@@ -18,31 +15,35 @@ use Illuminate\Support\Facades\Http;
 class MidtransService
 {
     const VOUCHER = 'VOC';
+
     const INVOICE = 'INV';
 
     protected $baseUrl;
+
     protected $credentials;
+
     protected $pathUrl;
 
     // optional property
     protected $orderId;
+
     protected bool $shouldLog = true;
 
     public function __construct()
     {
-        if (env('APP_ENV') == 'production') {
-            $this->baseUrl = env('MTRANS_URL');
+        if (app()->isProduction()) {
+            $this->baseUrl = config('services.midtrans.url');
             $credentials = [
-                'merchant_id' => env('MTRANS_MERCHANT_ID'),
-                'client_key' => env('MTRANS_CLIENT'),
-                'server_key' => env('MTRANS_KEY')
+                'merchant_id' => config('services.midtrans.merchant_id'),
+                'client_key' => config('services.midtrans.client_key'),
+                'server_key' => config('services.midtrans.server_key'),
             ];
         } else {
-            $this->baseUrl = env('MTRANS_URL_STG');
+            $this->baseUrl = config('services.midtrans.url_stg');
             $credentials = [
-                'merchant_id' => env('MTRANS_MERCHANT_ID_STG'),
-                'client_key' => env('MTRANS_CLIENT_STG'),
-                'server_key' => env('MTRANS_KEY_STG')
+                'merchant_id' => config('services.midtrans.merchant_id_stg'),
+                'client_key' => config('services.midtrans.client_key_stg'),
+                'server_key' => config('services.midtrans.server_key_stg'),
             ];
         }
 
@@ -72,7 +73,7 @@ class MidtransService
                     break;
 
                 default:
-                    $dataToSend = empty($data) ? new \stdClass() : $data;
+                    $dataToSend = empty($data) ? new \stdClass : $data;
                     $driver = $driver->post($url, $dataToSend);
                     break;
             }
@@ -81,14 +82,14 @@ class MidtransService
         } catch (Exception $e) {
             $response = [
                 'responseCode' => '',
-                'responseMessage' => $e->getMessage()
+                'responseMessage' => $e->getMessage(),
             ];
         }
 
         if (empty($response)) {
             $response = [
                 'responseCode' => '',
-                'responseMessage' => ''
+                'responseMessage' => '',
             ];
         }
 
@@ -118,27 +119,27 @@ class MidtransService
         $this->setOrderId($uniqueId);
 
         $data = [
-            "transaction_details" => [
-                "order_id" => $orderId,
-                "gross_amount" => $amount,
-                "payment_link_id" => strtolower($orderId),
+            'transaction_details' => [
+                'order_id' => $orderId,
+                'gross_amount' => $amount,
+                'payment_link_id' => strtolower($orderId),
             ],
-            "customer_required" => false,
-            "usage_limit" => 1,
-            "expiry" => [
-                "start_time" => $expired_at->format('Y-m-d H:i:s P'),
-                "duration" => $duration,
-                "unit" => "hours",
+            'customer_required' => false,
+            'usage_limit' => 1,
+            'expiry' => [
+                'start_time' => $expired_at->format('Y-m-d H:i:s P'),
+                'duration' => $duration,
+                'unit' => 'hours',
             ],
-            "item_details" => [
+            'item_details' => [
                 [
-                    "name" => $desc,
-                    "price" => $amount,
-                    "quantity" => 1,
-                    "category" => "Voucher",
-                ]
+                    'name' => $desc,
+                    'price' => $amount,
+                    'quantity' => 1,
+                    'category' => 'Voucher',
+                ],
             ],
-            "enabled_payments" => $channels
+            'enabled_payments' => $channels,
         ];
 
         $response = $this->request($data);
@@ -148,7 +149,7 @@ class MidtransService
 
     public function handleNotification($data = null)
     {
-        if (!isset($data['transaction_status']) || ($data['transaction_status'] != 'settlement')) {
+        if (! isset($data['transaction_status']) || ($data['transaction_status'] != 'settlement')) {
             return false;
         }
 
@@ -167,14 +168,14 @@ class MidtransService
         LogMidtrans::create([
             'orderid' => $this->getOrderId(),
             'request' => json_encode($data),
-            'act' => LogMidtrans::CALLBACK
+            'act' => LogMidtrans::CALLBACK,
         ]);
 
         $handler = null;
         if (strtoupper($orderIdType) == self::VOUCHER) {
-            $handler = new \App\Services\Midtrans\VoucherNotificationHandler();
+            $handler = new VoucherNotificationHandler;
         } elseif (strtoupper($orderIdType) == self::INVOICE) {
-            $handler = new \App\Services\Midtrans\InvoiceNotificationHandler();
+            $handler = new InvoiceNotificationHandler;
         }
 
         if ($handler) {
@@ -201,14 +202,15 @@ class MidtransService
         $this->setOrderId($uniqueId);
 
         $data = [
-            "transaction_details" => [
-                "order_id" => $orderId,
-                "gross_amount" => $amount,
+            'transaction_details' => [
+                'order_id' => $orderId,
+                'gross_amount' => $amount,
             ],
-            "payment_type" => 'gopay'
+            'payment_type' => 'gopay',
         ];
 
         $response = $this->request($data);
+
         return $response;
     }
 
@@ -220,21 +222,21 @@ class MidtransService
         $customer = $invoice->customerPackage->customer;
 
         $data = [
-            "transaction_details" => [
-                "order_id" => self::INVOICE . "#{$orderId}",
-                "gross_amount" => $invoice->balance_due + $feeAmount,
+            'transaction_details' => [
+                'order_id' => self::INVOICE . "#{$orderId}",
+                'gross_amount' => $invoice->balance_due + $feeAmount,
             ],
-            "customer_details" => [
-                "first_name" => $customer->full_name ?? $customer->user_name,
-                "email" => $customer->email,
-                "phone" => $customer->phone,
+            'customer_details' => [
+                'first_name' => $customer->full_name ?? $customer->user_name,
+                'email' => $customer->email,
+                'phone' => $customer->phone,
             ],
-            "item_details" => $invoice->items->map(function ($item) use ($invoice) {
+            'item_details' => $invoice->items->map(function ($item) use ($invoice) {
                 return [
                     'id' => $item->id,
                     'price' => $item->unit_price - $invoice->discount_amount,
                     'quantity' => 1,
-                    'name' => $item->description . (!empty($invoice->discount_amount) ? ' (Diskon)' : null),
+                    'name' => $item->description . (! empty($invoice->discount_amount) ? ' (Diskon)' : null),
                 ];
             })->toArray(),
         ];
@@ -243,7 +245,7 @@ class MidtransService
         $data['item_details'][] = [
             'price' => $feeAmount,
             'quantity' => 1,
-            'name' => 'Fee ' . $paymentMethod->name
+            'name' => 'Fee ' . $paymentMethod->name,
         ];
 
         switch ($paymentMethod->midtrans_code) {
@@ -265,6 +267,7 @@ class MidtransService
         }
 
         $response = $this->request($data);
+
         return $response;
     }
 
@@ -274,6 +277,7 @@ class MidtransService
         $this->setOrderId($orderId);
 
         $response = $this->request([], 'post');
+
         return $response;
     }
 
@@ -283,6 +287,7 @@ class MidtransService
         $this->setShouldLog(false);
 
         $response = $this->request([], 'get');
+
         return $response;
     }
 }

@@ -31,4 +31,15 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'midtrans' => [
+        'url' => env('MTRANS_URL'),
+        'merchant_id' => env('MTRANS_MERCHANT_ID'),
+        'client_key' => env('MTRANS_CLIENT'),
+        'server_key' => env('MTRANS_KEY'),
+        'url_stg' => env('MTRANS_URL_STG'),
+        'merchant_id_stg' => env('MTRANS_MERCHANT_ID_STG'),
+        'client_key_stg' => env('MTRANS_CLIENT_STG'),
+        'server_key_stg' => env('MTRANS_KEY_STG'),
+    ],
+
 ];
