@@ -14,11 +14,17 @@ class MikrotikAPINative
     use HasMikrotikConfiguration;
 
     private $host;
+
     private $user;
+
     private $password;
+
     private $port;
+
     private $ssl;
+
     private $action;
+
     private $api;
 
     public function __construct($host = null, $user = null, $password = null, $port = null, $ssl = null)
@@ -139,12 +145,12 @@ class MikrotikAPINative
      */
     public function createVoucher($code, $uptime = 3, $uptimeType = 'h', $server = null, $profile = 'default', $password = null)
     {
-        if (! defined("App\Models\Voucher::" . strtoupper($uptimeType) . "_{$uptime}")) {
+        if (! defined("App\Models\Voucher::".strtoupper($uptimeType)."_{$uptime}")) {
             return false;
         }
 
         $this->action = str(__FUNCTION__)->snake('-');
-        $profile = $this->getProfileAndUptime($uptimeType . $uptime);
+        $profile = $this->getProfileAndUptime($uptimeType.$uptime);
 
         $params = [
             'name' => $code,
@@ -207,11 +213,67 @@ class MikrotikAPINative
         return $response;
     }
 
+    public function updatePppSecret($username, $params = [])
+    {
+        $this->action = str(__FUNCTION__)->snake('-');
+
+        $user = $this->getPppUser($username);
+        if (empty($user['.id'])) {
+            return [
+                'detail' => 'MikroTik Error',
+                'error' => 404,
+                'message' => 'User not found',
+                'status' => true,
+            ];
+        }
+
+        $mikrotikParams = [
+            '.id' => $user['.id'],
+        ];
+
+        if (isset($params['username'])) {
+            $mikrotikParams['name'] = $params['username'];
+        }
+
+        if (isset($params['password'])) {
+            $mikrotikParams['password'] = $params['password'];
+        }
+
+        if (isset($params['profile'])) {
+            $mikrotikParams['profile'] = $params['profile'];
+        }
+
+        if (isset($params['local_address'])) {
+            $mikrotikParams['local-address'] = $params['local_address'];
+        }
+
+        if (isset($params['remote_address'])) {
+            $mikrotikParams['remote-address'] = $params['remote_address'];
+        }
+
+        if (isset($params['comment'])) {
+            $mikrotikParams['comment'] = $params['comment'];
+        }
+
+        if (isset($params['disabled'])) {
+            $mikrotikParams['disabled'] = $params['disabled'] ? 'yes' : 'no';
+        }
+
+        $response = $this->request('/ppp/secret/set', $mikrotikParams);
+
+        if (empty($response['status'])) {
+            return $this->getPppUser($params['username'] ?? $username);
+        }
+
+        return $response;
+    }
+
     public function deletePpoeCustomer($username)
     {
         $user = $this->getPppUser($username);
         if (empty($user['.id'])) {
             $user['status'] = true;
+
             return $user;
         }
 
@@ -298,13 +360,13 @@ class MikrotikAPINative
             $response = $this->request('/ppp/secret/print');
 
             if (is_array($response) && ! isset($response['error'])) {
-                Cache::remember($cacheKey, now()->addHour(), fn() => $response);
+                Cache::remember($cacheKey, now()->addHour(), fn () => $response);
             }
         }
 
         if (! $fromCache && (is_array($response) && ! isset($response['error']))) {
             Cache::delete($cacheKey);
-            Cache::remember($cacheKey, now()->addHour(), fn() => $response);
+            Cache::remember($cacheKey, now()->addHour(), fn () => $response);
         }
 
         return $response;
@@ -428,7 +490,7 @@ class MikrotikAPINative
 
         $comment = $enabled ? 'isolir' : 'lunas';
         if ($enabled && $additionalNotes) {
-            $comment .= ' - ' . $additionalNotes;
+            $comment .= ' - '.$additionalNotes;
         }
 
         $response = $this->request('/ppp/secret/set', [

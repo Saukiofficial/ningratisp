@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Customers\Schemas;
 
+use App\Helpers\MikrotikAPINative;
 use App\Models\Customer;
 use App\Models\Discount;
 use Filament\Actions\Action;
@@ -84,9 +85,51 @@ class CustomerForm
                         TextInput::make('local_address'),
                         TextInput::make('remote_address'),
                     ])
-                    ->afterHeader([
+                    ->footerActions([
                         Action::make('sync')
-                            ->visible(fn (?Customer $record) => $record),
+                            ->icon(Heroicon::OutlinedArrowPath)
+                            ->color('info')
+                            ->requiresConfirmation()
+                            ->visible(fn (?Customer $record) => $record !== null)
+                            ->action(function ($get, Customer $record) {
+                                $api = new MikrotikAPINative;
+
+                                $params = [
+                                    'username' => $get('username'),
+                                    'password' => $get('password_pptp'),
+                                    'local_address' => $get('local_address'),
+                                    'remote_address' => $get('remote_address'),
+                                ];
+
+                                if ($record->pppProfile) {
+                                    $params['profile'] = $record->pppProfile->profile_name;
+                                }
+
+                                $response = $api->updatePppSecret($record->username, $params);
+
+                                if (isset($response['status']) && $response['status']) {
+                                    Notification::make()
+                                        ->title('Sync Failed')
+                                        ->body($response['message'] ?? 'MikroTik connection error')
+                                        ->danger()
+                                        ->send();
+
+                                    return;
+                                }
+
+                                $record->update([
+                                    'username' => $get('username'),
+                                    'password_pptp' => $get('password_pptp'),
+                                    'local_address' => $get('local_address'),
+                                    'remote_address' => $get('remote_address'),
+                                ]);
+
+                                Notification::make()
+                                    ->title('Success')
+                                    ->body('PPP Secret synced and record updated')
+                                    ->success()
+                                    ->send();
+                            }),
                     ])
                     ->columnSpanFull(),
             ]);
