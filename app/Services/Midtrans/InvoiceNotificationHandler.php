@@ -51,7 +51,10 @@ class InvoiceNotificationHandler implements NotificationHandlerInterface
                         return $next($va);
                     },
                     function (VirtualAccount $va, Closure $next) use ($data) {
-                        ActivateCustomerInternetJob::dispatch($va->invoice->customerPackage->customer, $data);
+                        $customer = $va->invoice?->customerPackage?->customer;
+                        if ($customer && $customer->auto_isolir) {
+                            ActivateCustomerInternetJob::dispatch($customer, $data);
+                        }
 
                         return $next($va);
                     },

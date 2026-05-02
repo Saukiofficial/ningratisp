@@ -33,6 +33,7 @@ class Customer extends User
         'expiry_date' => 'date',
         'is_active' => 'boolean',
         'password' => 'hashed',
+        'auto_isolir' => 'boolean',
     ];
 
     /**
