@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { toast } from 'react-toastify';
-import { useEcho } from '@laravel/echo-react';
+// import { useEcho } from '@laravel/echo-react';
 import { route } from 'ziggy-js';
 import {
     Clock,
@@ -87,12 +87,12 @@ export default function PendingPayment({ virtualAccount, flash }) {
 
     const { auth } = usePage().props;
 
-    useEcho(`InvoicePaid.${auth.user.id}`, 'CustomerInvoicePaidEvent', (e) => {
-        if (e.va && e.va.id === virtualAccount.id) {
-            setPaidInvoiceId(e.va.invoice_id);
-            setIsPaymentSuccess(true);
-        }
-    });
+    // useEcho(`InvoicePaid.${auth.user.id}`, 'CustomerInvoicePaidEvent', (e) => {
+    //     if (e.va && e.va.id === virtualAccount.id) {
+    //         setPaidInvoiceId(e.va.invoice_id);
+    //         setIsPaymentSuccess(true);
+    //     }
+    // });
 
     useEffect(() => {
         const calculateTimeLeft = () => {
