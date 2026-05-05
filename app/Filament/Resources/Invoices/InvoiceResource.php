@@ -80,7 +80,7 @@ class InvoiceResource extends Resource
 
     public static function getGloballySearchableAttributes(): array
     {
-        return ['invoice_number', 'customerPackage.customer.full_name'];
+        return ['invoice_number', 'customerPackage.customer.full_name', 'customerPackage.customer.username'];
     }
 
     public static function getGlobalSearchResultDetails(Model $record): array

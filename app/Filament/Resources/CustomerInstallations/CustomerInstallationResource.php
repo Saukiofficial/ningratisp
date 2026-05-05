@@ -27,8 +27,6 @@ class CustomerInstallationResource extends Resource
 
     protected static ?int $navigationSort = 1;
 
-    protected static ?string $recordTitleAttribute = 'name';
-
     protected static ?string $modelLabel = 'Installation';
 
     public static function form(Schema $schema): Schema

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -132,6 +133,13 @@ class Customer extends User
     public function setPasswordAttribute($value): void
     {
         $this->attributes['password'] = Hash::make($value);
+    }
+
+    public function customerName(): Attribute
+    {
+        return new Attribute(
+            fn() => $this->full_name ?? $this->username
+        );
     }
 
     /**

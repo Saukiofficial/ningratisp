@@ -17,7 +17,7 @@ class CustomerConnectionsTable
     {
         return $table
             ->columns([
-                TextColumn::make('customer.full_name')
+                TextColumn::make('customer.customer_name')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('ip_address')

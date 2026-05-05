@@ -179,9 +179,9 @@ class ActiveInvoicesRelationManager extends RelationManager
                                         ->disabled()
                                         ->default(fn(Invoices $record) => $record->invoice_number),
                                     TextInput::make('customer')
-                                        ->label('Invoice Number')
+                                        ->label('Customer')
                                         ->disabled()
-                                        ->default(fn(Invoices $record) => $record->customerPackage->customer->full_name),
+                                        ->default(fn(Invoices $record) => $record->customerPackage->customer->customer_name),
                                     TextInput::make('current_total')
                                         ->label('Current Total Amount')
                                         ->disabled()

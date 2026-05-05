@@ -130,14 +130,15 @@ class CustomerResource extends Resource
 
     public static function getGloballySearchableAttributes(): array
     {
-        return ['username', 'full_name', 'billing_number'];
+        return ['username', 'full_name', 'billing_number', 'email'];
     }
 
     public static function getGlobalSearchResultDetails(Model $record): array
     {
         return [
             'ID Pelanggan' => $record->billing_number,
-            'Name' => $record->full_name,
+            'Name' => $record->customer_name,
+            'E-Mail' => $record->email
         ];
     }
 }
