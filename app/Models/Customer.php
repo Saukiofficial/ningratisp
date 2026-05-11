@@ -138,7 +138,7 @@ class Customer extends User
     public function customerName(): Attribute
     {
         return new Attribute(
-            fn() => $this->full_name ?? $this->username
+            fn() => $this->full_name ?: $this->username
         );
     }
 

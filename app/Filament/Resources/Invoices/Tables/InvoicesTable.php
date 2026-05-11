@@ -44,7 +44,7 @@ class InvoicesTable
                 TextColumn::make('invoice_number')
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('customerPackage.customer.full_name')
+                TextColumn::make('customerPackage.customer.customer_name')
                     ->label('Customer')
                     ->searchable()
                     ->sortable(),
