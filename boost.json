@@ -1,11 +1,12 @@
 {
     "agents": [
-        "cursor"
+        "gemini"
     ],
     "editors": [
-        "cursor"
+        "vscode"
     ],
     "guidelines": [
-        "filament/filament"
+        "filament/filament",
+        "inertiajs/inertia-laravel"
     ]
 }

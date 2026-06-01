@@ -23,7 +23,7 @@ return new class extends Migration
                 'burst_threshold',
                 'burst_limit',
                 'burst_time',
-                'payment_status',
+                // 'payment_status',
                 'caller_id',
                 'idle_timeout_override',
                 'keepalive_timeout_override',
@@ -41,12 +41,12 @@ return new class extends Migration
                 'bytes_out',
 
                 'profile_override',
-                'customer_type',
+                // 'customer_type',
                 'package_name',
                 'monthly_fee',
                 'only_one_override',
                 'created_by',
-                'loan_end_date',
+                // 'loan_end_date',
                 'loan_months'
             ]);
         });
