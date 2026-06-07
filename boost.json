@@ -6,7 +6,7 @@
         "vscode"
     ],
     "guidelines": [
-        "filament/filament",
-        "inertiajs/inertia-laravel"
+        "inertiajs/inertia-laravel",
+        "filament/filament"
     ]
 }
