@@ -53,6 +53,18 @@ class CustomerResource extends Resource
     {
         return CustomersTable::configure($table)
             ->headerActions([
+                Action::make('syncIsolir')
+                    ->icon(Heroicon::OutlinedSignalSlash)
+                    ->label('Sync Isolir Status')
+                    ->modalContent(fn () => view('filament.components.isolir-modal', ['type' => 'sync']))
+                    ->modalSubmitAction(false)
+                    ->modalCancelAction(false),
+                Action::make('openIsolir')
+                    ->icon(Heroicon::OutlinedEnvelopeOpen)
+                    ->label('Open Isolir (Paid)')
+                    ->modalContent(fn () => view('filament.components.isolir-modal', ['type' => 'open']))
+                    ->modalSubmitAction(false)
+                    ->modalCancelAction(false),
                 Action::make('syncWithMikrotik')
                     ->icon(Heroicon::OutlinedArrowPath)
                     ->label('Sync from MikroTik')
