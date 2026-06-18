@@ -35,6 +35,7 @@ class AllInvoicesRelationManager extends RelationManager
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('invoice_number'),
+                Tables\Columns\TextColumn::make('invoice_date')->date(),
                 Tables\Columns\TextColumn::make('total_amount')->money('IDR'),
                 Tables\Columns\TextColumn::make('due_date')->date(),
                 Tables\Columns\TextColumn::make('status'),

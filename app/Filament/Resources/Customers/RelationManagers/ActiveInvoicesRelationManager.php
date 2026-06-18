@@ -50,6 +50,7 @@ class ActiveInvoicesRelationManager extends RelationManager
             ->columns([
                 Tables\Columns\TextColumn::make('customerPackage.package.name'),
                 Tables\Columns\TextColumn::make('invoice_number'),
+                Tables\Columns\TextColumn::make('invoice_date')->date(),
                 Tables\Columns\TextColumn::make('total_amount')->money('IDR'),
                 Tables\Columns\TextColumn::make('discount_amount')->money('IDR'),
                 Tables\Columns\TextColumn::make('paid_amount')->money('IDR'),
