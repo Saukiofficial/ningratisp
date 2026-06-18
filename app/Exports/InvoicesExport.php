@@ -78,7 +78,7 @@ class InvoicesExport implements
             $firstRecord = $records->first();
             $this->customerCategories[] = $firstRecord->customer_category; // Store category
 
-            $rowData = [$firstRecord->full_name ?? $firstRecord->user_name, $firstRecord->isolir];
+            $rowData = [$firstRecord->username ?? $firstRecord->full_name, $firstRecord->isolir];
 
             foreach ($period as $date) {
                 // Calculate invoice total (avoid duplicates by using unique invoice dates)
