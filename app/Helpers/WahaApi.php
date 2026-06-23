@@ -25,7 +25,7 @@ class WahaApi
         $data['session'] = 'default';
 
         try {
-            $driver = Http::withHeaders(['X-Api-Key' => $this->apiKey]);
+            $driver = Http::timeout(10)->connectTimeout(5)->withHeaders(['X-Api-Key' => $this->apiKey]);
             $error = false;
 
             switch (strtolower($method)) {
@@ -48,16 +48,22 @@ class WahaApi
             }
 
             if ($driver->status() >= 300) {
-                throw new Exception($driver->reason());
+                $body = $driver->json();
+                if (is_array($body)) {
+                    $response = $body;
+                } else {
+                    throw new Exception($driver->reason() ?: 'HTTP Error ' . $driver->status());
+                }
+            } else {
+                $response = $driver->json();
             }
-
-            $response = $driver->json();
         } catch (Exception $e) {
             $error = true;
             $response = [
                 'detail' => 'Exception Request',
                 'error' => 500,
                 'message' => $e->getMessage(),
+                'connection_failed' => true,
             ];
         }
 
@@ -66,7 +72,7 @@ class WahaApi
             $response = [
                 'detail' => 'Empty Response',
                 'error' => 400,
-                'message' => $response['error']
+                'message' => is_array($response) && isset($response['error']) ? $response['error'] : 'No response content'
             ];
         }
 
@@ -83,7 +89,7 @@ class WahaApi
         $data['session'] = 'default';
 
         try {
-            $driver = Http::withHeaders(['X-Api-Key' => $this->apiKey]);
+            $driver = Http::timeout(10)->connectTimeout(5)->withHeaders(['X-Api-Key' => $this->apiKey]);
 
             switch (strtolower($method)) {
                 case 'delete':
@@ -128,6 +134,24 @@ class WahaApi
     {
         $this->setPathUrl('/api/sessions/' . $session);
         return $this->request();
+    }
+
+    public function startSession(string $session = 'default')
+    {
+        $this->setPathUrl('/api/sessions/' . $session . '/start');
+        return $this->request([], 'post');
+    }
+
+    public function stopSession(string $session = 'default')
+    {
+        $this->setPathUrl('/api/sessions/' . $session . '/stop');
+        return $this->request([], 'post');
+    }
+
+    public function restartSession(string $session = 'default')
+    {
+        $this->setPathUrl('/api/sessions/' . $session . '/restart');
+        return $this->request([], 'post');
     }
 
     public function getQrCode(string $session = 'default')
@@ -279,5 +303,30 @@ class WahaApi
         ];
 
         return $this->request($data, 'post');
+    }
+
+    /**
+     * Fetch all contacts for a session.
+     * Results are cached in WhatsappInformation::loadContacts() — this method
+     * itself makes no cache assumptions, it always hits the API.
+     */
+    public function getContacts(string $session = 'default')
+    {
+        $this->setPathUrl('/api/contacts/all?session=' . $session);
+        return $this->request();
+    }
+
+    /**
+     * Fetch recent messages for a specific chat.
+     *
+     * @param  string  $chatId   Full WAHA chat ID, e.g. "628123456789@c.us"
+     * @param  int     $limit    How many messages to return (newest first)
+     */
+    public function getChatMessages(string $chatId, string $session = 'default', int $limit = 40)
+    {
+        // Note: chatId already includes @c.us — do NOT pass through request()
+        // because request() appends @c.us to data['chatId'], not to the URL.
+        $this->setPathUrl('/api/' . $session . '/chats/' . $chatId . '/messages');
+        return $this->request(['limit' => $limit, 'downloadMedia' => false]);
     }
 }
