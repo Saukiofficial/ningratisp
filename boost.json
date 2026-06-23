@@ -1,12 +1,24 @@
 {
     "agents": [
-        "gemini"
+        "antigravity",
+        "cursor"
     ],
-    "editors": [
-        "vscode"
+    "cloud": false,
+    "guidelines": true,
+    "mcp": true,
+    "nightwatch": false,
+    "packages": [
+        "filament/filament"
     ],
-    "guidelines": [
-        "filament/filament",
-        "inertiajs/inertia-laravel"
+    "sail": false,
+    "skills": [
+        "laravel-best-practices",
+        "configure-nightwatch",
+        "livewire-development",
+        "pest-testing",
+        "inertia-react-development",
+        "echo-react-development",
+        "echo-development",
+        "tailwindcss-development"
     ]
 }
