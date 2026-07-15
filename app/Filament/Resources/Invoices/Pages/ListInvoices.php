@@ -10,6 +10,8 @@ use Filament\Actions\CreateAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Support\Icons\Heroicon;
@@ -99,6 +101,19 @@ class ListInvoices extends ListRecords
                         ->required(fn (Get $get) => $get('type') === Invoices::REPORT_ANNUALY)
                         ->default(now()->year),
 
+                    Select::make('payment_status')
+                        ->label('Payment Status')
+                        ->options([
+                            'paid' => 'Sudah bayar',
+                            'unpaid' => 'Belum bayar',
+                        ])
+                        ->placeholder('All')
+                        ->nullable(),
+
+                    Toggle::make('count_only')
+                        ->label('Count Invoice Only')
+                        ->default(false),
+
                 ])
                 ->action(function (array $data) {
                     $startDate = null;
@@ -119,7 +134,35 @@ class ListInvoices extends ListRecords
                         $fileName = 'invoices-date-range-report-'.$startDate->format('Y-m-d').'-'.$endDate->format('Y-m-d').'.xlsx';
                     }
 
-                    return Excel::download(new InvoicesExport($startDate, $endDate, $data['type']), $fileName);
+                    if (! empty($data['count_only'])) {
+                        $paymentStatus = $data['payment_status'] ?? null;
+
+                        $count = Invoices::query()
+                            ->whereBetween('invoice_date', [$startDate, $endDate])
+                            ->when($paymentStatus, function ($query) use ($paymentStatus) {
+                                return $query->where('status', $paymentStatus);
+                            })
+                            ->count();
+
+                        $totalAmount = Invoices::query()
+                            ->whereBetween('invoice_date', [$startDate, $endDate])
+                            ->when($paymentStatus, function ($query) use ($paymentStatus) {
+                                return $query->where('status', $paymentStatus);
+                            })
+                            ->sum('total_amount');
+
+                        $statusLabel = $paymentStatus ? (Invoices::getStatusLabel()[$paymentStatus] ?? $paymentStatus) : 'Semua';
+
+                        Notification::make()
+                            ->title("Total Tagihan ($statusLabel): $count")
+                            ->body('Total Nominal: Rp '.number_format($totalAmount, 2, ',', '.'))
+                            ->success()
+                            ->send();
+
+                        return;
+                    }
+
+                    return Excel::download(new InvoicesExport($startDate, $endDate, $data['type'], $data['payment_status'] ?? null), $fileName);
                 }),
         ];
     }

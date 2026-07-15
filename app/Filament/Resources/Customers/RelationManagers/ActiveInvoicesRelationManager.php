@@ -5,19 +5,19 @@ namespace App\Filament\Resources\Customers\RelationManagers;
 use App\Models\CustomerPackages;
 use App\Models\Invoices;
 use App\Models\PaymentMethod;
+use App\Models\User;
+use App\Models\VirtualAccount;
+use App\Services\Customer\VirtualAccountStatusServices;
 use App\Services\InvoiceService;
 use App\Services\PaymentService;
 use App\Services\ReceivableService;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkAction;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\DetachAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
-use Filament\Forms\Components\Repeater\TableColumn;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
@@ -31,6 +31,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ActiveInvoicesRelationManager extends RelationManager
 {
@@ -40,7 +41,7 @@ class ActiveInvoicesRelationManager extends RelationManager
 
     public function table(Table $table): Table
     {
-        /** @var \App\Models\User */
+        /** @var User */
         $user = auth('web')->user();
 
         return $table
@@ -136,7 +137,7 @@ class ActiveInvoicesRelationManager extends RelationManager
                         ->action(function (array $data, Invoices $record) {
                             $customer = $record->customerPackage?->customer;
                             if (! $customer) {
-                                \Filament\Notifications\Notification::make()
+                                Notification::make()
                                     ->title('No customer found for this invoice')
                                     ->danger()
                                     ->send();
@@ -146,10 +147,10 @@ class ActiveInvoicesRelationManager extends RelationManager
 
                             $method = null;
                             if (! empty($data['payment_method_id'])) {
-                                $method = \App\Models\PaymentMethod::find($data['payment_method_id']);
+                                $method = PaymentMethod::find($data['payment_method_id']);
                             }
 
-                            app(\App\Services\PaymentService::class)->recordIncomingPaymentWithAllocations(
+                            app(PaymentService::class)->recordIncomingPaymentWithAllocations(
                                 $customer,
                                 (float) ($data['amount'] ?? 0),
                                 $method,
@@ -161,9 +162,9 @@ class ActiveInvoicesRelationManager extends RelationManager
                             );
 
                             $record->refresh();
-                            app(\App\Services\ReceivableService::class)->syncForInvoice($record);
+                            app(ReceivableService::class)->syncForInvoice($record);
 
-                            \Filament\Notifications\Notification::make()
+                            Notification::make()
                                 ->title('Payment recorded')
                                 ->success()
                                 ->send();
@@ -233,12 +234,93 @@ class ActiveInvoicesRelationManager extends RelationManager
                                 ->send();
                         })
                         ->visible(fn(Invoices $record) => $record->status !== Invoices::STATUS_CANCELLED && $record->status !== Invoices::STATUS_PAID),
+                    Action::make('sync_midtrans')
+                        ->label('Sync Midtrans')
+                        ->icon(Heroicon::ArrowPath)
+                        ->color('info')
+                        ->visible(
+                            fn(Invoices $record) => $record->status == Invoices::STATUS_UNPAID && $record->virtualAccounts()->exists()
+                        )
+                        ->action(function (Invoices $record) {
+                            $virtualAccounts = $record->virtualAccounts;
+
+                            if ($virtualAccounts->isEmpty()) {
+                                Notification::make()
+                                    ->title('No Virtual Account')
+                                    ->body('There are no virtual accounts associated with this invoice.')
+                                    ->warning()
+                                    ->send();
+
+                                return;
+                            }
+
+                            $service = app(VirtualAccountStatusServices::class);
+                            $results = [];
+
+                            foreach ($virtualAccounts as $va) {
+                                try {
+                                    $res = $service->syncStatus($va);
+                                    $results[] = "VA {$va->va_number} ({$va->paymentMethod?->name}): {$res['message']}";
+                                } catch (\Exception $e) {
+                                    $results[] = "VA {$va->va_number} ({$va->paymentMethod?->name}): Failed (" . $e->getMessage() . ')';
+                                }
+                            }
+
+                            $record->refresh();
+
+                            Notification::make()
+                                ->title('Midtrans Sync Completed')
+                                ->body(implode("\n", $results))
+                                ->success()
+                                ->send();
+                        }),
+                    Action::make('cancel_va')
+                        ->label('Cancel VA')
+                        ->icon(Heroicon::XCircle)
+                        ->color('warning')
+                        ->visible(
+                            fn(Invoices $record) => $record->status == Invoices::STATUS_UNPAID && $record->virtualAccounts()->where('status', VirtualAccount::STATUS_PENDING)->exists()
+                        )
+                        ->requiresConfirmation()
+                        ->action(function (Invoices $record) {
+                            $virtualAccounts = $record->virtualAccounts()->where('status', VirtualAccount::STATUS_PENDING)->get();
+
+                            if ($virtualAccounts->isEmpty()) {
+                                Notification::make()
+                                    ->title('No Pending VA')
+                                    ->body('There are no pending virtual accounts associated with this invoice.')
+                                    ->warning()
+                                    ->send();
+
+                                return;
+                            }
+
+                            $service = app(VirtualAccountStatusServices::class);
+                            $results = [];
+
+                            foreach ($virtualAccounts as $va) {
+                                try {
+                                    $res = $service->cancel($va);
+                                    $results[] = "VA {$va->va_number} ({$va->paymentMethod?->name}): {$res['message']}";
+                                } catch (\Exception $e) {
+                                    $results[] = "VA {$va->va_number} ({$va->paymentMethod?->name}): Failed (" . $e->getMessage() . ')';
+                                }
+                            }
+
+                            $record->refresh();
+
+                            Notification::make()
+                                ->title('Midtrans Cancellation Completed')
+                                ->body(implode("\n", $results))
+                                ->success()
+                                ->send();
+                        }),
                     Action::make('delete')
                         ->modalHeading(
                             fn(): string => __('filament-actions::delete.single.modal.heading', ['label' => $this->getRelationshipTitle()])
                         )
                         ->visible(
-                            fn(Invoices $record) => $user->can('delete', $record) &&  $record->status == Invoices::STATUS_UNPAID
+                            fn(Invoices $record) => $user->can('delete', $record) && $record->status == Invoices::STATUS_UNPAID
                         )
                         ->modalSubmitActionLabel(__('filament-actions::delete.single.modal.actions.delete.label'))
                         ->successNotificationTitle(__('filament-actions::delete.single.notifications.deleted.title'))
@@ -271,19 +353,50 @@ class ActiveInvoicesRelationManager extends RelationManager
                                         )
                                         ->disabled(),
                                 ]),
-                            // Repeater::make('allocations')
-                            //     ->relationship()
-                            //     ->compact()
-                            //     ->table([
-                            //         TableColumn::make('total_amount'),
-                            //         TableColumn::make('allocated_at'),
-                            //     ])
-                            //     ->schema([
-                            //         TextInput::make('total_amount')->disabled(),
-                            //         TextInput::make('allocated_at')->disabled(),
-                            //     ])
-                            //     ->deletable(false)
-                            //     ->addable(false)
+                            Section::make('Related Virtual Accounts')
+                                ->schema([
+                                    Repeater::make('virtual_accounts')
+                                        ->label('')
+                                        ->default(fn(Invoices $record) => $record->virtualAccounts->map(fn($va) => [
+                                            'va_number' => $va->va_number,
+                                            'payment_method' => $va->paymentMethod?->name,
+                                            'total_amount' => 'Rp. ' . number_format($va->total_amount, 2, ',', '.'),
+                                            'status' => $va->status,
+                                        ])->toArray())
+                                        ->schema([
+                                            TextInput::make('va_number')->label('VA Number')->disabled(),
+                                            TextInput::make('payment_method')->label('Payment Method')->disabled(),
+                                            TextInput::make('total_amount')->label('Total Amount')->disabled(),
+                                            TextInput::make('status')->label('Status')->disabled(),
+                                        ])
+                                        ->addable(false)
+                                        ->deletable(false)
+                                        ->reorderable(false)
+                                        ->columns(4),
+                                ])
+                                ->visible(fn(Invoices $record) => $record->virtualAccounts()->exists()),
+                            Section::make('Related Payments')
+                                ->schema([
+                                    Repeater::make('payments')
+                                        ->label('')
+                                        ->default(fn(Invoices $record) => $record->payments->map(fn($payment) => [
+                                            'reference_id' => $payment->reference_id,
+                                            'payment_method' => $payment->paymentMethod?->name,
+                                            'total_amount' => 'Rp. ' . number_format($payment->total_amount, 2, ',', '.'),
+                                            'payment_datetime' => $payment->payment_datetime?->format('d F Y H:i:s'),
+                                        ])->toArray())
+                                        ->schema([
+                                            TextInput::make('reference_id')->label('Reference ID')->disabled(),
+                                            TextInput::make('payment_method')->label('Payment Method')->disabled(),
+                                            TextInput::make('total_amount')->label('Total Amount')->disabled(),
+                                            TextInput::make('payment_datetime')->label('Payment Date')->disabled(),
+                                        ])
+                                        ->addable(false)
+                                        ->deletable(false)
+                                        ->reorderable(false)
+                                        ->columns(4),
+                                ])
+                                ->visible(fn(Invoices $record) => $record->payments()->exists()),
                         ])
                         ->keyBindings(['mod+d'])
                         ->hidden(static function (Invoices $record): bool {
@@ -299,7 +412,20 @@ class ActiveInvoicesRelationManager extends RelationManager
                             DB::beginTransaction();
                             $ok = true;
 
-                            if ($record->payments()->exists()) {
+                            // Cancel virtual accounts via Midtrans and delete them first
+                            if ($record->virtualAccounts()->exists()) {
+                                $vaStatusService = app(VirtualAccountStatusServices::class);
+                                foreach ($record->virtualAccounts as $va) {
+                                    try {
+                                        $vaStatusService->cancel($va);
+                                    } catch (\Exception $e) {
+                                        Log::warning('Failed to cancel VA via Midtrans: ' . $e->getMessage());
+                                    }
+                                }
+                                $ok = $record->virtualAccounts()->delete();
+                            }
+
+                            if ($ok && $record->payments()->exists()) {
                                 $ok = $record->payments()->delete();
                             }
 
@@ -308,6 +434,7 @@ class ActiveInvoicesRelationManager extends RelationManager
                             }
 
                             if (! $ok) {
+                                DB::rollBack();
                                 Notification::make('')
                                     ->title('Action failed')
                                     ->body("Delete Invoice {$no} Fail")
@@ -324,7 +451,7 @@ class ActiveInvoicesRelationManager extends RelationManager
                                 ->body("Invoice {$no} deleted")
                                 ->success()
                                 ->send();
-                        })
+                        }),
                 ]),
             ])
             ->toolbarActions([
@@ -471,8 +598,8 @@ class ActiveInvoicesRelationManager extends RelationManager
     protected function addInvoice(int $packageId, $dueDate, $batch = 1)
     {
         try {
-            /** @var \App\Services\InvoiceService $invoiceService */
-            $invoiceService = app(\App\Services\InvoiceService::class);
+            /** @var InvoiceService $invoiceService */
+            $invoiceService = app(InvoiceService::class);
             $invoiceService->createManualInvoicesForPackage($packageId, $dueDate, $batch);
 
             Notification::make()

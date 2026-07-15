@@ -5,24 +5,27 @@ namespace App\Filament\Resources\Invoices\Tables;
 use App\Models\Invoices;
 use App\Models\Payment;
 use App\Models\PaymentMethod;
+use App\Models\VirtualAccount;
 use App\Services\CreditService;
+use App\Services\Customer\VirtualAccountStatusServices;
 use App\Services\InvoiceService;
 use App\Services\PaymentService;
 use App\Services\ReceivableService;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
+use Filament\Support\Enums\Width;
 use Filament\Support\Icons\Heroicon;
 use Filament\Support\RawJs;
 use Filament\Tables\Columns\TextColumn;
@@ -33,6 +36,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class InvoicesTable
 {
@@ -68,7 +72,7 @@ class InvoicesTable
                         'info' => Payment::STATUS_PARTIAL,
                         'danger' => Payment::STATUS_UNPAID,
                     ])
-                    ->formatStateUsing(fn(string $state) => Payment::getStatusLabel()[$state]),
+                    ->formatStateUsing(fn (string $state) => Payment::getStatusLabel()[$state]),
                 TextColumn::make('invoice_date')
                     ->date()
                     ->sortable(),
@@ -91,23 +95,23 @@ class InvoicesTable
                         return $query
                             ->when(
                                 $data['start_date'],
-                                fn(Builder $query, $date): Builder => $query->whereDate('invoice_date', '>=', $date),
+                                fn (Builder $query, $date): Builder => $query->whereDate('invoice_date', '>=', $date),
                             )
                             ->when(
                                 $data['end_date'],
-                                fn(Builder $query, $date): Builder => $query->whereDate('invoice_date', '<=', $date),
+                                fn (Builder $query, $date): Builder => $query->whereDate('invoice_date', '<=', $date),
                             );
                     })
                     ->indicateUsing(function (array $data): array {
                         $indicators = [];
 
                         if ($data['start_date'] ?? null) {
-                            $indicators[] = Indicator::make('Start: ' . Date::parse($data['start_date'])->format('d F Y'))
+                            $indicators[] = Indicator::make('Start: '.Date::parse($data['start_date'])->format('d F Y'))
                                 ->removeField('from');
                         }
 
                         if ($data['end_date'] ?? null) {
-                            $indicators[] = Indicator::make('Until: ' . Date::parse($data['end_date'])->format('d F Y'))
+                            $indicators[] = Indicator::make('Until: '.Date::parse($data['end_date'])->format('d F Y'))
                                 ->removeField('until');
                         }
 
@@ -125,22 +129,22 @@ class InvoicesTable
                                 TextInput::make('customer')
                                     ->disabled()
                                     ->default(
-                                        fn(Invoices $record) => $record->customerPackage->customer->username
+                                        fn (Invoices $record) => $record->customerPackage->customer->username
                                     ),
                                 TextInput::make('package')
                                     ->disabled()
                                     ->default(
-                                        fn(Invoices $record) => "{$record->customerPackage->package->name} ({$record->customerPackage->package->pppProfile->profile_name})"
+                                        fn (Invoices $record) => "{$record->customerPackage->package->name} ({$record->customerPackage->package->pppProfile->profile_name})"
                                     ),
                                 TextInput::make('invoice')
                                     ->disabled()
                                     ->default(
-                                        fn(Invoices $record) => $record->invoice_number
+                                        fn (Invoices $record) => $record->invoice_number
                                     ),
                                 TextInput::make('date')
                                     ->disabled()
                                     ->default(
-                                        fn(Invoices $record) => $record->invoice_date->format('d F Y')
+                                        fn (Invoices $record) => $record->invoice_date->format('d F Y')
                                     ),
                             ])
                                 ->label('Detail Information')
@@ -153,9 +157,9 @@ class InvoicesTable
                                     ->minValue(0.01)
                                     ->mask(RawJs::make('$money($input)'))
                                     ->stripCharacters(',')
-                                    ->maxValue(fn(Invoices $record) => (float) ($record->balance_due ?? 0))
+                                    ->maxValue(fn (Invoices $record) => (float) ($record->balance_due ?? 0))
                                     ->required()
-                                    ->default(fn(Invoices $record) => (float) ($record->balance_due ?? 0)),
+                                    ->default(fn (Invoices $record) => (float) ($record->balance_due ?? 0)),
                                 DateTimePicker::make('payment_datetime')
                                     ->default(now()),
                                 Select::make('payment_method_id')
@@ -173,7 +177,7 @@ class InvoicesTable
                                     ->label('Reference')
                                     ->disabled()
                                     ->dehydrated()
-                                    ->default('MAN-' . now()->unix()),
+                                    ->default('MAN-'.now()->unix()),
                             ])->columns()
                                 ->label('Record Payment'),
                             FileUpload::make('file_path')
@@ -225,7 +229,7 @@ class InvoicesTable
                                 ->send();
                         })
                         ->visible(
-                            fn(Invoices $record) => $record->status !== Invoices::STATUS_CANCELLED
+                            fn (Invoices $record) => $record->status !== Invoices::STATUS_CANCELLED
                                 && (float) ($record->balance_due ?? 0) > 0
                         ),
 
@@ -257,7 +261,7 @@ class InvoicesTable
                                     $available = $customer ? app(CreditService::class)->getBalance($customer) : 0.0;
                                     $balance = (float) ($record->balance_due ?? 0);
 
-                                    return 'Available credit: IDR ' . number_format($available, 2) . ' | Balance due: IDR ' . number_format($balance, 2);
+                                    return 'Available credit: IDR '.number_format($available, 2).' | Balance due: IDR '.number_format($balance, 2);
                                 }),
                         ])
                         ->action(function (Invoices $record, array $data) {
@@ -277,7 +281,7 @@ class InvoicesTable
                             app(ReceivableService::class)->syncForInvoice($record);
 
                             Notification::make()
-                                ->title('Credit applied: ' . number_format((float) ($res['applied'] ?? 0), 2))
+                                ->title('Credit applied: '.number_format((float) ($res['applied'] ?? 0), 2))
                                 ->success()
                                 ->send();
                         })
@@ -293,11 +297,11 @@ class InvoicesTable
                                     TextInput::make('invoice_number')
                                         ->label('Invoice Number')
                                         ->disabled()
-                                        ->default(fn(Invoices $record) => $record->invoice_number),
+                                        ->default(fn (Invoices $record) => $record->invoice_number),
                                     TextInput::make('customer')
                                         ->label('Invoice Number')
                                         ->disabled()
-                                        ->default(fn(Invoices $record) => $record->customerPackage->customer->full_name),
+                                        ->default(fn (Invoices $record) => $record->customerPackage->customer->full_name),
                                     TextInput::make('current_total')
                                         ->label('Current Total Amount')
                                         ->disabled()
@@ -305,7 +309,7 @@ class InvoicesTable
                                         ->prefix('Rp')
                                         ->mask(RawJs::make('$money($input)'))
                                         ->stripCharacters(',')
-                                        ->default(fn(Invoices $record) => (float) $record->total_amount),
+                                        ->default(fn (Invoices $record) => (float) $record->total_amount),
                                     TextInput::make('adjustment_amount')
                                         ->label('Adjustment Nominal')
                                         ->numeric()
@@ -326,7 +330,7 @@ class InvoicesTable
                                         ->live()
                                         ->dehydrated(false)
                                         ->default(
-                                            fn(Invoices $record) => number_format($record->total_amount)
+                                            fn (Invoices $record) => number_format($record->total_amount)
                                         ),
                                     TextInput::make('description')
                                         ->label('Reason/Description')
@@ -347,17 +351,190 @@ class InvoicesTable
                                 ->success()
                                 ->send();
                         })
-                        ->visible(fn(Invoices $record) => $record->status !== Invoices::STATUS_CANCELLED && $record->status !== Invoices::STATUS_PAID),
-                    DeleteAction::make()
+                        ->visible(fn (Invoices $record) => $record->status !== Invoices::STATUS_CANCELLED && $record->status !== Invoices::STATUS_PAID),
+                    Action::make('sync_midtrans')
+                        ->label('Sync Midtrans')
+                        ->icon(Heroicon::ArrowPath)
+                        ->color('info')
                         ->visible(
-                            fn(Invoices $record) => $record->status == Invoices::STATUS_UNPAID
+                            fn (Invoices $record) => $record->status == Invoices::STATUS_UNPAID && $record->virtualAccounts()->exists()
                         )
+                        ->action(function (Invoices $record) {
+                            $virtualAccounts = $record->virtualAccounts;
+
+                            if ($virtualAccounts->isEmpty()) {
+                                Notification::make()
+                                    ->title('No Virtual Account')
+                                    ->body('There are no virtual accounts associated with this invoice.')
+                                    ->warning()
+                                    ->send();
+
+                                return;
+                            }
+
+                            $service = app(VirtualAccountStatusServices::class);
+                            $results = [];
+
+                            foreach ($virtualAccounts as $va) {
+                                try {
+                                    $res = $service->syncStatus($va);
+                                    $results[] = "VA {$va->va_number} ({$va->paymentMethod?->name}): {$res['message']}";
+                                } catch (\Exception $e) {
+                                    $results[] = "VA {$va->va_number} ({$va->paymentMethod?->name}): Failed (".$e->getMessage().')';
+                                }
+                            }
+
+                            $record->refresh();
+
+                            Notification::make()
+                                ->title('Midtrans Sync Completed')
+                                ->body(implode("\n", $results))
+                                ->success()
+                                ->send();
+                        }),
+                    Action::make('cancel_va')
+                        ->label('Cancel VA')
+                        ->icon(Heroicon::XCircle)
+                        ->color('warning')
+                        ->visible(
+                            fn (Invoices $record) => $record->status == Invoices::STATUS_UNPAID && $record->virtualAccounts()->where('status', VirtualAccount::STATUS_PENDING)->exists()
+                        )
+                        ->requiresConfirmation()
+                        ->action(function (Invoices $record) {
+                            $virtualAccounts = $record->virtualAccounts()->where('status', VirtualAccount::STATUS_PENDING)->get();
+
+                            if ($virtualAccounts->isEmpty()) {
+                                Notification::make()
+                                    ->title('No Pending VA')
+                                    ->body('There are no pending virtual accounts associated with this invoice.')
+                                    ->warning()
+                                    ->send();
+
+                                return;
+                            }
+
+                            $service = app(VirtualAccountStatusServices::class);
+                            $results = [];
+
+                            foreach ($virtualAccounts as $va) {
+                                try {
+                                    $res = $service->cancel($va);
+                                    $results[] = "VA {$va->va_number} ({$va->paymentMethod?->name}): {$res['message']}";
+                                } catch (\Exception $e) {
+                                    $results[] = "VA {$va->va_number} ({$va->paymentMethod?->name}): Failed (".$e->getMessage().')';
+                                }
+                            }
+
+                            $record->refresh();
+
+                            Notification::make()
+                                ->title('Midtrans Cancellation Completed')
+                                ->body(implode("\n", $results))
+                                ->success()
+                                ->send();
+                        }),
+                    Action::make('delete')
+                        ->modalHeading(
+                            fn (): string => __('filament-actions::delete.single.modal.heading', ['label' => 'Invoice'])
+                        )
+                        ->visible(
+                            fn (Invoices $record) => $record->status == Invoices::STATUS_UNPAID
+                        )
+                        ->modalSubmitActionLabel(__('filament-actions::delete.single.modal.actions.delete.label'))
+                        ->successNotificationTitle(__('filament-actions::delete.single.notifications.deleted.title'))
+                        ->defaultColor('danger')
+                        ->icon(Heroicon::Trash)
+                        ->requiresConfirmation()
+                        ->modalIcon(Heroicon::OutlinedTrash)
+                        ->modalWidth(Width::ScreenLarge)
+                        ->schema([
+                            Section::make(fn (Invoices $record) => 'Invoice : '.$record->invoice_number)
+                                ->columns()
+                                ->components([
+                                    TextInput::make('package')
+                                        ->default(
+                                            fn (Invoices $record) => $record->customerPackage->package->name
+                                        )
+                                        ->disabled(),
+                                    TextInput::make('date')
+                                        ->default(fn (Invoices $record) => $record->invoice_date->format('d F Y'))
+                                        ->disabled(),
+                                    TextInput::make('total_amount')
+                                        ->default(
+                                            fn (Invoices $record) => 'Rp. '.number_format($record->total_amount, 2, ',', '.')
+                                        )
+                                        ->disabled(),
+                                    TextInput::make('paid_amount')
+                                        ->default(
+                                            fn (Invoices $record) => 'Rp. '.number_format($record->paid_amount, 2, ',', '.')
+                                        )
+                                        ->disabled(),
+                                ]),
+                            Section::make('Related Virtual Accounts')
+                                ->schema([
+                                    Repeater::make('virtual_accounts')
+                                        ->label('')
+                                        ->default(fn (Invoices $record) => $record->virtualAccounts->map(fn ($va) => [
+                                            'va_number' => $va->va_number,
+                                            'payment_method' => $va->paymentMethod?->name,
+                                            'total_amount' => 'Rp. '.number_format($va->total_amount, 2, ',', '.'),
+                                            'status' => $va->status,
+                                        ])->toArray())
+                                        ->schema([
+                                            TextInput::make('va_number')->label('VA Number')->disabled(),
+                                            TextInput::make('payment_method')->label('Payment Method')->disabled(),
+                                            TextInput::make('total_amount')->label('Total Amount')->disabled(),
+                                            TextInput::make('status')->label('Status')->disabled(),
+                                        ])
+                                        ->addable(false)
+                                        ->deletable(false)
+                                        ->reorderable(false)
+                                        ->columns(4),
+                                ])
+                                ->visible(fn (Invoices $record) => $record->virtualAccounts()->exists()),
+                            Section::make('Related Payments')
+                                ->schema([
+                                    Repeater::make('payments')
+                                        ->label('')
+                                        ->default(fn (Invoices $record) => $record->payments->map(fn ($payment) => [
+                                            'reference_id' => $payment->reference_id,
+                                            'payment_method' => $payment->paymentMethod?->name,
+                                            'total_amount' => 'Rp. '.number_format($payment->total_amount, 2, ',', '.'),
+                                            'payment_datetime' => $payment->payment_datetime?->format('d F Y H:i:s'),
+                                        ])->toArray())
+                                        ->schema([
+                                            TextInput::make('reference_id')->label('Reference ID')->disabled(),
+                                            TextInput::make('payment_method')->label('Payment Method')->disabled(),
+                                            TextInput::make('total_amount')->label('Total Amount')->disabled(),
+                                            TextInput::make('payment_datetime')->label('Payment Date')->disabled(),
+                                        ])
+                                        ->addable(false)
+                                        ->deletable(false)
+                                        ->reorderable(false)
+                                        ->columns(4),
+                                ])
+                                ->visible(fn (Invoices $record) => $record->payments()->exists()),
+                        ])
+                        ->keyBindings(['mod+d'])
                         ->action(function (Invoices $record): void {
                             $no = $record->invoice_number;
                             DB::beginTransaction();
                             $ok = true;
 
-                            if ($record->payments()->exists()) {
+                            // Cancel virtual accounts via Midtrans and delete them first
+                            if ($record->virtualAccounts()->exists()) {
+                                $vaStatusService = app(VirtualAccountStatusServices::class);
+                                foreach ($record->virtualAccounts as $va) {
+                                    try {
+                                        $vaStatusService->cancel($va);
+                                    } catch (\Exception $e) {
+                                        Log::warning('Failed to cancel VA via Midtrans: '.$e->getMessage());
+                                    }
+                                }
+                                $ok = $record->virtualAccounts()->delete();
+                            }
+
+                            if ($ok && $record->payments()->exists()) {
                                 $ok = $record->payments()->delete();
                             }
 
@@ -366,6 +543,7 @@ class InvoicesTable
                             }
 
                             if (! $ok) {
+                                DB::rollBack();
                                 Notification::make('')
                                     ->title('Action failed')
                                     ->body("Delete Invoice {$no} Fail")
@@ -391,7 +569,7 @@ class InvoicesTable
                 ]),
             ])
             ->checkIfRecordIsSelectableUsing(
-                fn(Invoices $record) => $record->status == Invoices::STATUS_UNPAID
+                fn (Invoices $record) => $record->status == Invoices::STATUS_UNPAID
             )
             ->defaultSort('updated_at', 'desc');
     }

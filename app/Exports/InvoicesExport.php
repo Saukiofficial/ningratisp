@@ -8,34 +8,36 @@ use App\Models\Payment;
 use Carbon\CarbonPeriod;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithColumnFormatting;
-use Maatwebsite\Excel\Concerns\WithHeadings;
-use Maatwebsite\Excel\Concerns\WithMapping; // Add this concern
-use Maatwebsite\Excel\Concerns\WithStartRow;
-use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
-use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
+// Add this concern
 use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithStartRow;
 use Maatwebsite\Excel\Events\AfterSheet;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
-use Illuminate\Support\Facades\DB;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 
-class InvoicesExport implements
-    FromCollection,
-    WithColumnFormatting,
-    WithHeadings,
-    WithEvents,
-    WithStartRow
+class InvoicesExport implements FromCollection, WithColumnFormatting, WithEvents, WithHeadings, WithStartRow
 {
     protected $startDate;
+
     protected $endDate;
+
     protected $type;
 
-    public function __construct($startDate, $endDate, $type)
+    protected $paymentStatus;
+
+    public function __construct($startDate, $endDate, $type, $paymentStatus = null)
     {
         $this->startDate = $startDate;
         $this->endDate = $endDate;
         $this->type = $type;
+        $this->paymentStatus = $paymentStatus;
     }
 
     protected $customerCategories = [];
@@ -57,6 +59,9 @@ class InvoicesExport implements
                     ->whereBetween('p.payment_datetime', [$this->startDate, $this->endDate]);
             })
             ->whereBetween('i.invoice_date', [$this->startDate, $this->endDate])
+            ->when($this->paymentStatus, function ($query) {
+                return $query->where('i.status', $this->paymentStatus);
+            })
             ->select(
                 'c.id as customer_id',
                 'c.full_name',
@@ -84,7 +89,7 @@ class InvoicesExport implements
                 // Calculate invoice total (avoid duplicates by using unique invoice dates)
                 $invoiceTotal = $records
                     ->unique(function ($record) {
-                        return $record->invoice_date . '-' . $record->total_amount;
+                        return $record->invoice_date.'-'.$record->total_amount;
                     })
                     ->filter(function ($record) use ($date) {
                         return $this->matchesDate(Date::parse($record->invoice_date), $date);
@@ -154,7 +159,7 @@ class InvoicesExport implements
 
                 $mergedCells = [
                     'A1:A2',
-                    'B1:B2'
+                    'B1:B2',
                 ];
                 foreach ($mergedCells as $cell) {
                     $sheet->mergeCells($cell);
@@ -168,13 +173,12 @@ class InvoicesExport implements
                 $rowNumber = 3; // Data starts from row 3
                 foreach ($this->getCustomerCategories() as $category) {
                     if ($category === 'free_forever') {
-                        $sheet->getStyle("A{$rowNumber}:" . $sheet->getHighestColumn() . $rowNumber)
+                        $sheet->getStyle("A{$rowNumber}:".$sheet->getHighestColumn().$rowNumber)
                             ->getFill()
-                            ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+                            ->setFillType(Fill::FILL_SOLID)
                             ->getStartColor()
                             ->setRGB('90EE90'); // Light green color
                     }
-
 
                     $rowNumber++;
                 }
@@ -196,7 +200,7 @@ class InvoicesExport implements
                     ->applyFromArray([
                         'borders' => [
                             'allBorders' => [
-                                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                                'borderStyle' => Border::BORDER_THIN,
                                 'color' => ['rgb' => '000000'],
                             ],
                         ],

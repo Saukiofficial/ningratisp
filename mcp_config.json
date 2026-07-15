@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "laravel-boost": {
+      "command": "/usr/bin/php",
+      "args": [
+        "/large-file/Developer/PHP/Laravel/ningratisp/artisan",
+        "boost:mcp"
+      ]
+    }
+  }
+}

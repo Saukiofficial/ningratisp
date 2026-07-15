@@ -14,19 +14,27 @@ class Invoices extends BaseModel
 
     // const invoice status
     const STATUS_UNPAID = 'unpaid';
+
     const STATUS_PAID = 'paid';
+
     const STATUS_OVERDUE = 'overdue';
+
     const STATUS_CANCELLED = 'cancelled';
 
     // const invoice type
     const TYPE_MONTHLY = 'monthly';
+
     const TYPE_LOAN = 'loan_settlement';
+
     const TYPE_ADJUSTMENT = 'adjustment';
+
     const TYPE_MANUAL = 'manual';
 
     // Const report type
     const REPORT_MONTHLY = 'monthly';
+
     const REPORT_ANNUALY = 'annualy';
+
     const REPORT_DATE_RANGE = 'date_range';
 
     public static function getStatusLabel(): array
@@ -115,6 +123,11 @@ class Invoices extends BaseModel
     public function customerPackage(): BelongsTo
     {
         return $this->belongsTo(CustomerPackages::class, 'customer_package_id');
+    }
+
+    public function virtualAccounts(): HasMany
+    {
+        return $this->hasMany(VirtualAccount::class, 'invoice_id');
     }
 
     protected static function booted(): void
@@ -217,6 +230,7 @@ class Invoices extends BaseModel
             $this->save();
 
             DB::commit();
+
             return true;
         } catch (\Exception $e) {
             DB::rollBack();
