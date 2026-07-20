@@ -48,6 +48,18 @@ class CustomerInfolist
                     ])
                     ->columnSpanFull()
                     ->columns(3),
+                Section::make('Administration')
+                    ->description('Data adminstrative')
+                    ->schema([
+                        TextEntry::make('created_at')
+                            ->date('d F Y, H:i:s')
+                            ->label('Register'),
+                        TextEntry::make('isolir_at')
+                            ->date('d F Y, H:i:s')
+                            ->label('Isolir'),
+                    ])
+                    ->columnSpanFull()
+                    ->columns()
             ]);
     }
 }

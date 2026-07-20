@@ -42,6 +42,7 @@ class CustomersTable
                     ->sortable(),
                 TextColumn::make('local_address')
                     ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->sortable(true, fn(Builder $query) => $query->orderByRaw('INET_ATON(local_address)')),
                 TextColumn::make('remote_address')
                     ->toggleable(isToggledHiddenByDefault: true)
@@ -69,7 +70,12 @@ class CustomersTable
                     ->toggleable(isToggledHiddenByDefault: true),
                 IconColumn::make('auto_isolir')->boolean()
                     ->trueIcon(Heroicon::OutlinedCheckBadge)
-                    ->falseIcon(Heroicon::OutlinedXMark),
+                    ->falseIcon(Heroicon::OutlinedXMark)
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('created_at')
+                    ->label('Register')
+                    ->date('d F Y, H:i:s')
+                    ->sortable(),
                 TextColumn::make('isolir_at')
                     ->sortable(),
                 // TextColumn::make('status')
