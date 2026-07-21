@@ -66,7 +66,8 @@ class CreateCustomer extends CreateRecord
 
                 if (! empty($queryData['ppp_user'])) {
                     $this->data['ppp_user'] = $queryData['ppp_user'];
-                    $this->data['username'] = $queryData['ppp_user'] . $queryData['area'];
+                    $areaSuffix = ($queryData['area'] ?? '') === '_' ? '' : ($queryData['area'] ?? '');
+                    $this->data['username'] = $queryData['ppp_user'].$areaSuffix;
                 }
             }
         }
@@ -125,31 +126,31 @@ class CreateCustomer extends CreateRecord
             $remoteNetworkPrefix = $data['remote_network'] ?? $networkPrefix;
 
             $mikrotikLocalIps = $secrets->pluck('local-address')
-                ->filter(fn($ip) => $ip && str_starts_with($ip, $networkPrefix))
-                ->map(fn($ip) => ($octet = str_replace($networkPrefix, '', $ip)) && is_numeric($octet) ? (int) $octet : null)
+                ->filter(fn ($ip) => $ip && str_starts_with($ip, $networkPrefix))
+                ->map(fn ($ip) => ($octet = str_replace($networkPrefix, '', $ip)) && is_numeric($octet) ? (int) $octet : null)
                 ->filter();
 
             $databaseLocalIps = Customer::query()
-                ->where('local_address', 'like', $networkPrefix . '%')
+                ->where('local_address', 'like', $networkPrefix.'%')
                 ->where('id', '!=', $record->id) // exclude current record
                 ->pluck('local_address')
-                ->map(fn($ip) => ($octet = str_replace($networkPrefix, '', $ip)) && is_numeric($octet) ? (int) $octet : null)
+                ->map(fn ($ip) => ($octet = str_replace($networkPrefix, '', $ip)) && is_numeric($octet) ? (int) $octet : null)
                 ->filter();
 
             $existingLocalIps = $mikrotikLocalIps->merge($databaseLocalIps)->unique()->sort();
             $localIpSuffix = $existingLocalIps->isEmpty() ? 1 : $existingLocalIps->last() + 1;
-            $localIp = $networkPrefix . $localIpSuffix;
+            $localIp = $networkPrefix.$localIpSuffix;
 
             $mikrotikRemoteIps = $secrets->pluck('remote-address')
-                ->filter(fn($ip) => $ip && str_starts_with($ip, $remoteNetworkPrefix))
-                ->map(fn($ip) => ($octet = str_replace($remoteNetworkPrefix, '', $ip)) && is_numeric($octet) ? (int) $octet : null)
+                ->filter(fn ($ip) => $ip && str_starts_with($ip, $remoteNetworkPrefix))
+                ->map(fn ($ip) => ($octet = str_replace($remoteNetworkPrefix, '', $ip)) && is_numeric($octet) ? (int) $octet : null)
                 ->filter();
 
             $databaseRemoteIps = Customer::query()
-                ->where('remote_address', 'like', $remoteNetworkPrefix . '%')
+                ->where('remote_address', 'like', $remoteNetworkPrefix.'%')
                 ->where('id', '!=', $record->id)
                 ->pluck('remote_address')
-                ->map(fn($ip) => ($octet = str_replace($remoteNetworkPrefix, '', $ip)) && is_numeric($octet) ? (int) $octet : null)
+                ->map(fn ($ip) => ($octet = str_replace($remoteNetworkPrefix, '', $ip)) && is_numeric($octet) ? (int) $octet : null)
                 ->filter();
 
             $existingRemoteIps = $mikrotikRemoteIps->merge($databaseRemoteIps)->unique()->sort();
@@ -170,7 +171,7 @@ class CreateCustomer extends CreateRecord
                 $this->halt();
             }
 
-            $remoteIp = $remoteNetworkPrefix . $nextIpSuffix;
+            $remoteIp = $remoteNetworkPrefix.$nextIpSuffix;
 
             // 3. Check PPP Profile
             $pppProfile = PppProfile::find($data['ppp_profile_id']);
@@ -247,7 +248,8 @@ class CreateCustomer extends CreateRecord
                             ->live()
                             ->afterStateUpdated(function ($get, $set, $state) use ($areas) {
                                 $state = $state == '-' ? null : $state;
-                                $set('username', $get('ppp_user') . $state);
+                                $areaSuffix = ($state === '_' || empty($state)) ? '' : $state;
+                                $set('username', $get('ppp_user').$areaSuffix);
                                 $areaRecord = $areas->firstWhere('customer_prefix', $state);
                                 $network = $areaRecord?->network_prefix ?? '';
                                 $remotePrefix = $areaRecord?->remote_prefix ?? '';
@@ -261,7 +263,11 @@ class CreateCustomer extends CreateRecord
                             ->required()
                             ->live(true)
                             ->afterStateUpdated(
-                                fn($get, $set, $state) => $set('username', $state . $get('area'))
+                                function ($get, $set, $state) {
+                                    $area = $get('area');
+                                    $areaSuffix = ($area === '_' || empty($area)) ? '' : $area;
+                                    $set('username', $state.$areaSuffix);
+                                }
                             ),
                         Select::make('package_id')
                             ->label('Paket')
