@@ -52,8 +52,8 @@ class MidtransService
 
     public function request($data, $method = 'post')
     {
-        $url = $this->baseUrl . $this->pathUrl;
-        $token = base64_encode($this->credentials['server_key'] . ':');
+        $url = $this->baseUrl.$this->pathUrl;
+        $token = base64_encode($this->credentials['server_key'].':');
         $driver = Http::withToken($token, 'Basic');
 
         try {
@@ -115,7 +115,7 @@ class MidtransService
         $now = now();
         $duration = $expired_at->diffInHours($now);
         $this->pathUrl = '/v1/payment-links';
-        $orderId = "VOC-{$uniqueId}";
+        $orderId = "VOC_{$uniqueId}";
         $this->setOrderId($uniqueId);
 
         $data = [
@@ -160,8 +160,8 @@ class MidtransService
             return false;
         }
 
-        $orderIdArr = explode('#', $data['order_id']);
-        $orderId = $orderIdArr[1] ?? null;
+        $orderIdArr = explode('_', $data['order_id'], 2);
+        $orderId = $orderIdArr[1] ?? $data['order_id'];
         $this->setOrderId($orderId);
         $orderIdType = $orderIdArr[0];
 
@@ -198,7 +198,7 @@ class MidtransService
     public function generateQRIS($uniqueId, $amount, $preOrderId = 'VOC')
     {
         $this->pathUrl = '/v2/charge';
-        $orderId = "$preOrderId#{$uniqueId}";
+        $orderId = "{$preOrderId}_{$uniqueId}";
         $this->setOrderId($uniqueId);
 
         $data = [
@@ -223,7 +223,7 @@ class MidtransService
 
         $data = [
             'transaction_details' => [
-                'order_id' => self::INVOICE . "#{$orderId}",
+                'order_id' => self::INVOICE."_{$orderId}",
                 'gross_amount' => $invoice->balance_due + $feeAmount,
             ],
             'customer_details' => [
@@ -236,7 +236,7 @@ class MidtransService
                     'id' => $item->id,
                     'price' => $item->unit_price - $invoice->discount_amount,
                     'quantity' => 1,
-                    'name' => $item->description . (! empty($invoice->discount_amount) ? ' (Diskon)' : null),
+                    'name' => $item->description.(! empty($invoice->discount_amount) ? ' (Diskon)' : null),
                 ];
             })->toArray(),
         ];
@@ -245,7 +245,7 @@ class MidtransService
         $data['item_details'][] = [
             'price' => $feeAmount,
             'quantity' => 1,
-            'name' => 'Fee ' . $paymentMethod->name,
+            'name' => 'Fee '.$paymentMethod->name,
         ];
 
         switch ($paymentMethod->midtrans_code) {
@@ -259,7 +259,7 @@ class MidtransService
                 break;
             case 'mandiri':
                 $data['payment_type'] = 'echannel';
-                $data['echannel'] = ['bill_info1' => 'Payment for:', 'bill_info2' => 'Invoice #' . $invoice->invoice_number];
+                $data['echannel'] = ['bill_info1' => 'Payment for:', 'bill_info2' => 'Invoice #'.$invoice->invoice_number];
                 break;
             default:
                 $data['payment_type'] = 'gopay';
