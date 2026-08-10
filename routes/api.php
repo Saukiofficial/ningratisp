@@ -1,10 +1,7 @@
 <?php
 
-use App\Helpers\MikrotikAPI;
 use App\Http\Controllers\HotspotController;
-use App\Http\Middleware\VerifyCsrfToken;
 use App\Http\Controllers\QrisProxyController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -28,5 +25,6 @@ Route::group(['prefix' => 'midtrans'], function () {
     // Route::post('paymentstate', [HotspotController::class, '']);
 });
 Route::get('voucherdetails/{sealcode?}', [HotspotController::class, 'getVoucherDetails'])->name('voucherDetails');
+Route::post('cancelvoucher/{sealcode?}', [HotspotController::class, 'cancelVoucher'])->name('voucherCancel');
 Route::middleware(['throttle:check_voucher'])
     ->post('check-invoice', [HotspotController::class, 'checkInvoice']);

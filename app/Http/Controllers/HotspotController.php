@@ -162,30 +162,72 @@ class HotspotController extends Controller
 
     public function getVoucherDetails($sealcode, VoucherService $service)
     {
-        // $challenge = $request->validated('challenge');
-        // $challengeKey = hash('sha512', env('CHALLENGE_VOUCHER') . $orderId);
-        // if ($challenge != $challengeKey) {
-        //     abort(403);
-        // }
-
         $response = [
             'error' => true,
-            'message' => 'Vocuher tidak ditemukan',
+            'message' => 'Voucher tidak ditemukan',
         ];
-        $voucherRow = $service->buildData()->where(['seal_code' => $sealcode]);
-        $voucher = $voucherRow->first(['order_id', 'code', 'duration', 'description', 'status', 'price']);
-        $fee = $voucherRow->first()->fee;
-        if (! empty($voucher)) {
-            $response['error'] = empty($voucher->status) ? true : false;
-            $response['message'] = empty($voucher->status) ? 'Voucher belum dibayar' : 'Voucher lunas';
-            $voucher->code = empty($voucher->status) ? null : $voucher->code;
-            $voucher->description = empty($voucher->status) ? explode('|', $voucher->description)[0] : $voucher->description;
-            $total_amount = TaxCalculate::calculate($voucher->price, $fee->amount, $fee->unit);
-            $voucher->total_amount = number_format($total_amount, 0, ',', '.');
+        $voucherModel = $service->buildData()->where(['seal_code' => $sealcode])->first();
+
+        if ($voucherModel) {
+            // Direct check to Midtrans if unpaid
+            if (empty($voucherModel->status)) {
+                try {
+                    $pg = new MidtransService;
+                    $midtransStatus = $pg->getStatusVirtualAccount("VOC_{$voucherModel->order_id}");
+                    if (isset($midtransStatus['transaction_status']) && in_array($midtransStatus['transaction_status'], ['settlement', 'capture'])) {
+                        $pg->handleNotification($midtransStatus);
+                        $voucherModel = $service->buildData()->where(['seal_code' => $sealcode])->first();
+                    }
+                } catch (Exception $e) {
+                    // Ignore Midtrans network errors gracefully
+                }
+            }
+
+            $fee = $voucherModel->fee;
+            $voucher = [
+                'order_id' => $voucherModel->order_id,
+                'code' => empty($voucherModel->status) ? null : $voucherModel->code,
+                'duration' => $voucherModel->duration,
+                'description' => empty($voucherModel->status) ? explode('|', $voucherModel->description)[0] : $voucherModel->description,
+                'status' => $voucherModel->status,
+                'price' => $voucherModel->price,
+            ];
+
+            $total_amount = $fee ? TaxCalculate::calculate($voucherModel->price, $fee->amount, $fee->unit) : $voucherModel->price;
+            $voucher['total_amount'] = number_format($total_amount, 0, ',', '.');
+
+            $response['error'] = empty($voucherModel->status) ? true : false;
+            $response['message'] = empty($voucherModel->status) ? 'Voucher belum dibayar' : 'Voucher lunas';
             $response['data'] = $voucher;
         }
 
         return response()->json($response);
+    }
+
+    public function cancelVoucher($sealcode, VoucherService $service)
+    {
+        $voucher = $service->buildData()->where(['seal_code' => $sealcode])->first();
+
+        if ($voucher && empty($voucher->status)) {
+            try {
+                $pg = new MidtransService;
+                $pg->cancelVirtualAccount("VOC_{$voucher->order_id}");
+            } catch (Exception $e) {
+                // Ignore if already cancelled or expired on Midtrans
+            }
+
+            $voucher->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Transaksi pembayaran berhasil dibatalkan.',
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Voucher tidak dapat dibatalkan atau sudah dilunasi.',
+        ], 400);
     }
 
     public function checkInvoice(Request $request, VoucherService $service)
