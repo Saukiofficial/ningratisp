@@ -8,7 +8,7 @@
 }
 
 /* ── Page & Background ── */
-.nn-page {
+.nn-login-page {
   min-height: 100dvh;
   min-height: 100vh;
   display: flex;
@@ -22,7 +22,7 @@
 }
 
 /* Mobile first — background mobile */
-.nn-bg {
+.nn-login-bg {
   position: fixed;
   inset: 0;
   background-image: url('/assets/img/background-mobile.webp');
@@ -34,14 +34,14 @@
 
 /* Desktop (≥768px) — background desktop */
 @media (min-width: 768px) {
-  .nn-bg {
+  .nn-login-bg {
     background-image: url('/assets/img/background-desktop.webp');
     background-position: center top;
   }
 }
 
 /* Very subtle overlay — background stays visible */
-.nn-overlay {
+.nn-login-overlay {
   position: fixed;
   inset: 0;
   background: linear-gradient(160deg,
@@ -51,7 +51,7 @@
   z-index: 1;
 }
 
-.nn-glow-tr {
+.nn-login-glow-tr {
   position: fixed;
   top: -100px;
   right: -80px;
@@ -64,7 +64,7 @@
   pointer-events: none;
 }
 
-.nn-glow-bl {
+.nn-login-glow-bl {
   position: fixed;
   bottom: -100px;
   left: -80px;
@@ -77,7 +77,7 @@
   pointer-events: none;
 }
 
-.nn-container {
+.nn-login-container {
   position: relative;
   z-index: 10;
   width: 100%;
@@ -88,13 +88,13 @@
 }
 
 /* ── Header ── */
-.nn-header {
+.nn-login-header {
   text-align: center;
   margin-bottom: 22px;
   animation: fadeSlideDown 0.6s ease-out both;
 }
 
-.nn-wifi-ring {
+.nn-login-wifi-ring {
   width: 70px;
   height: 70px;
   border-radius: 50%;
@@ -111,7 +111,7 @@
   animation: ringPulse 3.5s ease-in-out infinite;
 }
 
-.nn-brand {
+.nn-login-brand {
   font-size: 34px;
   font-weight: 900;
   color: #fff;
@@ -121,11 +121,11 @@
   line-height: 1;
 }
 
-.nn-brand span {
+.nn-login-brand span {
   color: #FFB347;
 }
 
-.nn-tagline {
+.nn-login-tagline {
   font-size: 11px;
   font-weight: 700;
   color: rgba(255, 255, 255, 0.55);
@@ -134,14 +134,14 @@
   margin: 0 0 16px;
 }
 
-.nn-pills {
+.nn-login-pills {
   display: flex;
   gap: 8px;
   justify-content: center;
   flex-wrap: wrap;
 }
 
-.nn-pill {
+.nn-login-pill {
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -159,7 +159,7 @@
 }
 
 /* ── Glass Card ── */
-.nn-card {
+.nn-login-card {
   width: 100%;
   background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(28px);
@@ -176,7 +176,7 @@
 }
 
 /* Shimmer top bar */
-.nn-card-bar {
+.nn-login-card-bar {
   position: absolute;
   top: 0;
   left: 20px;
@@ -189,7 +189,7 @@
 }
 
 /* Security badge */
-.nn-badge {
+.nn-login-badge {
   position: absolute;
   top: -14px;
   left: 50%;
@@ -208,7 +208,7 @@
   box-shadow: 0 3px 14px rgba(34, 197, 94, 0.40);
 }
 
-.nn-card-title {
+.nn-login-card-title {
   font-size: 19px;
   font-weight: 800;
   color: #fff;
@@ -217,7 +217,7 @@
   text-shadow: 0 1px 8px rgba(0, 0, 0, 0.20);
 }
 
-.nn-card-sub {
+.nn-login-card-sub {
   font-size: 13px;
   color: rgba(255, 255, 255, 0.50);
   text-align: center;
@@ -226,7 +226,7 @@
 }
 
 /* ── Form ── */
-.nn-label {
+.nn-login-label {
   display: block;
   font-size: 12px;
   font-weight: 700;
@@ -236,14 +236,14 @@
   text-transform: uppercase;
 }
 
-.nn-input-wrap {
+.nn-login-input-wrap {
   position: relative;
   display: flex;
   align-items: center;
   margin-bottom: 16px;
 }
 
-.nn-input-icon {
+.nn-login-input-icon {
   position: absolute;
   left: 14px;
   color: #FFB347;
@@ -252,7 +252,7 @@
   align-items: center;
 }
 
-.nn-input {
+.nn-login-input {
   width: 100%;
   padding: 13px 14px 13px 46px;
   background: rgba(255, 255, 255, 0.09);
@@ -270,26 +270,36 @@
   -webkit-backdrop-filter: blur(6px);
 }
 
-.nn-input::placeholder {
+.nn-login-input::placeholder {
   color: rgba(255, 255, 255, 0.28);
   font-size: 13px;
 }
 
-.nn-input:focus {
+.nn-login-input:focus {
   border-color: #FF8C00 !important;
   background: rgba(255, 255, 255, 0.13) !important;
   box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.18) !important;
 }
 
-.nn-input-pr {
+.nn-login-input:-webkit-autofill,
+.nn-login-input:-webkit-autofill:hover,
+.nn-login-input:-webkit-autofill:focus,
+.nn-login-input:-webkit-autofill:active {
+  -webkit-text-fill-color: #fff !important;
+  -webkit-box-shadow: 0 0 0px 1000px rgba(35, 25, 20, 0.92) inset !important;
+  transition: background-color 5000s ease-in-out 0s;
+  caret-color: #fff;
+}
+
+.nn-login-input-pr {
   padding-right: 46px;
 }
 
-.nn-input-err {
+.nn-login-input-err {
   border-color: rgba(239, 68, 68, 0.55) !important;
 }
 
-.nn-eye-btn {
+.nn-login-eye-btn {
   position: absolute;
   right: 14px;
   background: none;
@@ -302,12 +312,12 @@
   transition: color 0.2s;
 }
 
-.nn-eye-btn:hover {
+.nn-login-eye-btn:hover {
   color: #FFB347;
 }
 
 /* Error */
-.nn-error {
+.nn-login-error {
   display: flex;
   align-items: flex-start;
   gap: 7px;
@@ -320,7 +330,7 @@
   backdrop-filter: blur(6px);
 }
 
-.nn-error span {
+.nn-login-error span {
   font-size: 12px;
   font-weight: 600;
   color: #fca5a5;
@@ -328,7 +338,7 @@
 }
 
 /* Submit */
-.nn-submit {
+.nn-login-submit {
   width: 100%;
   padding: 15px;
   background: linear-gradient(135deg, #FF6B00 0%, #FF9500 50%, #FF6B00 100%);
@@ -352,35 +362,35 @@
   touch-action: manipulation;
 }
 
-.nn-submit:not(:disabled):hover {
+.nn-login-submit:not(:disabled):hover {
   transform: translateY(-2px);
   box-shadow: 0 10px 30px rgba(255, 107, 0, 0.58), inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
 
-.nn-submit:not(:disabled):active {
+.nn-login-submit:not(:disabled):active {
   transform: scale(0.98);
 }
 
-.nn-submit:disabled {
+.nn-login-submit:disabled {
   opacity: 0.58;
   cursor: not-allowed;
 }
 
 /* Divider */
-.nn-divider {
+.nn-login-divider {
   display: flex;
   align-items: center;
   gap: 10px;
   margin: 20px 0;
 }
 
-.nn-divider-line {
+.nn-login-divider-line {
   flex: 1;
   height: 1px;
   background: rgba(255, 255, 255, 0.12);
 }
 
-.nn-divider-text {
+.nn-login-divider-text {
   font-size: 10px;
   font-weight: 700;
   color: rgba(255, 255, 255, 0.30);
@@ -390,7 +400,7 @@
 }
 
 /* Help */
-.nn-help {
+.nn-login-help {
   text-align: center;
   font-size: 12.5px;
   color: rgba(255, 255, 255, 0.45);
@@ -398,12 +408,12 @@
   font-weight: 500;
 }
 
-.nn-help strong {
+.nn-login-help strong {
   color: #FFB347;
   font-weight: 700;
 }
 
-.nn-help small {
+.nn-login-help small {
   display: block;
   margin-top: 5px;
   font-size: 11px;
@@ -411,13 +421,13 @@
 }
 
 /* Footer */
-.nn-footer {
+.nn-login-footer {
   text-align: center;
   margin-top: 18px;
   animation: fadeIn 1s ease-out 0.4s both;
 }
 
-.nn-footer-text {
+.nn-login-footer-text {
   font-size: 11px;
   color: rgba(255, 255, 255, 0.32);
   font-weight: 500;
@@ -425,7 +435,7 @@
 }
 
 /* Test bar */
-.nn-testbar {
+.nn-login-testbar {
   position: fixed;
   top: 0;
   left: 0;
@@ -443,7 +453,7 @@
 }
 
 /* Spinner */
-.nn-spin {
+.nn-login-spin {
   width: 18px;
   height: 18px;
   animation: spin 0.8s linear infinite;
@@ -470,7 +480,6 @@
 
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 
@@ -550,11 +559,11 @@
 
 /* Responsive */
 @media (max-width: 360px) {
-  .nn-card {
+  .nn-login-card {
     padding: 28px 18px 22px;
   }
 
-  .nn-brand {
+  .nn-login-brand {
     font-size: 28px;
   }
 }

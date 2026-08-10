@@ -83,72 +83,72 @@ export default function Login() {
             <Head title="Login – NingratNet" />
 
             {appEnv !== 'production' && (
-                <div className="nn-testbar">⚠ &nbsp; TESTING APP &nbsp; ⚠</div>
+                <div className="nn-login-testbar">⚠ &nbsp; TESTING APP &nbsp; ⚠</div>
             )}
 
-            <div className="nn-bg" />
-            <div className="nn-overlay" />
-            <div className="nn-glow-tr" />
-            <div className="nn-glow-bl" />
+            <div className="nn-login-bg" />
+            <div className="nn-login-overlay" />
+            <div className="nn-login-glow-tr" />
+            <div className="nn-login-glow-bl" />
 
             <div
-                className="nn-page"
+                className="nn-login-page"
                 style={{ paddingTop: appEnv !== 'production' ? '54px' : '20px' }}
             >
-                <div className="nn-container">
+                <div className="nn-login-container">
 
                     {/* ── Header ── */}
-                    <div className="nn-header">
-                        <div className="nn-wifi-ring">
+                    <div className="nn-login-header">
+                        <div className="nn-login-wifi-ring">
                             <WifiIcon size={34} />
                         </div>
-                        <h1 className="nn-brand">
+                        <h1 className="nn-login-brand">
                             Ningrat<span>Net</span>
                         </h1>
-                        <p className="nn-tagline">Internet Pilihan Masyarakat</p>
-                        <div className="nn-pills">
-                            <span className="nn-pill"><ZapIcon /> Kecepatan Tinggi</span>
-                            <span className="nn-pill"><ShieldIcon size={10} /> Aman &amp; Stabil</span>
+                        <p className="nn-login-tagline">Internet Pilihan Masyarakat</p>
+                        <div className="nn-login-pills">
+                            <span className="nn-login-pill"><ZapIcon /> Kecepatan Tinggi</span>
+                            <span className="nn-login-pill"><ShieldIcon size={10} /> Aman &amp; Stabil</span>
                         </div>
                     </div>
 
                     {/* ── Card ── */}
-                    <div className="nn-card">
-                        <div className="nn-card-bar" />
+                    <div className="nn-login-card">
+                        <div className="nn-login-card-bar" />
 
-                        <div className="nn-badge">
+                        <div className="nn-login-badge">
                             <ShieldIcon size={12} />
                             Koneksi Aman &amp; Terenkripsi
                         </div>
 
-                        <h2 className="nn-card-title">Masuk ke Akun Anda</h2>
-                        <p className="nn-card-sub">Kelola layanan internet Anda</p>
+                        <h2 className="nn-login-card-title">Masuk ke Akun Anda</h2>
+                        <p className="nn-login-card-sub">Kelola layanan internet Anda</p>
 
                         <form onSubmit={submit} autoComplete="off">
 
                             {/* Username */}
-                            <label htmlFor="username" className="nn-label">
+                            <label htmlFor="username" className="nn-login-label">
                                 Username / ID Pelanggan
                             </label>
-                            <div className="nn-input-wrap">
-                                <span className="nn-input-icon"><UserIcon size={18} /></span>
+                            <div className="nn-login-input-wrap">
+                                <span className="nn-login-input-icon"><UserIcon size={18} /></span>
                                 <input
                                     id="username"
                                     name="username"
                                     type="text"
-                                    autoComplete="off"
+                                    autoComplete="username"
                                     autoCorrect="off"
                                     autoCapitalize="none"
                                     spellCheck="false"
                                     required
                                     value={data.username}
                                     onChange={(e) => setData('username', e.target.value)}
-                                    className={`nn-input${errors.username ? ' nn-input-err' : ''}`}
+                                    className={`nn-login-input${errors.username ? ' nn-login-input-err' : ''}`}
                                     placeholder="Masukkan username atau ID Anda"
                                 />
                             </div>
                             {errors.username && (
-                                <div className="nn-error">
+                                <div className="nn-login-error">
                                     <svg width="14" height="14" viewBox="0 0 20 20" fill="#fca5a5" style={{ flexShrink: 0, marginTop: 1 }}>
                                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                                     </svg>
@@ -157,25 +157,25 @@ export default function Login() {
                             )}
 
                             {/* Password */}
-                            <label htmlFor="password" className="nn-label">
+                            <label htmlFor="password" className="nn-login-label">
                                 Password
                             </label>
-                            <div className="nn-input-wrap">
-                                <span className="nn-input-icon"><LockIcon size={18} /></span>
+                            <div className="nn-login-input-wrap">
+                                <span className="nn-login-input-icon"><LockIcon size={18} /></span>
                                 <input
                                     id="password"
                                     name="password"
                                     type={showPassword ? 'text' : 'password'}
-                                    autoComplete="new-password"
+                                    autoComplete="current-password"
                                     required
                                     value={data.password}
                                     onChange={(e) => setData('password', e.target.value)}
-                                    className={`nn-input nn-input-pr${errors.password ? ' nn-input-err' : ''}`}
+                                    className={`nn-login-input nn-login-input-pr${errors.password ? ' nn-login-input-err' : ''}`}
                                     placeholder="Masukkan password Anda"
                                 />
                                 <button
                                     type="button"
-                                    className="nn-eye-btn"
+                                    className="nn-login-eye-btn"
                                     onClick={() => setShowPassword(!showPassword)}
                                     tabIndex={-1}
                                     aria-label={showPassword ? 'Sembunyikan' : 'Tampilkan'}
@@ -184,7 +184,7 @@ export default function Login() {
                                 </button>
                             </div>
                             {errors.password && (
-                                <div className="nn-error">
+                                <div className="nn-login-error">
                                     <svg width="14" height="14" viewBox="0 0 20 20" fill="#fca5a5" style={{ flexShrink: 0, marginTop: 1 }}>
                                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                                     </svg>
@@ -196,11 +196,11 @@ export default function Login() {
                             <button
                                 type="submit"
                                 disabled={processing}
-                                className="nn-submit"
+                                className="nn-login-submit"
                             >
                                 {processing ? (
                                     <>
-                                        <svg className="nn-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <svg className="nn-login-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                             <circle style={{ opacity: 0.25 }} cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                                             <path style={{ opacity: 0.75 }} fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                                         </svg>
@@ -215,20 +215,20 @@ export default function Login() {
                             </button>
                         </form>
 
-                        <div className="nn-divider">
-                            <div className="nn-divider-line" />
-                            <span className="nn-divider-text">info akun</span>
-                            <div className="nn-divider-line" />
+                        <div className="nn-login-divider">
+                            <div className="nn-login-divider-line" />
+                            <span className="nn-login-divider-text">info akun</span>
+                            <div className="nn-login-divider-line" />
                         </div>
 
-                        <p className="nn-help">
+                        <p className="nn-login-help">
                             <small>Butuh bantuan? Hubungi CS NingratNet</small>
                         </p>
                     </div>
 
                     {/* Footer */}
-                    <div className="nn-footer">
-                        <p className="nn-footer-text">
+                    <div className="nn-login-footer">
+                        <p className="nn-login-footer-text">
                             © {new Date().getFullYear()} NingratNet &nbsp;·&nbsp; Dilindungi enkripsi SSL
                         </p>
                     </div>

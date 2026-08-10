@@ -8,7 +8,8 @@
     "mcp": true,
     "nightwatch": false,
     "packages": [
-        "filament/filament"
+        "filament/filament",
+        "erag/laravel-pwa"
     ],
     "sail": false,
     "skills": [
@@ -20,6 +21,7 @@
         "inertia-react-development",
         "echo-react-development",
         "echo-development",
-        "tailwindcss-development"
+        "tailwindcss-development",
+        "laravel-pwa-setup"
     ]
 }

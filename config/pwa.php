@@ -21,6 +21,7 @@ return [
     'manifest' => [
         'name' => env('APP_NAME') ?? 'WiFi App',
         'short_name' => 'NingratApp',
+        'start_url' => '/customer',
         'background_color' => '#6777ef',
         'display' => 'fullscreen',
         'description' => 'Customer wifi system App',
@@ -30,6 +31,13 @@ return [
                 'src' => 'logo.png',
                 'sizes' => '512x512',
                 'type' => 'image/png',
+                'purpose' => 'any maskable',
+            ],
+            [
+                'src' => 'logo.png',
+                'sizes' => '192x192',
+                'type' => 'image/png',
+                'purpose' => 'any maskable',
             ],
         ],
         'screenshots' => [
@@ -38,24 +46,24 @@ return [
                 'sizes' => '520x999',
                 'types' => 'image/png',
                 'label' => 'Modern login page',
-                'form_factor' => 'narrow'
+                'form_factor' => 'narrow',
             ],
             [
                 'src' => 'assets/img/pwa/ss-2.png',
                 'sizes' => '520x999',
                 'types' => 'image/png',
                 'label' => 'Dashboard full control with nice view',
-                'form_factor' => 'narrow'
+                'form_factor' => 'narrow',
             ],
             [
                 'src' => 'assets/img/pwa/ss-3.png',
                 'sizes' => '520x999',
                 'types' => 'image/png',
                 'label' => 'Confirm payment for better clarify',
-                'form_factor' => 'narrow'
+                'form_factor' => 'narrow',
             ],
         ],
-        'display_override' => ["fullscreen", "minimal-ui"]
+        'display_override' => ['fullscreen', 'minimal-ui'],
     ],
 
     /*
