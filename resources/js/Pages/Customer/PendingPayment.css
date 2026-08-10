@@ -404,3 +404,168 @@
 .pp-footer-nav:hover {
     color: #ff8c00;
 }
+
+/* ── Mobile Phone Optimization (≤640px) ── */
+@media (max-width: 640px) {
+    .pp-root {
+        padding: 16px 0 96px;
+    }
+
+    .pp-container {
+        padding: 0 12px;
+        max-width: 100%;
+    }
+
+    .pp-card {
+        border-radius: 18px;
+        margin-bottom: 16px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    .pp-header {
+        padding: 20px 16px 16px;
+    }
+
+    .pp-brand-badge {
+        font-size: 0.68rem;
+        padding: 4px 10px;
+        margin-bottom: 12px;
+    }
+
+    .pp-title {
+        font-size: 1.25rem;
+    }
+
+    .pp-subtitle {
+        font-size: 0.8rem;
+    }
+
+    .pp-timer-box {
+        margin: 14px 0 0;
+        padding: 10px 14px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-radius: 12px;
+        text-align: left;
+    }
+
+    .pp-timer-label {
+        margin-bottom: 0;
+        font-size: 0.72rem;
+    }
+
+    .pp-timer-value {
+        font-size: 1.05rem;
+    }
+
+    .pp-body {
+        padding: 16px 16px 20px;
+    }
+
+    .pp-amount-card {
+        padding: 14px 16px;
+        margin-bottom: 16px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        text-align: left;
+    }
+
+    .pp-amount-label {
+        margin-bottom: 0;
+        font-size: 0.78rem;
+    }
+
+    .pp-amount-value {
+        font-size: 1.35rem;
+    }
+
+    .pp-qris-wrap {
+        margin-bottom: 16px;
+    }
+
+    .pp-qris-img-container {
+        padding: 6px;
+        border-radius: 10px;
+        margin-bottom: 14px;
+    }
+
+    .pp-qris-img {
+        width: 220px;
+        max-width: 100%;
+    }
+
+    .pp-va-box {
+        padding: 14px 16px;
+        border-radius: 12px;
+    }
+
+    .pp-va-header {
+        margin-bottom: 8px;
+    }
+
+    .pp-va-method {
+        font-size: 0.8rem;
+    }
+
+    .pp-va-number-row {
+        padding: 10px 12px;
+        border-radius: 10px;
+    }
+
+    .pp-va-number {
+        font-size: 1.05rem;
+        letter-spacing: 0.04em;
+    }
+
+    .pp-copy-btn {
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+    }
+
+    .pp-actions {
+        margin-top: 16px;
+        gap: 10px;
+    }
+
+    .pp-btn-primary,
+    .pp-btn-secondary {
+        padding: 11px;
+        font-size: 0.82rem;
+        border-radius: 10px;
+    }
+
+    .pp-modal-card {
+        padding: 22px 18px;
+        border-radius: 20px;
+    }
+
+    .pp-modal-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 16px;
+        margin-bottom: 14px;
+    }
+
+    .pp-modal-title {
+        font-size: 1.15rem;
+        margin-bottom: 8px;
+    }
+
+    .pp-modal-body {
+        font-size: 0.88rem;
+    }
+
+    .pp-modal-footer {
+        margin-top: 20px;
+        gap: 8px;
+    }
+
+    .pp-footer-nav {
+        margin-top: 16px;
+        font-size: 0.8rem;
+    }
+}

@@ -624,3 +624,92 @@
         display: none !important;
     }
 }
+
+/* ── Mobile Phone Optimization (≤640px) ── */
+@media (max-width: 640px) {
+    .inv-root {
+        padding: 16px 0 96px;
+    }
+
+    .inv-container {
+        padding: 0 12px;
+        max-width: 100%;
+    }
+
+    .inv-title {
+        font-size: 1.35rem;
+    }
+
+    .inv-subtitle {
+        font-size: 0.78rem;
+        margin-bottom: 16px;
+    }
+
+    .inv-alert {
+        padding: 10px 14px;
+        gap: 10px;
+        border-radius: 12px;
+        margin-bottom: 12px;
+    }
+
+    .inv-alert-text {
+        font-size: 0.78rem;
+    }
+
+    .inv-filter-card {
+        padding: 14px 16px;
+        border-radius: 16px;
+        margin-bottom: 16px;
+    }
+
+    .inv-filter-title {
+        font-size: 0.75rem;
+    }
+
+    .inv-filter-toggle {
+        padding: 5px 10px;
+        font-size: 0.72rem;
+    }
+
+    .inv-filter-body {
+        gap: 12px;
+        margin-top: 12px;
+    }
+
+    .inv-field-input {
+        padding: 8px 10px;
+        font-size: 0.8rem;
+        border-radius: 8px;
+    }
+
+    .inv-filter-btn {
+        padding: 9px 16px;
+        font-size: 0.8rem;
+        border-radius: 8px;
+    }
+
+    .inv-mobile-list {
+        gap: 10px;
+    }
+
+    .inv-mobile-card {
+        border-radius: 14px;
+        padding: 14px 16px;
+    }
+
+    .inv-mobile-card-top {
+        margin-bottom: 10px;
+    }
+
+    .inv-mobile-amount {
+        font-size: 1.05rem;
+    }
+
+    .inv-mobile-card-footer {
+        padding-top: 10px;
+    }
+
+    .inv-mobile-arrow {
+        font-size: 0.72rem;
+    }
+}

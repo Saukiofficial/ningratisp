@@ -507,3 +507,171 @@
     box-shadow: 0 6px 22px rgba(255, 110, 0, 0.55);
     transform: translateY(-1px);
 }
+
+/* ── Mobile Phone Optimization (≤640px) ── */
+@media (max-width: 640px) {
+    .sh-root {
+        padding: 16px 0 96px;
+    }
+
+    .sh-container {
+        padding: 0 12px;
+        max-width: 100%;
+    }
+
+    .sh-back {
+        margin-bottom: 14px;
+        font-size: 0.76rem;
+    }
+
+    .sh-header-card {
+        padding: 18px 16px 14px;
+        border-radius: 16px;
+        margin-bottom: 12px;
+    }
+
+    .sh-header-top {
+        gap: 10px;
+    }
+
+    .sh-invoice-label {
+        font-size: 0.65rem;
+    }
+
+    .sh-invoice-number {
+        font-size: 1.25rem;
+    }
+
+    .sh-status-badge {
+        padding: 4px 10px;
+        font-size: 0.72rem;
+    }
+
+    .sh-paid-on {
+        font-size: 0.68rem;
+        margin-top: 4px;
+    }
+
+    .sh-dates {
+        gap: 6px;
+        margin-top: 10px;
+    }
+
+    .sh-date-chip {
+        padding: 4px 8px;
+        font-size: 0.7rem;
+    }
+
+    .sh-card {
+        border-radius: 16px;
+        margin-bottom: 12px;
+    }
+
+    .sh-card-header {
+        padding: 12px 14px;
+    }
+
+    .sh-card-icon {
+        width: 28px;
+        height: 28px;
+        border-radius: 7px;
+    }
+
+    .sh-card-title {
+        font-size: 0.72rem;
+    }
+
+    .sh-from-body {
+        padding: 14px 16px;
+    }
+
+    .sh-from-name {
+        font-size: 0.92rem;
+    }
+
+    .sh-from-line {
+        font-size: 0.76rem;
+        line-height: 1.6;
+    }
+
+    .sh-table th {
+        padding: 10px 14px;
+        font-size: 0.64rem;
+    }
+
+    .sh-table td {
+        padding: 12px 14px;
+        font-size: 0.8rem;
+    }
+
+    .sh-totals {
+        padding: 14px 16px;
+    }
+
+    .sh-total-row {
+        padding: 7px 0;
+        font-size: 0.8rem;
+    }
+
+    .sh-balance-row {
+        padding: 10px 12px;
+        border-radius: 10px;
+        margin-top: 8px;
+    }
+
+    .sh-balance-label {
+        font-size: 0.82rem;
+    }
+
+    .sh-balance-value {
+        font-size: 1.05rem;
+    }
+
+    .sh-pay-table th {
+        padding: 10px 14px;
+        font-size: 0.64rem;
+    }
+
+    .sh-pay-table td {
+        padding: 10px 14px;
+        font-size: 0.78rem;
+    }
+
+    .sh-va-card {
+        padding: 14px 16px;
+        border-radius: 14px;
+        margin-bottom: 12px;
+    }
+
+    .sh-va-row {
+        flex-direction: column;
+        gap: 2px;
+        margin-bottom: 6px;
+    }
+
+    .sh-va-key {
+        min-width: auto;
+        font-size: 0.75rem;
+    }
+
+    .sh-va-val {
+        font-size: 0.8rem;
+    }
+
+    .sh-footer {
+        flex-direction: column-reverse;
+        gap: 8px;
+        margin-top: 6px;
+        padding-top: 14px;
+    }
+
+    .sh-back-btn,
+    .sh-pay-btn {
+        width: 100%;
+        justify-content: center;
+        padding: 11px 16px;
+        font-size: 0.82rem;
+        border-radius: 10px;
+        box-sizing: border-box;
+    }
+}
