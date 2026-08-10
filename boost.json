@@ -12,6 +12,7 @@
     ],
     "sail": false,
     "skills": [
+        "infer-conventions",
         "laravel-best-practices",
         "configure-nightwatch",
         "livewire-development",
