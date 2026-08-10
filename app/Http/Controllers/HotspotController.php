@@ -36,7 +36,7 @@ class HotspotController extends Controller
 
         $channels = $service->getAll();
         $data['channels'] = $channels->where('is_active')
-            ->where('code', '!=', PaymentMethod::CASH)
+            ->where('code', '==', 'qris')
             ->groupBy('category');
         $data['categories'] = $service->getCategory();
         $data['price'] = $price['price'];
@@ -96,8 +96,8 @@ class HotspotController extends Controller
                 $responseHttp = Http::get($imgUrl);
                 if ($responseHttp->successful()) {
                     $imageContent = $responseHttp->body();
-                    $fileName = 'qris-'.$voucher->order_id.'.png';
-                    $filePath = 'qris/'.$fileName;
+                    $fileName = 'qris-' . $voucher->order_id . '.png';
+                    $filePath = 'qris/' . $fileName;
                     Storage::disk('public')->put($filePath, $imageContent);
 
                     $imgUrl = Storage::disk('public')->url($filePath);
