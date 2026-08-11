@@ -833,12 +833,30 @@
         let pollTimer = null;
         let countdownTimer = null;
         let notificationSent = false;
+        let sharedAudioCtx = null;
+
+        function initAudioContext() {
+            try {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (AudioCtx && !sharedAudioCtx) {
+                    sharedAudioCtx = new AudioCtx();
+                }
+                if (sharedAudioCtx && sharedAudioCtx.state === 'suspended') {
+                    sharedAudioCtx.resume();
+                }
+            } catch (e) {}
+        }
 
         function playSuccessSound() {
             try {
                 const AudioCtx = window.AudioContext || window.webkitAudioContext;
-                if (!AudioCtx) return;
-                const audioCtx = new AudioCtx();
+                const audioCtx = sharedAudioCtx || (AudioCtx ? new AudioCtx() : null);
+                if (!audioCtx) return;
+                
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+
                 const now = audioCtx.currentTime;
                 
                 const osc1 = audioCtx.createOscillator();
@@ -868,6 +886,9 @@
         }
 
         function requestNotificationPermission() {
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW reg error:', err));
+            }
             if ("Notification" in window && Notification.permission === "default") {
                 Notification.requestPermission();
             }
@@ -879,13 +900,47 @@
 
             playSuccessSound();
 
-            if ("Notification" in window) {
-                if (Notification.permission === "granted") {
-                    const notif = new Notification("Pembayaran Berhasil! 🎉", {
-                        body: `Kode Voucher Anda: ${voucherCode}\nKlik untuk menyalin kode voucher.`,
-                        tag: "voucher-paid-" + voucherCode,
-                        requireInteraction: true
-                    });
+            if (navigator.vibrate) {
+                try { navigator.vibrate([200, 100, 200, 100, 300]); } catch (e) {}
+            }
+
+            const title = "Pembayaran Berhasil! 🎉";
+            const options = {
+                body: `Kode Voucher Anda: ${voucherCode}\nTap untuk menyalin kode voucher.`,
+                icon: "{{ asset('logo.png') }}",
+                badge: "{{ asset('logo.png') }}",
+                tag: "voucher-paid-" + voucherCode,
+                vibrate: [200, 100, 200],
+                requireInteraction: true
+            };
+
+            if ('serviceWorker' in navigator && Notification.permission === 'granted') {
+                navigator.serviceWorker.ready.then(registration => {
+                    if (registration && registration.showNotification) {
+                        registration.showNotification(title, options);
+                    } else {
+                        fallbackDesktopNotification(voucherCode, title, options);
+                    }
+                }).catch(() => {
+                    fallbackDesktopNotification(voucherCode, title, options);
+                });
+            } else if ("Notification" in window && Notification.permission === "default") {
+                Notification.requestPermission().then(permission => {
+                    if (permission === "granted") {
+                        sendPaidNotification(voucherCode);
+                    }
+                });
+            } else {
+                fallbackDesktopNotification(voucherCode, title, options);
+            }
+
+            showToast('🎉 Pembayaran Berhasil! Kode Voucher: ' + voucherCode);
+        }
+
+        function fallbackDesktopNotification(voucherCode, title, options) {
+            if ("Notification" in window && Notification.permission === "granted") {
+                try {
+                    const notif = new Notification(title, options);
                     notif.onclick = function() {
                         window.focus();
                         if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -894,12 +949,8 @@
                             });
                         }
                     };
-                } else if (Notification.permission === "default") {
-                    Notification.requestPermission().then(permission => {
-                        if (permission === "granted") {
-                            sendPaidNotification(voucherCode);
-                        }
-                    });
+                } catch (e) {
+                    console.log('Native Notification constructor error:', e);
                 }
             }
         }
@@ -966,9 +1017,14 @@
         document.addEventListener('DOMContentLoaded', function() {
             paymentConfirmModal = new bootstrap.Modal(document.getElementById('paymentConfirmModal'));
             cancelConfirmModal = new bootstrap.Modal(document.getElementById('cancelConfirmModal'));
+
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW reg error:', err));
+            }
         });
 
         function goConfirm(el) {
+            initAudioContext();
             const c_name = $(el).find('#channel_name').text();
             const c_total = $(el).find('#channel_total').text();
 
@@ -979,6 +1035,7 @@
         }
 
         $('#confirmPaymentBtn').on('click', function() {
+            initAudioContext();
             $(this).prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Memproses...');
 
             const whatsappNumber = $('#whatsappNumber').val().trim();
