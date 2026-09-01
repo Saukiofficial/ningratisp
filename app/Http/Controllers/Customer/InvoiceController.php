@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
+use App\Models\Customer;
 use App\Models\Customer\Invoices;
 use App\Models\Discount;
 use App\Models\Fee;
@@ -24,7 +25,7 @@ class InvoiceController extends Controller
      */
     public function index(Request $request)
     {
-        /** @var \App\Models\Customer */
+        /** @var Customer */
         $user = auth('customers')->user();
         $query = $user->invoices();
         $unpaidQuery = (clone $query)->where('invoices.status', Invoices::STATUS_UNPAID);
@@ -47,7 +48,7 @@ class InvoiceController extends Controller
         $totalUnpaidInvoices = $unpaidQuery->count();
 
         return Inertia::render('Customer/Invoices/Index', [
-            'tagihans' => Inertia::scroll(fn() => $invoicesQuery->paginate($paginationLength)->withQueryString()),
+            'tagihans' => Inertia::scroll(fn () => $invoicesQuery->paginate($paginationLength)->withQueryString()),
             'has_active_invoices' => $hasUnpaidInvoices,
             'total_unpaid_invoices' => $totalUnpaidInvoices,
             'filters' => $request->only(['status', 'start_date', 'end_date']),
@@ -248,7 +249,7 @@ class InvoiceController extends Controller
             } elseif (isset($response['permata_va_number'])) {
                 $va->va_number = $response['permata_va_number'];
             } elseif ($response['payment_type'] == 'echannel') {
-                $va->va_number = $response['biller_code'] . $response['bill_key'];
+                $va->va_number = $response['biller_code'].$response['bill_key'];
             } elseif (isset($response['actions'])) {
                 $urls = [];
                 foreach ($response['actions'] as $action) {
@@ -266,7 +267,7 @@ class InvoiceController extends Controller
 
             return to_route('customer.pending-payment.show', $va)->with('success', 'Virtual Account created successfully.');
         } else {
-            return to_route('customer.invoices.checkout', $invoice)->with('error', 'Failed to create Virtual Account (' . ($response['status_code'] ?? json_encode($response)) . ').');
+            return to_route('customer.invoices.checkout', $invoice)->with('error', 'Failed to create Virtual Account ('.($response['status_code'] ?? json_encode($response)).').');
         }
     }
 
@@ -290,8 +291,9 @@ class InvoiceController extends Controller
 
         if ($discount->type === Discount::PERCENTAGE) {
             $discountAmount = ($subtotal * $discount->value) / 100;
-            if ($discount->max_discount_amount && $discountAmount > $discount->max_discount_amount) {
-                $discountAmount = $discount->max_discount_amount;
+            $maxCap = floatval($discount->max_discount_amount);
+            if ($maxCap > 0 && $discountAmount > $maxCap) {
+                $discountAmount = $maxCap;
             }
         } elseif ($discount->type === Discount::FIXED_AMOUNT) {
             $discountAmount = $discount->value;

@@ -167,8 +167,9 @@ const OrderSummary = ({ invoice, claimedDiscounts = [], selectedMethod, handleOp
         const subtotal = parseFloat(invoice.subtotal);
         if (claimed.discount.type === 'percentage') {
             discountAmount = (subtotal * parseFloat(claimed.discount.value)) / 100;
-            if (claimed.discount.max_discount_amount && discountAmount > parseFloat(claimed.discount.max_discount_amount)) {
-                discountAmount = parseFloat(claimed.discount.max_discount_amount);
+            const maxCap = parseFloat(claimed.discount.max_discount_amount);
+            if (maxCap > 0 && discountAmount > maxCap) {
+                discountAmount = maxCap;
             }
         } else if (claimed.discount.type === 'fixed_amount') {
             discountAmount = parseFloat(claimed.discount.value);
@@ -314,8 +315,9 @@ export default function Checkout({ invoice, paymentMethods = [], claimedDiscount
         let amount = 0;
         if (discount.type === 'percentage') {
             amount = (subtotal * parseFloat(discount.value)) / 100;
-            if (discount.max_discount_amount && amount > parseFloat(discount.max_discount_amount)) {
-                amount = parseFloat(discount.max_discount_amount);
+            const maxCap = parseFloat(discount.max_discount_amount);
+            if (maxCap > 0 && amount > maxCap) {
+                amount = maxCap;
             }
         } else if (discount.type === 'fixed_amount') {
             amount = parseFloat(discount.value);

@@ -27,11 +27,11 @@ class DiscountService
                 $q->whereNull('customer_category')
                     ->orWhere('customer_category', $customer->customer_category);
             })
-            ->when($package, fn($q) => $q->where(function ($w) use ($package) {
+            ->when($package, fn ($q) => $q->where(function ($w) use ($package) {
                 $w->whereNull('package_id')->orWhere('package_id', $package->id);
             }))
             ->get()
-            ->filter(fn(Discount $d) => $d->isWithinDateRange($date))
+            ->filter(fn (Discount $d) => $d->isWithinDateRange($date))
             ->values()
             ->all();
     }
@@ -117,7 +117,7 @@ class DiscountService
             $activeAssignmentCount = $customer->invoices()
                 ->where('invoices.status', '!=', Invoices::STATUS_PAID)
                 ->where('discount_id', $discount->id)
-                ->when($currentInvoice, fn($q) => $q->where('invoices.id', '!=', $currentInvoice->id))
+                ->when($currentInvoice, fn ($q) => $q->where('invoices.id', '!=', $currentInvoice->id))
                 ->count();
 
             $totalUsage = $paidUsageCount + $activeAssignmentCount;
@@ -154,8 +154,9 @@ class DiscountService
 
         if ($discount->type === Discount::PERCENTAGE) {
             $discountAmount = ($subtotal * $discount->value) / 100;
-            if (! empty(floatval($discount->max_discount_amount)) && $discountAmount > $discount->max_discount_amount) {
-                $discountAmount = $discount->max_discount_amount;
+            $maxCap = floatval($discount->max_discount_amount);
+            if ($maxCap > 0 && $discountAmount > $maxCap) {
+                $discountAmount = $maxCap;
             }
         } elseif ($discount->type === Discount::FIXED_AMOUNT) {
             $discountAmount = $discount->value;
