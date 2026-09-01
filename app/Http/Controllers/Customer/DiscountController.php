@@ -23,7 +23,7 @@ class DiscountController extends Controller
         $result = $this->discountService->validateDiscountForCustomer($discount, $customer);
 
         if (empty($result['valid'])) {
-            return back()->with('error', $result['message']);
+            return back()->withErrors(['code' => $result['message']])->with('error', $result['message']);
         }
 
         $customer->discounts()->attach($discount->id, [

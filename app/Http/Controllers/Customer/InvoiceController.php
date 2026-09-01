@@ -148,6 +148,14 @@ class InvoiceController extends Controller
 
         // 3. Determine which claims are actually available
         foreach ($groupedClaims as $discountId => $claims) {
+            $discount = $claims->first()?->discount;
+            if (! $discount || ! $discount->is_active || ! $discount->isWithinDateRange()) {
+                continue;
+            }
+            if ($discount->usage_limit !== null && $discount->used_count >= $discount->usage_limit) {
+                continue;
+            }
+
             $used = $usedCounts->get($discountId, 0);
             $availableCount = $claims->count() - $used;
 

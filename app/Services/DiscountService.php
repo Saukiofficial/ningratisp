@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Customer;
+use App\Models\CustomerDiscount;
 use App\Models\Discount;
 use App\Models\Invoices;
 use App\Models\Packages;
@@ -96,11 +97,27 @@ class DiscountService
             ];
         }
 
-        if ($discount->usage_limit !== null && $discount->used_count >= $discount->usage_limit) {
-            return [
-                'valid' => false,
-                'message' => 'Kuota diskon ini sudah habis.',
-            ];
+        if ($discount->usage_limit !== null) {
+            if ($forUsage) {
+                if ($discount->used_count >= $discount->usage_limit) {
+                    return [
+                        'valid' => false,
+                        'message' => 'Kuota diskon ini sudah habis.',
+                    ];
+                }
+            } else {
+                $activeClaimsCount = CustomerDiscount::where('discount_id', $discount->id)
+                    ->where('is_active', true)
+                    ->count();
+                $totalReserved = $discount->used_count + $activeClaimsCount;
+
+                if ($totalReserved >= $discount->usage_limit) {
+                    return [
+                        'valid' => false,
+                        'message' => 'Kuota diskon ini sudah habis.',
+                    ];
+                }
+            }
         }
 
         if (! empty($discount->max_per_user)) {
