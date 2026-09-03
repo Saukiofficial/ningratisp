@@ -15,8 +15,11 @@ use Illuminate\Support\Facades\Hash;
 class Customer extends User
 {
     const ACTIVE = 'active';
+
     const SUSPENDED = 'suspended';
+
     const TERMINATED = 'terminated';
+
     const PENDING = 'pending';
 
     use HasFactory;
@@ -98,7 +101,7 @@ class Customer extends User
     public function discounts(): BelongsToMany
     {
         return $this->belongsToMany(Discount::class, 'customer_discounts')
-            ->withPivot(['is_active', 'applied_at', 'created_at', 'updated_at'])
+            ->withPivot(['id', 'is_active', 'applied_at', 'notes', 'created_at', 'updated_at'])
             ->withTimestamps();
     }
 
@@ -138,7 +141,7 @@ class Customer extends User
     public function customerName(): Attribute
     {
         return new Attribute(
-            fn() => $this->full_name ?: $this->username
+            fn () => $this->full_name ?: $this->username
         );
     }
 
@@ -299,7 +302,7 @@ class Customer extends User
             self::PENDING => 'Pending (Belum Aktif)',
             self::ACTIVE => 'Active',
             self::TERMINATED => 'Terminated (Permanen)',
-            self::SUSPENDED => 'Suspended (Sementar)'
+            self::SUSPENDED => 'Suspended (Sementar)',
         ];
     }
 
@@ -326,6 +329,6 @@ class Customer extends User
             $i++;
         }
 
-        return round($bytes, 2) . ' ' . $units[$i];
+        return round($bytes, 2).' '.$units[$i];
     }
 }

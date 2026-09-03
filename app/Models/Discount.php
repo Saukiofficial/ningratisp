@@ -11,21 +11,25 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Discount extends Model
 {
-
     use HasFactory;
 
     // applicable on
     const FOR_INVOICE = 'invoice';
+
     const FOR_PACKAGE = 'package';
+
     const FOR_CUSTOMER = 'customer';
 
     // category for user
     const TYPE_FREE_FOREVER = 'free_forever';
+
     const TYPE_LOAN = 'loan';
+
     const TYPE_NORMAL = 'normal';
 
     // type
     const PERCENTAGE = 'percentage';
+
     const FIXED_AMOUNT = 'fixed_amount';
 
     use HasFactory;
@@ -54,6 +58,7 @@ class Discount extends Model
     public function customers(): BelongsToMany
     {
         return $this->belongsToMany(Customer::class, CustomerDiscount::class)
+            ->withPivot(['id', 'is_active', 'applied_at', 'notes'])
             ->withTimestamps();
     }
 
@@ -65,7 +70,7 @@ class Discount extends Model
     public function canClaimed(): Attribute
     {
         return new Attribute(
-            get: fn() => !empty($this->claimable)
+            get: fn () => ! empty($this->claimable)
         );
     }
 
@@ -78,6 +83,7 @@ class Discount extends Model
     public function scopeAutoApplicable($query)
     {
         $today = now()->toDateString();
+
         return $query->active()
             ->where(function ($q) use ($today) {
                 $q->whereNull('start_date')->orWhere('start_date', '<=', $today);
@@ -90,8 +96,13 @@ class Discount extends Model
     public function isWithinDateRange(): bool
     {
         $today = now()->toDateString();
-        if ($this->start_date && $this->start_date->toDateString() > $today) return false;
-        if ($this->end_date && $this->end_date->toDateString() < $today) return false;
+        if ($this->start_date && $this->start_date->toDateString() > $today) {
+            return false;
+        }
+        if ($this->end_date && $this->end_date->toDateString() < $today) {
+            return false;
+        }
+
         return true;
     }
 
@@ -100,7 +111,7 @@ class Discount extends Model
         return [
             self::FOR_CUSTOMER => 'Customer',
             self::FOR_INVOICE => 'Invoice',
-            self::FOR_PACKAGE => 'Package'
+            self::FOR_PACKAGE => 'Package',
         ];
     }
 
@@ -109,7 +120,7 @@ class Discount extends Model
         return [
             self::TYPE_FREE_FOREVER => 'Free Forever',
             self::TYPE_LOAN => 'Loan / Adjustment',
-            self::TYPE_NORMAL => 'Normal (Default)'
+            self::TYPE_NORMAL => 'Normal (Default)',
         ];
     }
 
@@ -117,7 +128,7 @@ class Discount extends Model
     {
         return [
             self::PERCENTAGE => 'Percentage (%)',
-            self::FIXED_AMOUNT => 'Fixed Price (Rp)'
+            self::FIXED_AMOUNT => 'Fixed Price (Rp)',
         ];
     }
 

@@ -68,7 +68,7 @@ class CustomerUsedVoucherRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('name')
             ->columns([
-                TextColumn::make('name')
+                TextColumn::make('customer_name')
                     ->label('Customer Name')
                     ->searchable()
                     ->sortable(),
@@ -78,17 +78,21 @@ class CustomerUsedVoucherRelationManager extends RelationManager
                 TextColumn::make('payment_status')
                     ->label('Payment Status')
                     ->badge()
-                    ->state(fn (Customer $record): string => $this->isVoucherUsedForPayment($record) ? 'Used for Payment' : 'Claimed (Unpaid)')
-                    ->color(fn (string $state): string => $state === 'Used for Payment' ? 'success' : 'warning')
-                    ->icon(fn (string $state): string => $state === 'Used for Payment' ? 'heroicon-m-check-circle' : 'heroicon-m-clock'),
+                    ->state(fn(Customer $record): string => $this->isVoucherUsedForPayment($record) ? 'Used for Payment' : 'Claimed (Unpaid)')
+                    ->color(fn(string $state): string => $state === 'Used for Payment' ? 'success' : 'warning')
+                    ->icon(fn(string $state): string => $state === 'Used for Payment' ? 'heroicon-m-check-circle' : 'heroicon-m-clock'),
                 IconColumn::make('used_for_payment_flag')
                     ->label('Used for Payment')
                     ->boolean()
-                    ->state(fn (Customer $record): bool => $this->isVoucherUsedForPayment($record)),
+                    ->state(fn(Customer $record): bool => $this->isVoucherUsedForPayment($record)),
                 TextColumn::make('pivot.applied_at')
                     ->label('Claimed At')
                     ->dateTime('d F Y, H:i:s')
                     ->sortable(),
+                TextColumn::make('pivot.notes')
+                    ->label('Notes')
+                    ->searchable()
+                    ->placeholder('-'),
             ])
             ->filters([
                 SelectFilter::make('payment_status')
@@ -125,7 +129,7 @@ class CustomerUsedVoucherRelationManager extends RelationManager
                     ->icon('heroicon-m-trash')
                     ->modalHeading('Remove Claimed Voucher')
                     ->modalDescription('Are you sure you want to remove this claimed voucher from this customer? This will free up the voucher quota.')
-                    ->visible(fn (Customer $record): bool => ! $this->isVoucherUsedForPayment($record))
+                    ->visible(fn(Customer $record): bool => ! $this->isVoucherUsedForPayment($record))
                     ->after(function (Customer $record): void {
                         $discountId = $this->getOwnerRecord()->id;
                         $record->invoices()
